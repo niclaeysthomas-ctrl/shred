@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d0b09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shred">
+<link rel="manifest" href="manifest.webmanifest">
+<title>SHRED — d'intermédiaire à expert</title>
+<style>
+  :root{
+    --bg:#0d0b09; --bg2:#161210; --bg3:#211a14; --line:#332921;
+    --txt:#f2ede6; --dim:#a2938a;
+    --acc:#f59b2d; --accd:#c67a1c; --red:#e0563f;
+    --ok:#35c77f; --bad:#ff5c6c; --blue:#5b9cff;
+    --r:13px;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overscroll-behavior:none}
+  #app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+  main{flex:1;padding:16px 16px 92px}
+  header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .logo{font-weight:900;font-size:20px;letter-spacing:1px;font-style:italic}
+  .logo span{color:var(--acc)}
+  .hbadges{display:flex;gap:7px}
+  .badge{font-family:var(--mono);font-weight:700;font-size:11.5px;background:var(--bg2);border:1px solid var(--line);padding:6px 10px;border-radius:9px}
+  .badge.gold{color:var(--acc);border-color:#4a3823}
+
+  h1.page{font-size:23px;font-weight:900;font-style:italic;margin-bottom:4px}
+  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;color:var(--dim);margin:18px 0 8px;display:flex;align-items:center;gap:10px}
+  h2.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:14px;line-height:1.5}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:15px;margin-bottom:12px}
+
+  .hero{background:linear-gradient(135deg,#1d130c,#241a0e);border:1px solid #4a3823;border-top:3px solid var(--acc);border-radius:var(--r);padding:16px;margin-bottom:12px}
+  .hero .lab{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:800}
+  .hero .big{font-family:var(--mono);font-size:23px;font-weight:800;margin:4px 0 8px}
+  .xpbar{height:9px;border-radius:3px;background:#0009;overflow:hidden;margin:2px 0 4px}
+  .xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accd),var(--acc));transition:width .4s}
+  .xptxt{font-family:var(--mono);font-size:11px;color:var(--dim)}
+
+  .coach{background:var(--bg2);border-left:3px solid var(--acc);border-radius:0 var(--r) var(--r) 0;padding:13px 14px;margin-bottom:12px;font-size:14px;line-height:1.55}
+  .coach b{color:var(--acc)}
+
+  .act{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:13px;margin-bottom:8px;cursor:pointer}
+  .act:active{background:var(--bg3)}
+  .act .ico{width:38px;height:38px;border-radius:11px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .act .t{flex:1;min-width:0}
+  .act .t b{display:block;font-size:14px}
+  .act .t small{color:var(--dim);font-size:12px;line-height:1.35;display:block;margin-top:1px}
+  .act .st{font-size:13px;flex-shrink:0;color:var(--dim);font-family:var(--mono);font-weight:700}
+  .act.done{opacity:.55}
+  .act.done .st{color:var(--ok)}
+  .act.hot{border-color:#4a3823;background:linear-gradient(135deg,#191008,#1d150b)}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:var(--bg3);color:var(--acc);border:1px solid #4a3823;padding:3px 8px;border-radius:6px;margin-right:6px;margin-bottom:4px}
+  .tag.b{color:var(--blue);border-color:#27406e}
+  .tag.g{color:var(--ok);border-color:#1e4a36}
+
+  pre.tab{font-family:var(--mono);font-size:11.5px;line-height:1.55;background:#080604;border:1px solid var(--line);border-radius:10px;padding:12px 10px;overflow-x:auto;color:#e8dfd2;margin:10px 0}
+
+  .btn{display:block;border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:800;cursor:pointer;background:var(--acc);color:#221200;width:100%;text-align:center;margin-top:12px}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
+  .btn[disabled]{opacity:.4;pointer-events:none}
+  .danger{color:var(--bad);background:none;border:1px solid #55232c;border-radius:12px;width:100%;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px}
+
+  #ov{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;overflow-y:auto}
+  #ov.on{display:block}
+  #ov .inner{max-width:520px;margin:0 auto;padding:14px 16px 60px}
+  #ov .top{display:flex;align-items:center;gap:10px;margin-bottom:12px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+  #ov .top .x{width:36px;height:36px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font-size:16px;cursor:pointer;flex-shrink:0}
+  #ov .top b{font-size:16.5px;flex:1;font-weight:800}
+  .story p{font-size:14.5px;line-height:1.65;color:#e6ddd2;margin-bottom:12px}
+  .meta{color:var(--dim);font-size:12.5px;margin-bottom:10px}
+  .pt{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;font-size:13.5px;line-height:1.55;color:#e0d8cc;margin-bottom:8px}
+  .pt b{color:var(--acc)}
+  .crit{background:#12201a;border:1px solid #1e4a36;border-radius:12px;padding:12px 13px;font-size:13.5px;line-height:1.5;margin-top:4px}
+  .crit b{color:var(--ok)}
+
+  /* paliers BPM */
+  .prow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}
+  .prow .p{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:9px 4px;text-align:center}
+  .prow .p small{display:block;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .prow .p b{font-family:var(--mono);font-size:15px}
+  .prow .p.hit{background:#12201a;border-color:#1e4a36}
+  .prow .p.hit b{color:var(--ok)}
+  .prow .p.next{border-color:#4a3823}
+  .prow .p.next b{color:var(--acc)}
+  .bpmlog{display:flex;gap:8px;margin-top:10px}
+  .bpmlog input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font-size:16px;font-family:var(--mono);text-align:center}
+  .bpmlog input:focus{outline:none;border-color:var(--acc)}
+  .bpmlog button{width:auto;margin:0;padding:12px 18px}
+
+  /* métronome */
+  .met{background:#080604;border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;text-align:center}
+  .met .bpmv{font-family:var(--mono);font-size:40px;font-weight:800;line-height:1}
+  .met .bpml{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:2px}
+  .met .row{display:flex;gap:7px;justify-content:center;margin-top:12px}
+  .met button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px 0;font-size:14px;font-weight:800;cursor:pointer;flex:1;max-width:64px}
+  .met button.go{background:var(--acc);color:#221200;border-color:var(--acc);max-width:none;flex:1.6}
+  .met button.go.on{background:var(--red);border-color:var(--red);color:#fff}
+  .met button.sel{border-color:var(--acc);color:var(--acc)}
+  .met .row+.row{margin-top:8px}
+  .met .dots{display:flex;gap:8px;justify-content:center;margin-top:12px;height:10px}
+  .met .dots i{width:10px;height:10px;border-radius:50%;background:var(--bg3);border:1px solid var(--line)}
+  .met .dots i.on{background:var(--acc);border-color:var(--acc)}
+
+  .selfrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+  .selfrow button{border:none;border-radius:10px;padding:11px 4px;font-size:12.5px;font-weight:800;cursor:pointer;background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
+  .selfrow button.on{background:var(--acc);color:#221200;border-color:var(--acc)}
+
+  .opt{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13.5px;line-height:1.4;color:var(--txt);margin-bottom:7px;cursor:pointer}
+  .opt.ok{border-color:var(--ok);background:#12201a}
+  .opt.ko{border-color:var(--bad);background:#2a1512}
+  .exp{background:var(--bg3);border-radius:12px;padding:11px;font-size:13px;line-height:1.5;color:#dcd2c6;margin:4px 0 10px;border-left:3px solid var(--acc)}
+  .qq{font-size:15px;font-weight:700;line-height:1.45;margin:12px 0 10px}
+
+  textarea,input[type=text]{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font-size:14px;font-family:inherit}
+  textarea{min-height:70px;resize:vertical}
+  textarea:focus,input:focus{outline:none;border-color:var(--acc)}
+
+  .result{text-align:center;padding:24px 10px}
+  .result .big{font-family:var(--mono);font-size:40px;font-weight:800}
+  .result p{color:var(--dim);font-size:14px;margin-top:8px;line-height:1.5}
+  .result .xp{color:var(--acc);font-weight:800;font-family:var(--mono);margin-top:6px}
+
+  nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,11,9,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:40}
+  nav .in{max-width:520px;margin:0 auto;display:flex}
+  nav button{flex:1;background:none;border:none;color:var(--dim);font-size:10.5px;font-weight:700;padding:9px 0 max(9px,env(safe-area-inset-bottom));cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+  nav button i{font-style:normal;font-size:19px}
+  nav button.on{color:var(--acc)}
+
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .stat{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:13px;text-align:center}
+  .stat b{font-family:var(--mono);font-size:20px;display:block}
+  .stat small{font-family:var(--mono);color:var(--dim);font-size:10px;letter-spacing:.6px}
+  .hm{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,12px);gap:3px;justify-content:start;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+  .hm i{width:12px;height:12px;border-radius:3px;background:var(--bg3)}
+  .hm i.on{background:var(--acc)}
+  .hm i.today{outline:1px solid var(--dim)}
+  .ranks li{list-style:none;display:flex;justify-content:space-between;padding:9px 4px;border-bottom:1px solid var(--line);font-size:14px}
+  .ranks li:last-child{border:none}
+  .ranks li.cur{color:var(--acc);font-weight:800}
+  .ranks li.past{color:var(--dim)}
+  .ranks li small{color:var(--dim);font-family:var(--mono)}
+
+  .chk{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:7px;cursor:pointer;font-size:13.5px;line-height:1.45}
+  .chk input{margin-top:2px;accent-color:var(--acc);width:17px;height:17px;flex-shrink:0}
+  .chk.on{opacity:.6}
+
+  .tierhead{display:flex;align-items:baseline;gap:8px;margin:16px 0 8px}
+  .tierhead b{font-size:15px;font-style:italic}
+  .tierhead small{color:var(--dim);font-size:12px}
+  .tierbar{font-family:var(--mono);font-size:11px;color:var(--acc);margin-left:auto}
+
+  .game{background:#080604;border:1px solid var(--line);border-radius:16px;padding:22px 14px;text-align:center;margin-bottom:12px}
+  .game .qnote{font-size:19px;font-weight:800;margin:8px 0 2px}
+  .game .qnote b{color:var(--acc)}
+  .game .timer{font-family:var(--mono);font-size:13px;color:var(--dim)}
+  .gopts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:14px}
+  .gopts button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:13px 4px;font-size:15px;font-weight:800;cursor:pointer}
+  .gopts button.ok{background:#12201a;border-color:var(--ok)}
+  .gopts button.ko{background:#2a1512;border-color:var(--bad)}
+
+  #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:#241a0e;border:1px solid #4a3823;color:var(--txt);padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;z-index:60;opacity:0;pointer-events:none;transition:all .25s;max-width:90%;text-align:center}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast b{color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">SH<span>RED</span> 🎸</div>
+    <div class="hbadges">
+      <div class="badge">🔥 <span id="hstreak">0</span></div>
+      <div class="badge gold" id="hrank">Bedroom</div>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+<div id="ov"><div class="inner" id="ovin"></div></div>
+<div id="toast"></div>
+<nav><div class="in">
+  <button data-v="jour"><i>🎯</i>Jour</button>
+  <button data-v="tech"><i>🎸</i>Technique</button>
+  <button data-v="manche"><i>🗺️</i>Manche</button>
+  <button data-v="rep"><i>🎵</i>Répertoire</button>
+  <button data-v="profil"><i>👑</i>Profil</button>
+</div></nav>
+
+<script src="data-guitar.js"></script>
+<script>
+// ================= ÉTAT =================
+const KEY="shred_v1";
+const RANKS=[["Bedroom Player",0],["Rythmicien",150],["Soliste",350],["Lead Guitarist",650],["Shredder",1050],["Guitar Hero",1600]];
+const DEF={xp:0,streak:0,lastVal:"",days:[],menu:null,bpm:{},pal:{},pieces:{},fiches:{},game:{best:0,runs:0}};
+let S=load();
+function load(){
+  let s={}; try{ s=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){}
+  const o=Object.assign({},DEF,s);
+  o.days=s.days||[]; o.bpm=s.bpm||{}; o.pal=s.pal||{}; o.pieces=s.pieces||{}; o.fiches=s.fiches||{};
+  o.game=Object.assign({best:0,runs:0},s.game||{});
+  return o;
+}
+function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function yesterday(){ return new Date(Date.now()-864e5).toISOString().slice(0,10); }
+function esc(x){ return String(x??"").replace(/</g,"&lt;"); }
+function rank(){ let r=RANKS[0]; for(const x of RANKS){ if(S.xp>=x[1]) r=x; } return r; }
+function nextRank(){ for(const x of RANKS){ if(S.xp<x[1]) return x; } return null; }
+function dispStreak(){ return (S.lastVal===today()||S.lastVal===yesterday())?S.streak:0; }
+function addXP(n){
+  if(n<=0){save();header();return;}
+  const b=rank()[0]; S.xp+=n; save(); header();
+  if(rank()[0]!==b) setTimeout(()=>toast("👑 <b>"+rank()[0].toUpperCase()+"</b> — nouveau grade. Ça s'entend déjà."),700);
+}
+function header(){ document.getElementById("hstreak").textContent=dispStreak(); document.getElementById("hrank").textContent=rank()[0].split(" ")[0]; }
+let toastT=null;
+function toast(h){ const t=document.getElementById("toast"); t.innerHTML=h; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),3200); }
+
+// helpers données
+function exo(id){ return TEXOS.find(x=>x.id===id); }
+function tmod(id){ return TMODS.find(m=>m.id===id); }
+function pb(id){ const a=S.bpm[id]||[]; return a.length?Math.max(...a.map(x=>x.v)):null; }
+function bpmSpark(id){
+  const a=(S.bpm[id]||[]).slice(0,15).reverse().map(x=>x.v);
+  if(a.length<3) return "";
+  const mn=Math.min(...a),mx=Math.max(...a),rg=(mx-mn)||1;
+  const pts=a.map((v,i)=>((i/(a.length-1))*100).toFixed(1)+","+(26-((v-mn)/rg)*20).toFixed(1)).join(" ");
+  return `<svg viewBox="0 0 100 30" style="width:100%;height:30px;margin-top:9px" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(--acc)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="xptxt" style="font-size:9.5px;letter-spacing:.4px">${a.length} DERNIERS LOGS — PLUS HAUT = PLUS VITE</div>`;
+}
+function palierOf(x){ // niveau atteint 0-4
+  if(x.bpm){ const p=pb(x.id); if(p===null) return 0; let n=0; x.bpm.forEach(b=>{if(p>=b)n++;}); return n; }
+  return S.pal[x.id]||0;
+}
+
+// ================= MÉTRONOME (WebAudio) =================
+// sub : clics par temps (1=noires, 2=croches, 3=triolets, 4=doubles) — indispensable pour les sextolets lents.
+// trainer : mode paliers — +tStep BPM toutes les tEvery mesures, automatiquement.
+const MET={bpm:100,on:false,ctx:null,next:0,tick:0,measures:0,iv:null,sub:1,trainer:false,tStep:4,tEvery:8};
+function metCtx(){ if(!MET.ctx) MET.ctx=new (window.AudioContext||window.webkitAudioContext)(); return MET.ctx; }
+function metClick(t,lvl){ // 2=début de mesure, 1=temps, 0=subdivision
+  const c=metCtx(),o=c.createOscillator(),g=c.createGain();
+  o.frequency.value=lvl===2?1400:lvl===1?950:700;
+  g.gain.setValueAtTime(lvl===2?.5:lvl===1?.3:.13,t); g.gain.exponentialRampToValueAtTime(.001,t+.05);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.06);
+}
+function metStart(){
+  const c=metCtx(); if(c.state==="suspended") c.resume();
+  MET.on=true; MET.tick=0; MET.measures=0; MET.next=c.currentTime+.08;
+  MET.iv=setInterval(()=>{
+    while(MET.next<metCtx().currentTime+.12){
+      const perM=4*MET.sub, inM=MET.tick%perM;
+      const isOne=inM===0, isBeat=inM%MET.sub===0;
+      metClick(MET.next,isOne?2:isBeat?1:0);
+      if(isOne&&MET.tick>0){
+        MET.measures++;
+        if(MET.trainer&&MET.measures%MET.tEvery===0){
+          MET.bpm=Math.min(240,MET.bpm+MET.tStep);
+          const v=document.getElementById("metv"); if(v) v.textContent=MET.bpm;
+        }
+      }
+      if(isBeat){
+        const bi=Math.floor(inM/MET.sub);
+        setTimeout(()=>{ document.querySelectorAll(".met .dots i").forEach((d,k)=>d.classList.toggle("on",k===bi)); },Math.max(0,(MET.next-metCtx().currentTime)*1000));
+      }
+      MET.next+=60/MET.bpm/MET.sub; MET.tick++;
+    }
+  },25);
+  metUI();
+}
+function metStop(){ MET.on=false; if(MET.iv){clearInterval(MET.iv);MET.iv=null;} document.querySelectorAll(".met .dots i").forEach(d=>d.classList.remove("on")); metUI(); }
+function metTog(){ MET.on?metStop():metStart(); }
+function metSet(d){ MET.bpm=Math.max(40,Math.min(240,MET.bpm+d)); metUI(); }
+function metSub(s){ MET.sub=s; metRefresh(); }
+function metTrain(){ MET.trainer=!MET.trainer; metRefresh(); }
+function metRefresh(){ const b=document.getElementById("metbox"); if(b){ b.outerHTML=metHtml(); metUI(); } }
+function metUI(){
+  const v=document.getElementById("metv"); if(v) v.textContent=MET.bpm;
+  const b=document.getElementById("metgo"); if(b){ b.textContent=MET.on?"■ Stop":"▶ Lancer"; b.classList.toggle("on",MET.on); }
+}
+function metHtml(){
+  return `<div class="met" id="metbox">
+    <div class="bpmv" id="metv">${MET.bpm}</div><div class="bpml">BPM · MÉTRONOME</div>
+    <div class="dots"><i></i><i></i><i></i><i></i></div>
+    <div class="row">
+      <button onclick="metSet(-5)">−5</button><button onclick="metSet(-1)">−1</button>
+      <button class="go" id="metgo" onclick="metTog()">▶ Lancer</button>
+      <button onclick="metSet(1)">+1</button><button onclick="metSet(5)">+5</button>
+    </div>
+    <div class="row">
+      ${[1,2,3,4].map(s=>`<button class="${MET.sub===s?"sel":""}" onclick="metSub(${s})" title="${s} clic${s>1?"s":""}/temps">${["♩","♪♪","³","♬♬"][s-1]}</button>`).join("")}
+      <button class="${MET.trainer?"sel":""}" style="max-width:none;flex:1.5" onclick="metTrain()">${MET.trainer?"⏫ Paliers ON":"Paliers +"+MET.tStep+"/"+MET.tEvery+"m"}</button>
+    </div>
+  </div>`;
+}
+
+// ================= MENU DU JOUR =================
+function ensureMenu(){
+  const t=today();
+  if(S.menu&&S.menu.date===t) return;
+  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+  S.menu={date:t,mod:TMODS[doy%TMODS.length].id,
+    manche:(doy%3===2)?"game":SCALES[doy%SCALES.length].id,
+    dTech:false,dManche:false,dRep:false,validated:false};
+  save();
+}
+function checkMenu(kind,ref){
+  const m=S.menu; if(!m||m.date!==today()) return;
+  if(kind==="tech"&&ref===m.mod) m.dTech=true;
+  if(kind==="manche"&&(ref===m.manche||m.manche==="game"&&ref==="game")) m.dManche=true;
+  if(kind==="rep") m.dRep=true;
+  if(m.dTech&&m.dManche&&m.dRep&&!m.validated){
+    m.validated=true;
+    S.streak=(S.lastVal===yesterday())?S.streak+1:1;
+    S.lastVal=today();
+    if(!S.days.includes(today())) S.days.push(today());
+    addXP(15);
+    setTimeout(()=>toast("🔥 <b>Journée validée.</b> Streak : "+S.streak+" (+15 XP)"),400);
+  }
+  save(); header();
+}
+function curPiece(){ const e=Object.entries(S.pieces).find(([id,p])=>p.st==="cur"); return e?PIECES.find(p=>p.id===e[0]):null; }
+
+// ================= VUES =================
+let view="jour";
+function nav(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v));
+function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,rep:vRep,profil:vProfil})[view](); header(); }
+const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
+function openOv(h){ ovin.innerHTML=h; ov.classList.add("on"); ov.scrollTop=0; }
+function closeOv(){ ov.classList.remove("on"); metStop(); stopGame(); if(WU&&WU.iv){clearInterval(WU.iv);WU=null;} render(); }
+function ovTop(t){ return `<div class="top"><button class="x" onclick="closeOv()">✕</button><b>${t}</b></div>`; }
+
+function vJour(){
+  const m=S.menu,r=rank(),nr=nextRank();
+  const md=tmod(m.mod);
+  const sc=m.manche==="game"?null:SCALES.find(s=>s.id===m.manche);
+  const cp=curPiece();
+  const pct=nr?Math.min(100,Math.round((S.xp-r[1])/(nr[1]-r[1])*100)):100;
+  const coach=m.validated?"Journée validée. La guitare ne compte pas les jours où tu joues — elle compte ceux où tu ne joues pas. <b>À demain.</b>":
+    dispStreak()===0?"Streak à <b>zéro</b>. Vingt minutes par jour battent trois heures le dimanche — c'est physiologique (mémoire musculaire), pas motivationnel.":
+    "Trois rendez-vous : la technique, le manche, le morceau. <b>Métronome obligatoire</b> — sans lui tu répètes tes défauts plus vite.";
+  return `
+  <h1 class="page">Le menu du jour</h1>
+  <div class="sub">${new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})} — 30-45 min, métronome allumé.</div>
+  <div class="hero">
+    <div class="lab">${r[0]}</div>
+    <div class="big">${S.xp} XP</div>
+    <div class="xpbar"><i style="width:${pct}%"></i></div>
+    <div class="xptxt">${nr?nr[1]-S.xp+" XP avant "+nr[0]:"Grade maximal — reste affûté."}</div>
+  </div>
+  <div class="coach">${coach}</div>
+  <div class="act ${m.dTech?"done":""}" onclick="openMod('${m.mod}')">
+    <div class="ico">${md.icon}</div><div class="t"><b>Technique — ${md.name}</b><small>15 min sur un exo du module, et <b>logue ton BPM</b> (ou ton palier) pour valider</small></div>
+    <div class="st">${m.dTech?"✓":"›"}</div>
+  </div>
+  <div class="act ${m.dManche?"done":""}" onclick="${sc?`openScale('${sc.id}')`:"openGame()"}">
+    <div class="ico">${sc?sc.icon:"🎮"}</div><div class="t"><b>Manche — ${sc?sc.name:"Le manche en 60 s (jeu)"}</b><small>${sc?"10 min + évalue ton palier":"une partie chrono : nomme les notes"}</small></div>
+    <div class="st">${m.dManche?"✓":"›"}</div>
+  </div>
+  <div class="act ${m.dRep?"done":""}" onclick="${cp?`openPiece('${cp.id}')`:"nav('rep')"}">
+    <div class="ico">🎵</div><div class="t"><b>Répertoire — ${cp?cp.title:"choisis ton morceau en cours"}</b><small>${cp?"10 min de travail ciblé sur le morceau-examen":"aucun morceau en cours : va en choisir un"}</small></div>
+    <div class="st">${m.dRep?"✓":"›"}</div>
+  </div>
+  <h2 class="sec">Outils</h2>
+  <div class="act hot" onclick="openWarmup()">
+    <div class="ico">🔥</div><div class="t"><b>Échauffement guidé — 5 min</b><small>avant tout travail rapide. Les tendons ne pardonnent pas.</small></div><div class="st">›</div>
+  </div>
+  <div class="act hot" onclick="openMet()">
+    <div class="ico">🕰️</div><div class="t"><b>Métronome</b><small>subdivisions + mode paliers automatique — ton juge de paix</small></div><div class="st">›</div>
+  </div>`;
+}
+
+// ============ ÉCHAUFFEMENT ============
+let WU=null;
+function openWarmup(){
+  const total=WARMUP.reduce((s,w)=>s+w.s,0);
+  openOv(ovTop("🔥 Échauffement")+`
+    <div class="sub">${Math.round(total/60)} minutes, guidé au chrono. On ne saute pas l'échauffement avant de pousser les BPM — c'est la règle des mains qui durent.</div>`+
+    WARMUP.map((w,i)=>`<div class="act" id="wu${i}"><div class="ico">${w.s}s</div><div class="t"><b>${w.name}</b><small>${w.txt}</small></div></div>`).join("")+
+    `<button class="btn" onclick="runWarmup()">▶ Lancer le guide (chrono auto)</button>
+     <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+function runWarmup(){
+  WU={i:0,left:WARMUP[0].s};
+  tickWarmup();
+  WU.iv=setInterval(()=>{
+    WU.left--;
+    if(WU.left<=0){
+      const el=document.getElementById("wu"+WU.i); if(el) el.classList.add("done");
+      buzzWU(); WU.i++;
+      if(WU.i>=WARMUP.length){ endWarmup(); return; }
+      WU.left=WARMUP[WU.i].s;
+    }
+    tickWarmup();
+  },1000);
+}
+function buzzWU(){ try{ if(navigator.vibrate) navigator.vibrate(80); }catch(e){} try{ const c=metCtx(); if(c.state==="suspended")c.resume(); metClick(c.currentTime,2);}catch(e){} }
+function tickWarmup(){
+  const w=WARMUP[WU.i];
+  WARMUP.forEach((_,k)=>{ const el=document.getElementById("wu"+k); if(el){ el.style.borderColor=k===WU.i?"var(--acc)":""; el.style.opacity=k<WU.i?".45":"1"; }});
+  const el=document.getElementById("wu"+WU.i);
+  if(el){ const st=el.querySelector(".st")||document.createElement("div"); st.className="st"; st.style.color="var(--acc)"; st.textContent=WU.left+"s"; if(!el.querySelector(".st")) el.appendChild(st); }
+}
+function endWarmup(){
+  if(WU&&WU.iv) clearInterval(WU.iv); WU=null;
+  addXP(3); save();
+  openOv(ovTop("🔥 Prêt")+`<div class="result"><div class="big">🔥</div><p>Mains chaudes, tendons réveillés. Maintenant tu peux pousser les BPM sans risque.</p><div class="xp">+3 XP</div></div>
+    <button class="btn" onclick="closeOv();nav('tech')">Aller travailler la technique</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+function vTech(){
+  return `<h1 class="page">La forge</h1>
+  <div class="sub">${TEXOS.length} exercices, 4 paliers de tempo chacun. Le BPM que tu logues est celui où c'est <b>propre</b> — pas celui où ça passe une fois sur trois.</div>
+  <div class="act hot" onclick="openMet()"><div class="ico">🕰️</div><div class="t"><b>Métronome</b></div><div class="st">›</div></div>`+
+  TMODS.map(md=>{
+    const xs=TEXOS.filter(x=>x.mod===md.id);
+    const done=xs.reduce((s,x)=>s+palierOf(x),0), max=xs.length*4;
+    return `<div class="act" onclick="openMod('${md.id}')">
+      <div class="ico">${md.icon}</div><div class="t"><b>${md.name}</b><small>${md.desc}</small></div>
+      <div class="st">${done}/${max}</div></div>`;
+  }).join("");
+}
+function openMod(mid){
+  const md=tmod(mid);
+  openOv(ovTop(md.icon+" "+md.name)+`<div class="sub">${md.desc}</div>`+
+    TEXOS.filter(x=>x.mod===mid).map(x=>{
+      const lvl=palierOf(x), p=pb(x.id);
+      return `<div class="act" onclick="openExo('${x.id}')">
+        <div class="ico">${["·","I","II","III","IV"][x.tier]||x.tier}</div>
+        <div class="t"><b>${x.name}</b><small>Palier ${lvl}/4 ${p?"· record "+p+" BPM":x.bpm?"· jamais logué":"· contrôle/justesse"}</small></div>
+        <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
+    }).join(""));
+}
+function openExo(id){
+  const x=exo(id), lvl=palierOf(x), p=pb(id);
+  MET.bpm=x.bpm?(p?Math.min(240,p+2):x.bpm[0]):MET.bpm;
+  const hist=(S.bpm[id]||[]).slice(0,5).map(h=>h.v+" ("+h.d.slice(5).split("-").reverse().join("/")+")").join(" · ");
+  openOv(ovTop(x.name)+`
+    <div class="meta"><span class="tag">${tmod(x.mod).name}</span><span class="tag b">Niveau ${x.tier}</span>${lvl?`<span class="tag g">Palier ${lvl}/4</span>`:""}</div>
+    <pre class="tab">${esc(x.tab)}</pre>
+    <div class="pt">${x.consigne}</div>
+    <div class="crit"><b>Palier atteint :</b> ${x.crit}</div>
+    ${x.bpm?`
+    <div class="prow">${x.bpm.map((b,i)=>`<div class="p ${p>=b?"hit":(i===lvl?"next":"")}"><small>${PALIERS[i]}</small><b>${b}</b></div>`).join("")}</div>
+    ${metHtml()}
+    <div class="bpmlog">
+      <input type="number" id="bpmIn" placeholder="BPM propre" min="30" max="260" value="${p||x.bpm[0]}">
+      <button class="btn" onclick="logBpm('${id}')">Loguer</button>
+    </div>
+    <div class="xptxt" style="margin-top:8px">${p?"Record : <b style='color:var(--acc)'>"+p+" BPM</b>"+(hist?" · derniers : "+hist:""):"Premier log = ta référence. Sois honnête, personne ne regarde — et justement."}</div>
+    ${bpmSpark(id)}`
+    :`
+    ${metHtml()}
+    <p class="sub" style="margin:12px 0 4px">Exercice de contrôle — évalue ton palier honnêtement :</p>
+    <div class="selfrow">${PALIERS.map((pl,i)=>`<button class="${S.pal[id]===i+1?"on":""}" onclick="logPal('${id}',${i+1})">${pl}</button>`).join("")}</div>`}
+  `);
+}
+function logBpm(id){
+  const v=parseInt(document.getElementById("bpmIn").value);
+  if(!v||v<30||v>260) return toast("Entre un BPM réaliste.");
+  const x=exo(id), old=pb(id);
+  S.bpm[id]=S.bpm[id]||[]; S.bpm[id].unshift({d:today(),v}); S.bpm[id]=S.bpm[id].slice(0,60);
+  let xp=3, msg="🎸 <b>"+v+" BPM logué.</b>";
+  if(old===null||v>old){ xp+=10; msg="🏆 <b>Record : "+v+" BPM</b> (+13 XP)"; }
+  const newLvl=palierOf(x);
+  if(x.bpm&&old!==null){ let oldLvl=0; x.bpm.forEach(b=>{if(old>=b)oldLvl++;}); if(newLvl>oldLvl) msg="⭐ <b>Palier "+PALIERS[newLvl-1].toUpperCase()+" atteint</b> sur "+x.name+" !"; }
+  addXP(xp); checkMenu("tech",x.mod); save(); toast(msg); openExo(id);
+}
+function logPal(id,lvl){
+  const old=S.pal[id]||0;
+  S.pal[id]=lvl;
+  addXP(lvl>old?8*(lvl-old):2);
+  checkMenu("tech",exo(id)?exo(id).mod:"__");
+  if(SCALES.find(s=>s.id===id)) checkMenu("manche",id);
+  save(); toast(lvl>old?"⭐ <b>Palier "+PALIERS[lvl-1]+"</b> — la marche suivante t'attend.":"Palier enregistré.");
+  if(exo(id)) openExo(id); else openScale(id);
+}
+
+// ================= MANCHE =================
+function vManche(){
+  const fichesOk=Object.keys(S.fiches).length;
+  return `<h1 class="page">Le manche</h1>
+  <div class="sub">Pentas, éolien, liaisons, triades — l'objectif : que le manche devienne UN territoire connu, pas cinq cages.</div>
+  <div class="act hot" onclick="openGame()">
+    <div class="ico">🎮</div><div class="t"><b>Le manche en 60 secondes</b><small>${S.game.runs?"records "+gBest("fwd")+" (lecture) / "+gBest("rev")+" (impro) · "+S.game.runs+" parties":"deux sens : lire le manche ET trouver une note. Jamais tenté."}</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act hot" onclick="openBacking()">
+    <div class="ico">🎚️</div><div class="t"><b>Backing tracks — où improviser</b><small>${BACKING.length} terrains d'impro, du drone de La au dorien</small></div>
+    <div class="st">›</div>
+  </div>
+  <h2 class="sec">Cartographie & gammes</h2>`+
+  SCALES.map(s=>{
+    const lvl=S.pal[s.id]||0;
+    return `<div class="act" onclick="openScale('${s.id}')">
+      <div class="ico">${s.icon}</div><div class="t"><b>${s.name}</b><small>${s.consigne.slice(0,64)}…</small></div>
+      <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
+  }).join("")+
+  `<h2 class="sec">Théorie express — ${fichesOk}/${THEORY.length}</h2>`+
+  THEORY.map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
+    <div class="ico">📖</div><div class="t"><b>${t.title}</b></div>
+    <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
+}
+function openScale(id){
+  const s=SCALES.find(x=>x.id===id), lvl=S.pal[id]||0;
+  openOv(ovTop(s.icon+" "+s.name)+`
+    <pre class="tab">${esc(s.diagram)}</pre>
+    <div class="pt">${s.consigne}</div>
+    <div class="crit"><b>Mission :</b> ${s.mission}</div>
+    ${metHtml()}
+    <p class="sub" style="margin:12px 0 4px">Où en es-tu, honnêtement ?</p>
+    <div class="selfrow">${PALIERS.map((pl,i)=>`<button class="${lvl===i+1?"on":""}" onclick="logPal('${id}',${i+1})">${pl}</button>`).join("")}</div>`);
+}
+// fiches théorie
+let FQ=null;
+function openFiche(id){
+  const f=THEORY.find(x=>x.id===id);
+  FQ={id,i:0,good:0};
+  openOv(ovTop(f.title)+`<div class="story">${f.content.map(p=>`<p>${p}</p>`).join("")}</div>
+    <button class="btn" onclick="ficheQ()">Les 2 questions — on vérifie</button>`);
+}
+function ficheQ(){
+  const f=THEORY.find(x=>x.id===FQ.id), q=f.q[FQ.i];
+  const ord=[...Array(q.opts.length).keys()].sort(()=>Math.random()-.5);
+  FQ.map=ord;
+  openOv(ovTop(f.title)+`
+    <div class="qq">${FQ.i+1}/2 — ${q.q}</div>
+    ${ord.map((oi,p)=>`<button class="opt" onclick="ficheA(${p})">${q.opts[oi]}</button>`).join("")}
+    <div id="fexp"></div>`);
+}
+function ficheA(p){
+  const f=THEORY.find(x=>x.id===FQ.id), q=f.q[FQ.i], ok=FQ.map[p]===q.a;
+  if(ok) FQ.good++;
+  document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(FQ.map[k]===q.a) b.classList.add("ok"); else if(k===p) b.classList.add("ko"); });
+  document.getElementById("fexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non."}</b> ${q.exp}</div>
+    <button class="btn" onclick="${FQ.i===0?"FQ.i=1;ficheQ()":"ficheEnd()"}">${FQ.i===0?"Question suivante":"Terminer"}</button>`;
+}
+function ficheEnd(){
+  const first=S.fiches[FQ.id]===undefined;
+  S.fiches[FQ.id]=FQ.good;
+  addXP(first?8+FQ.good*2:FQ.good); save();
+  toast(FQ.good===2?"📖 <b>Fiche acquise, 2/2.</b>":"📖 Fiche lue — "+FQ.good+"/2, relis-la dans quelques jours.");
+  closeOv();
+}
+
+// jeu du manche
+const CHROM=["Do","Do#","Ré","Ré#","Mi","Fa","Fa#","Sol","Sol#","La","La#","Si"];
+const STRINGS=[["Mi aigu",4],["Si",11],["Sol",7],["Ré",2],["La",9],["Mi grave",4]];
+let G=null;
+function gBest(m){ return (S.game.best&&typeof S.game.best==="object")?(S.game.best[m]||0):(m==="fwd"?(S.game.best||0):0); }
+function setGBest(m,v){ if(!S.game.best||typeof S.game.best!=="object") S.game.best={fwd:(S.game.best||0),rev:0}; S.game.best[m]=v; }
+function openGame(){
+  openOv(ovTop("🎮 Le manche en 60 s")+`
+    <div class="game">
+      <div class="timer">Deux sens, deux réflexes. Le premier lit le manche ; le second — trouver une note — est celui de l'impro.</div>
+    </div>
+    <div class="act hot" onclick="startGame('fwd')">
+      <div class="ico">👁️</div><div class="t"><b>Case → Note</b><small>on te donne corde + case, tu nommes la note · record ${gBest("fwd")}</small></div><div class="st">›</div>
+    </div>
+    <div class="act hot" onclick="startGame('rev')">
+      <div class="ico">🎯</div><div class="t"><b>Note → Case</b><small>on te donne une note + une corde, tu trouves la case · record ${gBest("rev")}</small></div><div class="st">›</div>
+    </div>
+    <div class="xptxt" style="margin-top:8px">${S.game.runs||0} partie${(S.game.runs||0)>1?"s":""} jouées.</div>`);
+}
+function startGame(mode){
+  G={mode,score:0,total:0,left:60,cur:null};
+  G.iv=setInterval(()=>{ G.left--; const t=document.getElementById("gtimer"); if(t) t.textContent=G.left+" s"; if(G.left<=0) endGame(); },1000);
+  nextQ();
+}
+function stopGame(){ if(G&&G.iv){clearInterval(G.iv);} G=null; }
+function nextQ(){
+  if(!G) return;
+  const si=Math.floor(Math.random()*6), open=STRINGS[si][1];
+  if(G.mode==="fwd"){
+    const fret=Math.floor(Math.random()*13), note=CHROM[(open+fret)%12];
+    const opts=new Set([note]); while(opts.size<4) opts.add(CHROM[Math.floor(Math.random()*12)]);
+    G.cur={note,opts:[...opts].sort(()=>Math.random()-.5)};
+    openOv(gameShell(`Corde de <b>${STRINGS[si][0]}</b> · case <b>${fret}</b>`,G.cur.opts));
+  } else {
+    // note → case : on demande LA case (0-12) de la note sur la corde
+    const targetNote=Math.floor(Math.random()*12), correctFret=((targetNote-open)%12+12)%12;
+    const opts=new Set([correctFret]); while(opts.size<4){ let f=Math.floor(Math.random()*13); if(f!==correctFret) opts.add(f); }
+    G.cur={fret:correctFret,opts:[...opts].sort((a,b)=>a-b)};
+    openOv(gameShell(`<b>${CHROM[targetNote]}</b> sur la corde de <b>${STRINGS[si][0]}</b> — quelle case ? (0-12)`,G.cur.opts.map(f=>"case "+f)));
+  }
+}
+function gameShell(prompt,opts){
+  return ovTop("🎮 Le manche en 60 s")+`
+    <div class="game">
+      <div class="timer" id="gtimer">${G.left} s</div>
+      <div class="qnote">${prompt}</div>
+      <div class="timer">score ${G.score}/${G.total}</div>
+      <div class="gopts">${opts.map((o,i)=>`<button onclick="answerG(${i})">${o}</button>`).join("")}</div>
+    </div>`;
+}
+function answerG(i){
+  if(!G) return;
+  const ok=G.mode==="fwd"?(G.cur.opts[i]===G.cur.note):(G.cur.opts[i]===G.cur.fret);
+  G.total++;
+  if(ok){ G.score++; nextQ(); }
+  else{
+    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
+      const good=G.mode==="fwd"?(G.cur.opts[k]===G.cur.note):(G.cur.opts[k]===G.cur.fret);
+      if(good) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
+    setTimeout(nextQ,650);
+  }
+}
+function endGame(){
+  clearInterval(G.iv);
+  const sc=G.score, tot=G.total, mode=G.mode; G=null;
+  S.game.runs=(S.game.runs||0)+1;
+  const rec=sc>gBest(mode); if(rec) setGBest(mode,sc);
+  addXP(rec?12:4); checkMenu("manche","game"); save();
+  openOv(ovTop("🎮 Résultat")+`
+    <div class="result"><div class="big">${sc}</div>
+    <p>${mode==="fwd"?"notes nommées":"cases trouvées"} en 60 s · ${tot-sc} erreur${tot-sc>1?"s":""}${rec?" · <b style='color:var(--acc)'>RECORD</b>":""}</p>
+    <p>${sc>=30?"Le manche est chez toi.":sc>=20?"Solide — les cordes Si et Sol te ralentissent encore ?":sc>=12?"Ça vient. Rejoue chaque jour, c'est du vocabulaire pur.":"Normal au début : mémorise d'abord les cases 0, 3, 5, 7 sur chaque corde."}</p></div>
+    <button class="btn" onclick="startGame('${mode}')">Rejouer (${mode==="fwd"?"case→note":"note→case"})</button>
+    <button class="btn ghost" onclick="openGame()">Changer de sens</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+// ================= RÉPERTOIRE =================
+function pState(id){ return S.pieces[id]||{st:"todo",checks:[]}; }
+function tierDone(n){ return PIECES.filter(p=>p.tier===n&&pState(p.id).st==="ok").length; }
+function vRep(){
+  return `<h1 class="page">Le répertoire impératif</h1>
+  <div class="sub">Les morceaux-examens. Un exercice prouve un geste ; un morceau validé prouve un <b>niveau</b>. Un seul « en cours » à la fois — la dispersion est l'ennemie.</div>`+
+  RTIERS.map(t=>{
+    const done=tierDone(t.n);
+    return `<div class="tierhead"><b>Palier ${t.n} — ${t.name}</b><span class="tierbar">${done}/${t.need} validés</span></div>
+    <div class="sub" style="margin-bottom:8px">${t.desc}</div>`+
+    PIECES.filter(p=>p.tier===t.n).map(p=>{
+      const st=pState(p.id);
+      return `<div class="act ${st.st==="ok"?"done":""} ${st.st==="cur"?"hot":""}" onclick="openPiece('${p.id}')">
+        <div class="ico">${st.st==="ok"?"🏆":st.st==="cur"?"🎯":"🎵"}</div>
+        <div class="t"><b>${p.title}</b><small>${p.artist} · ${p.focus.join(" · ")}</small></div>
+        <div class="st">${st.st==="ok"?"✓":st.st==="cur"?"EN COURS":"›"}</div></div>`;
+    }).join("");
+  }).join("");
+}
+function openPiece(id){
+  const p=PIECES.find(x=>x.id===id), st=pState(id);
+  const allChecked=st.checks.length===p.checks.length;
+  openOv(ovTop(p.title)+`
+    <div class="meta">${p.artist} · <span class="tag">Palier ${p.tier}</span>${p.focus.map(f=>`<span class="tag b">${f}</span>`).join("")}</div>
+    <div class="pt"><b>Pourquoi ce morceau :</b> ${p.why}</div>
+    ${st.st==="ok"?`<div class="crit"><b>Validé.</b> Rejoue-le une fois par mois — un morceau qu'on ne joue plus se désapprend.</div>`:`
+    <p class="sub" style="margin:12px 0 6px">Critères de validation — coche seulement ce qui est VRAI, enregistrement à l'appui :</p>
+    ${p.checks.map((c,i)=>`<label class="chk ${st.checks.includes(i)?"on":""}"><input type="checkbox" ${st.checks.includes(i)?"checked":""} onchange="togCheck('${id}',${i})"><span>${c}</span></label>`).join("")}
+    ${st.st==="cur"
+      ?`<button class="btn ghost" onclick="workedPiece('${id}')">🎸 J'ai travaillé 10 min dessus (valide le jour)</button>
+        ${allChecked?`<button class="btn" onclick="validatePiece('${id}')">🏆 Valider le morceau</button>`:""}`
+      :`<button class="btn" onclick="setCur('${id}')">🎯 En faire mon morceau en cours</button>`}`}
+  `);
+}
+function togCheck(id,i){
+  const st=pState(id);
+  if(st.checks.includes(i)) st.checks=st.checks.filter(x=>x!==i); else st.checks.push(i);
+  S.pieces[id]=st; save(); openPiece(id);
+}
+function setCur(id){
+  Object.values(S.pieces).forEach(p=>{ if(p.st==="cur") p.st="todo"; });
+  const st=pState(id); st.st="cur"; S.pieces[id]=st; save();
+  toast("🎯 <b>Morceau en cours.</b> Il apparaît dans ton menu du jour.");
+  openPiece(id);
+}
+function workedPiece(id){ checkMenu("rep",id); toast("🎸 Session comptée. La régularité fait le morceau."); openPiece(id); }
+function validatePiece(id){
+  const p=PIECES.find(x=>x.id===id);
+  const st=pState(id); st.st="ok"; S.pieces[id]=st;
+  const xp=[0,80,100,130,180][p.tier];
+  addXP(xp); checkMenu("rep",id); save();
+  const t=RTIERS.find(x=>x.n===p.tier), done=tierDone(p.tier);
+  openOv(ovTop("🏆 Morceau validé")+`
+    <div class="result"><div class="big">🏆</div>
+    <div class="xp">+${xp} XP</div>
+    <p><b>${p.title}</b> rejoint ton répertoire certifié.<br>${done>=t.need?"Palier "+p.tier+" <b style='color:var(--acc)'>COMPLET</b> — le palier "+(p.tier+1<=4?p.tier+1:4)+" t'attend.":done+"/"+t.need+" pour compléter le palier « "+t.name+" »."}</p></div>
+    <button class="btn" onclick="closeOv();nav('rep')">Continuer</button>`);
+}
+
+// ================= BACKING TRACKS =================
+function openBacking(){
+  openOv(ovTop("🎚️ Backing tracks")+`
+    <div class="sub">Improviser sur une vraie grille est la seule manière de transformer la technique en musique. Chaque bouton ouvre une recherche YouTube qui marche toujours.</div>`+
+    BACKING.map(b=>`<div class="card" style="padding:13px">
+      <b style="font-size:14.5px">${b.label}</b>
+      <div class="pt" style="margin:8px 0">${b.tip}</div>
+      <a class="btn" style="text-decoration:none" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(b.search)}">▶ Ouvrir sur YouTube</a>
+    </div>`).join(""));
+}
+
+// ================= MÉTRONOME STANDALONE =================
+function openMet(){ openOv(ovTop("🕰️ Métronome")+metHtml()+`
+  <div class="pt"><b>Méthode des paliers :</b> trouve le tempo où c'est propre 3 fois de suite. +4 BPM. Si ça casse deux fois, −6 BPM et re-stabilise. Termine TOUJOURS par 30 s au tempo propre — le cerveau garde la dernière impression.</div>
+  <div class="pt"><b>Mode Paliers automatique :</b> active-le et le métronome monte tout seul de +${MET.tStep} BPM toutes les ${MET.tEvery} mesures — tu joues, il pousse. <b>Subdivisions :</b> ³ pour caler tes triolets, ♬♬ pour les doubles, indispensable sur le legato et les sextolets lents.</div>`); }
+
+// ================= PROFIL =================
+function heatmap(){
+  const c=[];const t=new Date();
+  for(let i=69;i>=0;i--){ const d=new Date(t-i*864e5).toISOString().slice(0,10);
+    c.push(`<i class="${S.days.includes(d)?"on":""}${d===today()?" today":""}"></i>`); }
+  return `<div class="hm">${c.join("")}</div>`;
+}
+function vProfil(){
+  const r=rank();
+  const logs=Object.values(S.bpm).reduce((s,a)=>s+a.length,0);
+  const stars=TEXOS.reduce((s,x)=>s+palierOf(x),0);
+  const pcs=PIECES.filter(p=>pState(p.id).st==="ok").length;
+  return `<h1 class="page">Profil</h1><div class="sub">Les BPM ne mentent pas, les morceaux validés non plus.</div>
+  <div class="statgrid">
+    <div class="stat"><b>${S.xp}</b><small>XP</small></div>
+    <div class="stat"><b>${dispStreak()} 🔥</b><small>STREAK</small></div>
+    <div class="stat"><b>${stars}/${TEXOS.length*4}</b><small>PALIERS TECHNIQUE</small></div>
+    <div class="stat"><b>${logs}</b><small>BPM LOGUÉS</small></div>
+    <div class="stat"><b>${pcs}/${PIECES.length}</b><small>MORCEAUX VALIDÉS</small></div>
+    <div class="stat"><b>${Math.max(gBest("fwd"),gBest("rev"))}</b><small>RECORD MANCHE 60s</small></div>
+  </div>
+  <div class="card"><b style="font-size:14px">Tes 10 dernières semaines</b>${heatmap()}
+    <div class="xptxt" style="margin-top:6px">Un carré = un jour validé. La mémoire musculaire lit ce calendrier.</div></div>
+  <div class="card"><b style="font-size:14px">La hiérarchie</b>
+    <ul class="ranks" style="margin-top:8px">${RANKS.map(x=>`<li class="${x[0]===r[0]?"cur":(S.xp>=x[1]?"past":"")}"><span>${x[0]}</span><small>${x[1]} XP</small></li>`).join("")}</ul></div>
+  <button class="btn ghost" onclick="exportSave()">Exporter ma progression</button>
+  <button class="btn ghost" onclick="importSave()">Importer</button>
+  <button class="danger" onclick="if(confirm('Tout effacer ? XP, records BPM, morceaux. Irréversible.')){localStorage.removeItem(KEY);location.reload()}">Réinitialiser</button>`;
+}
+function exportSave(){
+  const d=JSON.stringify(S);
+  const done=()=>toast("📋 <b>Copié.</b> Colle ça dans une note — sauvegarde.");
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(d).then(done,()=>prompt("Copie :",d));
+  else prompt("Copie :",d);
+}
+function importSave(){
+  const raw=prompt("Colle le JSON exporté :");
+  if(!raw) return;
+  try{ const s=JSON.parse(raw); if(typeof s.xp!=="number") throw 0; localStorage.setItem(KEY,raw); location.reload(); }
+  catch(e){ toast("❌ JSON invalide."); }
+}
+
+// ================= INIT =================
+if(location.protocol.startsWith("http")&&"serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+nav("jour");
+</script>
+</body>
+</html>
