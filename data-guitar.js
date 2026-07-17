@@ -332,6 +332,60 @@ mission:"Palier 4 = jouer n'importe quel accord majeur en 5 positions, en nomman
 
 // ============ THÉORIE EXPRESS (fiches courtes + 2 questions) ============
 const THEORY=[
+// ============ LE SYSTÈME DU MANCHE — les fondations (à faire dans l'ordre) ============
+{id:"f1", fond:true, title:"Il n'y a que 12 notes. Point.",
+content:[
+"Avant toute chose : la musique occidentale n'a que <b>12 notes</b>. Pas 50, pas 200. Douze. Puis ça recommence, plus aigu. Les voici, en boucle : <b>A · A# · B · C · C# · D · D# · E · F · F# · G · G#</b> → et on revient à A. (En français : La · La# · Si · Do · Do# · Ré · Ré# · Mi · Fa · Fa# · Sol · Sol#.)",
+"Sur la guitare, <b>une case = un demi-ton = la note suivante</b> dans cette liste. C'est tout. Case 0 (corde à vide) = E, case 1 = F, case 2 = F#, case 3 = G… Tu avances d'une case, tu avances d'une note dans le cycle. Le manche n'est pas un mystère : c'est cette liste de 12 notes, répétée sur 6 cordes.",
+"Pourquoi tu ne le \"vois\" pas encore : parce que personne ne te l'a dit comme ça, et parce qu'il reste UNE irrégularité — celle de la fiche suivante. Une fois les deux sues, le manche devient calculable."],
+q:[
+{q:"Sur une corde, avancer d'une case, c'est avancer de :",opts:["Un ton","Un demi-ton (la note suivante des 12)","Une octave","Ça dépend de la corde"],a:1,exp:"Une case = un demi-ton = un cran dans le cycle des 12 notes. Universel, sur toutes les cordes, sur toute guitare."},
+{q:"Combien de notes différentes existe-t-il, avant que ça recommence ?",opts:["7","12","6","24"],a:1,exp:"12. Les 7 lettres (A à G) plus les 5 dièses. Ensuite, le cycle repart à l'octave — c'est pour ça que ta 12e case sonne comme ta corde à vide."}]},
+{id:"f2", fond:true, title:"Les deux marches sans dièse — LA clé",
+content:[
+"Voici l'irrégularité qui bloque tout le monde, et qui n'est jamais expliquée. Entre presque toutes les notes voisines, il y a un dièse : A→A#→B. Mais il existe <b>deux exceptions</b>, deux endroits où les notes se touchent directement :",
+"<b>E → F</b> &nbsp;et&nbsp; <b>B → C</b>. &nbsp;Pas de E#. Pas de B#. Ces deux paires sont séparées d'<b>une seule case</b>, alors que toutes les autres notes naturelles sont séparées de <b>deux cases</b> (un ton).",
+"Traduction concrète sur ton manche : sur la corde de Mi grave (E), la case 1 est <b>F</b> — juste à côté. Mais de F à G, il faut <b>deux</b> cases (case 3). C'est cette alternance ton/demi-ton qui donne au manche son irrégularité apparente. Sache-la, et tu peux calculer n'importe quelle note sans l'avoir mémorisée.",
+"Moyen mnémotechnique : les deux marches basses de l'escalier sont <b>E-F</b> et <b>B-C</b>. Répète-le jusqu'à ce que ça sorte tout seul. C'est la fiche la plus rentable de toute l'app."],
+q:[
+{q:"Quelles paires de notes n'ont PAS de dièse entre elles ?",opts:["A-B et C-D","E-F et B-C","G-A et D-E","Aucune"],a:1,exp:"E→F et B→C sont à un demi-ton (une case). Toutes les autres notes naturelles voisines sont à un ton (deux cases). C'est la seule irrégularité du système."},
+{q:"Sur la corde de Mi grave, la case 1 est donc :",opts:["E#","F","F#","G"],a:1,exp:"E + un demi-ton = F (pas de E#). C'est pour ça que le Fa est si près de la corde à vide — et pourquoi l'accord de Fa barré est en case 1."}]},
+{id:"f3", fond:true, title:"Pourquoi E-A-D-G-B-E (et l'anomalie du Si)",
+content:[
+"Ton accordage n'est pas arbitraire. De la corde grave vers l'aigu : <b>E · A · D · G · B · E</b>. Regarde l'écart entre chaque corde : E→A = 5 cases. A→D = 5 cases. D→G = 5 cases. Toutes des <b>quartes</b>. La logique est régulière…",
+"…sauf <b>G → B</b>, qui ne fait que <b>4 cases</b> (une tierce majeure). Puis B→E repasse à 5 cases. Cette unique anomalie a été choisie par les luthiers pour que les accords tombent sous la main — un compromis vieux de plusieurs siècles.",
+"<b>Conséquence que tu dois graver</b> : toute forme (accord, gamme, octave, intervalle) qui <b>traverse la corde Si</b> se décale d'<b>une case vers le haut</b>. C'est l'explication de 90 % des fausses notes des guitaristes autodidactes en position haute. Ce n'est pas toi qui es mauvais : c'est le système qui a un défaut, et personne ne te l'a signalé."],
+q:[
+{q:"L'accordage standard est fait de quartes, sauf entre :",opts:["E et A","D et G","G et B","B et E"],a:2,exp:"G→B est une tierce majeure (4 cases) au lieu d'une quarte (5 cases). Unique exception, et source de tous les décalages de formes."},
+{q:"Une forme d'accord ou d'octave qui traverse la corde Si doit être :",opts:["Décalée d'une case","Jouée à l'identique","Décalée de deux cases","Abandonnée"],a:0,exp:"Décalage d'une case (vers l'aigu) dès que la forme franchit le Si. Le savoir, c'est arrêter de jouer faux en haut du manche."}]},
+{id:"f4", fond:true, title:"La 12e case : le manche se répète",
+content:[
+"12 notes dans le cycle → <b>12 cases et tout recommence</b>. La case 12 de n'importe quelle corde donne <b>la même note que la corde à vide</b>, une octave plus haut. C'est pour ça que le repère de la 12e case est un double point : c'est le milieu, le miroir.",
+"La bonne nouvelle qui devrait te soulager : <b>tu n'as que 12 cases à connaître.</b> La case 13 = la case 1. La case 15 = la case 3. La case 17 = la case 5. Tu ne mémorises pas un manche de 22 cases : tu en mémorises 12, et tu ajoutes 12 pour l'autre moitié.",
+"Réflexe à installer : au-delà de la case 12, <b>soustrais 12</b> et tu retombes sur du terrain connu."],
+q:[
+{q:"La case 12 d'une corde donne :",opts:["Une note nouvelle","La même note que la corde à vide, une octave plus haut","La quinte","Ça dépend de la corde"],a:1,exp:"12 cases = 12 demi-tons = une octave. Le manche est un cycle qui se referme à la 12e case — d'où son double repère."},
+{q:"La note en case 15 de la corde de La est la même qu'en case :",opts:["5","3","7","12"],a:1,exp:"15 − 12 = 3. Au-delà de la 12e case, soustrais 12 : tu ne connais jamais que 12 cases par corde."}]},
+{id:"f5", fond:true, title:"Les deux cordes-mères : Mi grave et La",
+content:[
+"Tu n'as pas besoin de mémoriser les 6 cordes. <b>Deux suffisent</b> — parce que ce sont elles qui portent la fondamentale de presque tous tes accords et power chords.",
+"<b>Corde de Mi grave (6e)</b> : F=1 · G=3 · A=5 · B=7 · C=8 · D=10 · E=12. &nbsp;(Repère les deux marches : F est collé à E, et C est collé à B → 7 puis 8.)",
+"<b>Corde de La (5e)</b> : B=2 · C=3 · D=5 · E=7 · F=8 · G=10 · A=12. &nbsp;(Mêmes marches : B→C = 2 puis 3, E→F = 7 puis 8.)",
+"Voilà ce que ça t'offre <b>immédiatement</b> : un accord barré en forme de Mi, tu le nommes par sa case sur la corde de Mi grave (case 5 = Am si forme mineure, A si forme majeure). En forme de La, tu le nommes par la corde de La. <b>Tu ne joues plus « la forme case 8 » : tu joues Do.</b> C'est exactement la compréhension musicale que tu cherches."],
+q:[
+{q:"Sur la corde de Mi grave, le Do (C) se trouve en case :",opts:["7","8","10","5"],a:1,exp:"B=7, et B→C est une marche sans dièse → C=8. C'est la case du fameux barré de Do en forme de Mi."},
+{q:"Pourquoi connaître les cordes de Mi grave et de La suffit-il pour commencer ?",opts:["Parce qu'elles sont plus faciles","Parce qu'elles portent la fondamentale des accords barrés et des power chords — elles nomment l'accord","Parce qu'elles sont plus graves","Ce n'est pas suffisant"],a:1,exp:"La fondamentale = le nom de l'accord. Elle est presque toujours sur la 6e ou la 5e corde. Ces deux cordes te donnent le NOM de tout ce que tu joues."}]},
+{id:"f6", fond:true, title:"La forme d'octave : trouver n'importe quelle note",
+content:[
+"Dernière brique, et le manche entier s'ouvre. Tu connais tes deux cordes-mères. Comment atteindre les 4 autres ? Avec la <b>forme d'octave</b> : <b>+2 cordes, +2 cases</b>.",
+"Depuis la corde de <b>Mi grave</b>, case X → la même note (une octave plus haut) sur la corde de <b>Ré</b>, case X+2. Depuis la corde de <b>La</b>, case X → la même note sur la corde de <b>Sol</b>, case X+2. Exemple : G est en case 3 sur le Mi grave → donc aussi en case 5 sur la corde de Ré. Toujours vrai.",
+"<b>L'exception, tu la connais déjà</b> (fiche 3) : dès que la forme touche la corde Si, ajoute une case. Depuis la corde de <b>Ré</b>, case X → corde de <b>Si</b>, case <b>X+3</b>. Depuis la corde de <b>Sol</b>, case X → corde de <b>Mi aigu</b>, case X+3.",
+"Résultat : deux cordes mémorisées + une forme géométrique = <b>tu localises n'importe quelle note, n'importe où</b>, par le calcul, sans avoir rien appris par cœur d'autre. C'est ça, le système."],
+q:[
+{q:"La forme d'octave standard (hors corde Si) est :",opts:["+2 cordes, +2 cases","+1 corde, +2 cases","+2 cordes, même case","+3 cordes, +3 cases"],a:0,exp:"Deux cordes plus haut, deux cases plus loin. Le Sol en case 3 du Mi grave se retrouve en case 5 de la corde de Ré. Partout, toujours."},
+{q:"Depuis la corde de Ré, l'octave sur la corde de Si demande :",opts:["+2 cases","+3 cases (l'anomalie du Si)","+1 case","Même case"],a:1,exp:"La forme traverse la corde Si → on ajoute une case : +3 au lieu de +2. Toujours la même anomalie G→B, qui explique tout."}]},
+
+// ============ Théorie express (la suite) ============
 {id:"th1", title:"Les intervalles ont une FORME sur le manche",
 content:[
 "Oublie le solfège une seconde : sur la guitare, chaque intervalle est un DESSIN. L'octave ? Deux cordes plus haut, deux cases plus loin. La quinte ? Une corde plus haut, deux cases plus loin. La tierce mineure ? Même corde, 3 cases. Ces formes sont IDENTIQUES partout sur le manche (sauf en traversant la corde Si, où tout se décale d'une case — la fameuse anomalie de l'accordage).",

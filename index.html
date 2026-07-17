@@ -193,7 +193,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js"></script>
+<script src="data-guitar.js?v=3"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -306,8 +306,10 @@ function ensureMenu(){
   const t=today();
   if(S.menu&&S.menu.date===t) return;
   const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+  const nextFond=THEORY.filter(x=>x.fond).find(x=>S.fiches[x.id]===undefined);
   S.menu={date:t,mod:TMODS[doy%TMODS.length].id,
     manche:(doy%3===2)?"game":SCALES[doy%SCALES.length].id,
+    fond:nextFond?nextFond.id:null,
     dTech:false,dManche:false,dRep:false,validated:false};
   save();
 }
@@ -316,7 +318,8 @@ function checkMenu(kind,ref){
   if(kind==="tech"&&ref===m.mod) m.dTech=true;
   if(kind==="manche"&&(ref===m.manche||m.manche==="game"&&ref==="game")) m.dManche=true;
   if(kind==="rep") m.dRep=true;
-  if(m.dTech&&m.dManche&&m.dRep&&!m.validated){
+  if(kind==="fond"&&ref===m.fond) m.dFond=true;
+  if(m.dTech&&m.dManche&&m.dRep&&(!m.fond||m.dFond)&&!m.validated){
     m.validated=true;
     S.streak=(S.lastVal===yesterday())?S.streak+1:1;
     S.lastVal=today();
@@ -357,6 +360,14 @@ function vJour(){
     <div class="xptxt">${nr?nr[1]-S.xp+" XP avant "+nr[0]:"Grade maximal — reste affûté."}</div>
   </div>
   <div class="coach">${coach}</div>
+  ${m.fond?(()=>{const f=THEORY.find(x=>x.id===m.fond);return `
+  <h2 class="sec">⛔ L'exercice imposé du jour</h2>
+  <div class="sub" style="margin:-4px 0 10px">Pas de choix aujourd'hui. Le système du manche passe avant tout le reste — une fiche par jour, dans l'ordre.</div>
+  <div class="act ${m.dFond?"done":"hot"}" onclick="openFiche('${m.fond}')">
+    <div class="ico">${m.dFond?"✓":"🧭"}</div><div class="t"><b>${f.title}</b><small>${m.dFond?"acquise aujourd'hui — la suivante demain, une par jour, ça infuse pendant la nuit":"fiche "+(THEORY.filter(x=>x.fond).findIndex(x=>x.id===m.fond)+1)+"/6 du système — lis, puis réponds aux 2 questions"}</small></div>
+    <div class="st">${m.dFond?"✓":"›"}</div>
+  </div>
+  <h2 class="sec">Le reste (après)</h2>`;})():""}
   <div class="act ${m.dTech?"done":""}" onclick="openMod('${m.mod}')">
     <div class="ico">${md.icon}</div><div class="t"><b>Technique — ${md.name}</b><small>15 min sur un exo du module, et <b>logue ton BPM</b> (ou ton palier) pour valider</small></div>
     <div class="st">${m.dTech?"✓":"›"}</div>
@@ -488,8 +499,30 @@ function logPal(id,lvl){
 // ================= MANCHE =================
 function vManche(){
   const fichesOk=Object.keys(S.fiches).length;
+  const fonds=THEORY.filter(t=>t.fond), fondOk=fonds.filter(t=>S.fiches[t.id]!==undefined).length;
+  const fondDone=fondOk===fonds.length;
+  let fondLock=false;
+  const fondHtml=`<h2 class="sec">🧭 Le système du manche — ${fondOk}/${fonds.length}${fondDone?" ✓":" · commence ici"}</h2>
+  <div class="sub" style="margin:-4px 0 10px">${fondDone
+    ? "Fondations acquises. Le manche n'est plus une carte au trésor : c'est un système que tu calcules."
+    : "<b>Avant les gammes, le système.</b> Quelle case = quelle note, et pourquoi. Six fiches, dans l'ordre. Sans ça, tout le reste n'est que des formes apprises par cœur."}</div>`+
+  fonds.map((t,i)=>{
+    const done=S.fiches[t.id]!==undefined;
+    const isToday=S.menu.fond===t.id&&!S.menu.dFond;
+    // une seule fiche par jour : la suivante n'ouvre que demain
+    const locked=!done&&!isToday;
+    const why=fondLock&&!done ? "Fais d\\'abord la fiche précédente — l\\'ordre compte ici."
+      : "Une fiche par jour, pas deux. Celle d\\'aujourd\\'hui est faite : laisse-la infuser, joue, reviens demain.";
+    if(!done) fondLock=true;
+    return `<div class="act ${done?"done":""}" style="${locked?"opacity:.45":""}" onclick="${locked?`toast('${why}')`:`openFiche('${t.id}')`}">
+      <div class="ico">${done?"✓":locked?"🔒":(i+1)}</div>
+      <div class="t"><b>${t.title}</b>${isToday?"<small>ta fiche imposée du jour</small>":""}</div>
+      <div class="st">${done?"✓":locked?"":"›"}</div></div>`;
+  }).join("");
   return `<h1 class="page">Le manche</h1>
   <div class="sub">Pentas, éolien, liaisons, triades — l'objectif : que le manche devienne UN territoire connu, pas cinq cages.</div>
+  ${fondHtml}
+  ${fondDone?"":`<div class="crit" style="margin:14px 0">Le reste de l'onglet reste accessible — mais tant que le système n'est pas acquis, tu joues des dessins sans savoir ce qu'ils disent. Fais les six fiches d'abord.</div>`}
   <div class="act hot" onclick="openGame()">
     <div class="ico">🎮</div><div class="t"><b>Le manche en 60 secondes</b><small>${S.game.runs?"records "+gBest("fwd")+" (lecture) / "+gBest("rev")+" (impro) · "+S.game.runs+" parties":"deux sens : lire le manche ET trouver une note. Jamais tenté."}</small></div>
     <div class="st">›</div>
@@ -505,8 +538,8 @@ function vManche(){
       <div class="ico">${s.icon}</div><div class="t"><b>${s.name}</b><small>${s.consigne.slice(0,64)}…</small></div>
       <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
   }).join("")+
-  `<h2 class="sec">Théorie express — ${fichesOk}/${THEORY.length}</h2>`+
-  THEORY.map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
+  `<h2 class="sec">Théorie express</h2>`+
+  THEORY.filter(t=>!t.fond).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
     <div class="ico">📖</div><div class="t"><b>${t.title}</b></div>
     <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
 }
@@ -545,11 +578,18 @@ function ficheA(p){
     <button class="btn" onclick="${FQ.i===0?"FQ.i=1;ficheQ()":"ficheEnd()"}">${FQ.i===0?"Question suivante":"Terminer"}</button>`;
 }
 function ficheEnd(){
+  const f=THEORY.find(x=>x.id===FQ.id);
+  if(f.fond&&FQ.good<2&&S.fiches[FQ.id]===undefined){
+    addXP(2); save();
+    toast("On ne passe pas les fondations avec "+FQ.good+"/2. Relis, puis refais.");
+    closeOv(); render(); return;
+  }
   const first=S.fiches[FQ.id]===undefined;
   S.fiches[FQ.id]=FQ.good;
   addXP(first?8+FQ.good*2:FQ.good); save();
+  if(f.fond&&first) checkMenu("fond",FQ.id);
   toast(FQ.good===2?"📖 <b>Fiche acquise, 2/2.</b>":"📖 Fiche lue — "+FQ.good+"/2, relis-la dans quelques jours.");
-  closeOv();
+  closeOv(); render();
 }
 
 // jeu du manche

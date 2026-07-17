@@ -1,5 +1,5 @@
 // SHRED — service worker : cache-first, app 100 % hors-ligne
-const CACHE = "shred-v2";
+const CACHE = "shred-v3";
 const ASSETS = [
   "./",
   "./index.html",
