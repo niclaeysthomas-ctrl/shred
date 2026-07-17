@@ -193,7 +193,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=3"></script>
+<script src="data-guitar.js?v=4"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -304,9 +304,15 @@ function metHtml(){
 // ================= MENU DU JOUR =================
 function ensureMenu(){
   const t=today();
-  if(S.menu&&S.menu.date===t) return;
-  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
   const nextFond=THEORY.filter(x=>x.fond).find(x=>S.fiches[x.id]===undefined);
+  if(S.menu&&S.menu.date===t){
+    // Un menu créé AVANT l'ajout des fondations n'a pas de champ `fond` : sans ça,
+    // l'exercice imposé disparaît et les six fiches restent verrouillées toute la journée.
+    // On complète en place — surtout pas de régénération, qui effacerait la progression du jour.
+    if(S.menu.fond===undefined){ S.menu.fond=nextFond?nextFond.id:null; save(); }
+    return;
+  }
+  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
   S.menu={date:t,mod:TMODS[doy%TMODS.length].id,
     manche:(doy%3===2)?"game":SCALES[doy%SCALES.length].id,
     fond:nextFond?nextFond.id:null,
