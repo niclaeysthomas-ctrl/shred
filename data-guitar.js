@@ -543,3 +543,55 @@ why:"L'option 'main droite' de la porte expert : 8 minutes de downpicking à 212
 focus:["Downpicking 212","Endurance","Précision métal"],
 checks:["L'intro et le riff principal à 212 en downpicking strict","Le morceau entier à 90 % du tempo minimum","La section mélodique centrale (arpèges) propre"]}
 ];
+
+
+/* ================= DICTIONNAIRE D'ACCORDS =================
+   frets : 6 valeurs de Mi grave à Mi aigu · -1 = corde étouffée
+   Le rendu étiquette chaque note en DEGRÉ (1, 3, 5, b7…) — cf. fiche f10. */
+const CHORDLIB=[
+{cat:"Ouverts majeurs", list:[
+ {name:"C",  frets:[-1,3,2,0,1,0], root:0},
+ {name:"A",  frets:[-1,0,2,2,2,0], root:9},
+ {name:"G",  frets:[3,2,0,0,0,3],  root:7},
+ {name:"E",  frets:[0,2,2,1,0,0],  root:4},
+ {name:"D",  frets:[-1,-1,0,2,3,2],root:2}]},
+{cat:"Ouverts mineurs", list:[
+ {name:"Am", frets:[-1,0,2,2,1,0], root:9},
+ {name:"Em", frets:[0,2,2,0,0,0],  root:4},
+ {name:"Dm", frets:[-1,-1,0,2,3,1],root:2}]},
+{cat:"Septièmes (blues & tension)", list:[
+ {name:"E7", frets:[0,2,0,1,0,0],  root:4},
+ {name:"A7", frets:[-1,0,2,0,2,0], root:9},
+ {name:"D7", frets:[-1,-1,0,2,1,2],root:2},
+ {name:"G7", frets:[3,2,0,0,0,1],  root:7},
+ {name:"B7", frets:[-1,2,1,2,0,2], root:11},
+ {name:"C7", frets:[-1,3,2,3,1,0], root:0}]},
+{cat:"Septièmes majeures & m7 (couleur)", list:[
+ {name:"Cmaj7", frets:[-1,3,2,0,0,0], root:0},
+ {name:"Fmaj7", frets:[-1,-1,3,2,1,0],root:5},
+ {name:"Am7",   frets:[-1,0,2,0,1,0], root:9},
+ {name:"Dm7",   frets:[-1,-1,0,2,1,1],root:2},
+ {name:"Em7",   frets:[0,2,0,0,0,0],  root:4}]},
+{cat:"Barrés (formes mobiles)", list:[
+ {name:"F (forme de E)",  frets:[1,3,3,2,1,1], root:5, note:"Toute la forme de E, déplacée. Monte-la de 2 cases : G. La fondamentale est sous ton index, corde Mi grave — c'est la fiche f5 qui te dit laquelle."},
+ {name:"Bm (forme de Am)",frets:[-1,2,4,4,3,2],root:11, note:"La forme de Am déplacée, fondamentale corde La. Deux formes barrées = les 24 accords majeurs/mineurs du manche."}]},
+{cat:"Suspendus (ni majeur ni mineur)", list:[
+ {name:"Dsus4", frets:[-1,-1,0,2,3,3], root:2, note:"La tierce remplacée par la quarte : l'accord flotte, en attente de résolution vers D."},
+ {name:"Asus2", frets:[-1,0,2,2,0,0],  root:9, note:"Tierce remplacée par la seconde. Ni majeur ni mineur : ouvert, aérien."}]}
+];
+
+/* ================= JAM STATION =================
+   prog : [fondamentale relative (demi-tons depuis la tonique), type] par mesure. */
+const JAMS=[
+{id:"pop",  name:"Pop — I·V·vi·IV",  icon:"🎤", prog:[[0,"M"],[7,"M"],[9,"m"],[5,"M"]],
+ hint:"Gamme majeure ou penta majeure de la tonalité. Vise la tierce de chaque accord au changement.", defKey:0, bpm:92},
+{id:"blues",name:"Blues 12 mesures", icon:"🎺", prog:[[0,"7"],[0,"7"],[0,"7"],[0,"7"],[5,"7"],[5,"7"],[0,"7"],[0,"7"],[7,"7"],[5,"7"],[0,"7"],[7,"7"]],
+ hint:"Penta mineure + blue note. Le mensonge magnifique de la fiche th4 : mineure sur des accords majeurs.", defKey:9, bpm:84},
+{id:"aeol", name:"Vamp éolien — i·VI·VII", icon:"🌑", prog:[[9,"m"],[9,"m"],[5,"M"],[7,"M"]],
+ hint:"Ton chantier : l'éolien complet, pas seulement la penta. La sixte mineure est la note qui pleure.", defKey:0, bpm:76},
+{id:"iiVI", name:"Jazz — ii·V·I", icon:"🎷", prog:[[2,"m7"],[7,"7"],[0,"maj7"],[0,"maj7"]],
+ hint:"Une seule gamme majeure couvre tout — mais vise 3 et 7 de chaque accord : ce sont elles qui changent.", defKey:0, bpm:96},
+{id:"dor",  name:"Vamp dorien — i7·IV7", icon:"🌊", prog:[[9,"m7"],[9,"m7"],[2,"7"],[2,"7"]],
+ hint:"Le mineur qui sourit (fiche th6) : c'est la sixte MAJEURE qui fait le dorien. Santana vit ici.", defKey:0, bpm:88},
+{id:"mixo", name:"Vamp mixolydien — I7·bVII", icon:"🔥", prog:[[0,"7"],[0,"7"],[10,"M"],[10,"M"]],
+ hint:"Majeur à septième mineure : le son rock/funk. AC/DC et James Brown habitent ici.", defKey:4, bpm:96}];

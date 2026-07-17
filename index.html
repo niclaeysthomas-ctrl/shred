@@ -159,6 +159,28 @@
   .tierbar{font-family:var(--mono);font-size:11px;color:var(--acc);margin-left:auto}
 
   .game{background:#080604;border:1px solid var(--line);border-radius:16px;padding:22px 14px;text-align:center;margin-bottom:12px}
+  /* accordeur */
+  .tuner{margin:14px 0;text-align:center}
+  .tuner .vnote{font-size:52px;font-weight:900;line-height:1;font-style:italic}
+  .tuner .vsub{color:var(--dim);font-family:var(--mono);font-size:12px;margin-top:4px}
+  .gauge{position:relative;height:54px;margin:14px 0;border-radius:12px;background:var(--bg3);border:1px solid var(--line);overflow:hidden}
+  .gauge .zone{position:absolute;left:42%;width:16%;top:0;bottom:0;background:rgba(53,199,127,.14)}
+  .gauge .center{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--ok);opacity:.5}
+  .gauge .ndl{position:absolute;top:6px;bottom:6px;width:6px;border-radius:3px;background:var(--acc);left:50%;transform:translateX(-3px);transition:left .07s linear}
+  .gauge.intune .ndl{background:var(--ok)}
+  .strow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+  .strow button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px 2px;font-family:var(--mono);font-weight:800;font-size:13px;cursor:pointer}
+  .strow button.hit{border-color:var(--ok);color:var(--ok)}
+  /* jam station */
+  .jamnow{text-align:center;margin:14px 0}
+  .jamnow .cur{font-size:46px;font-weight:900;font-style:italic}
+  .jamnow .nxt{color:var(--dim);font-size:13px;font-family:var(--mono);margin-top:2px}
+  .jambeats{display:flex;gap:8px;justify-content:center;margin-top:10px;height:10px}
+  .jambeats i{width:10px;height:10px;border-radius:50%;background:var(--bg3);border:1px solid var(--line)}
+  .jambeats i.on{background:var(--acc);border-color:var(--acc)}
+  .keyrow{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}
+  .keyrow button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 0;font-size:12px;font-weight:800;cursor:pointer}
+  .keyrow button.on{border-color:var(--acc);color:var(--acc)}
   /* manche visuel */
   .fb{margin:12px 0;background:#0a0705;border:1px solid var(--line);border-radius:12px;padding:10px 6px 6px;overflow-x:auto}
   .fb table{border-collapse:collapse;width:100%;min-width:430px}
@@ -213,7 +235,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=5"></script>
+<script src="data-guitar.js?v=6"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -367,7 +389,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v
 function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,rep:vRep,profil:vProfil})[view](); header(); }
 const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
 function openOv(h){ ovin.innerHTML=h; ov.classList.add("on"); ov.scrollTop=0; }
-function closeOv(){ ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; FBTAP=null; if(WU&&WU.iv){clearInterval(WU.iv);WU=null;} render(); }
+function closeOv(){ ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; FBTAP=null; if(typeof LV!=="undefined") LV=null; if(typeof MICG!=="undefined") MICG.release(); if(typeof JAM!=="undefined"&&JAM.on) jamStop(); if(WU&&WU.iv){clearInterval(WU.iv);WU=null;} render(); }
 function ovTop(t){ return `<div class="top"><button class="x" onclick="closeOv()">✕</button><b>${t}</b></div>`; }
 
 function vJour(){
@@ -414,6 +436,9 @@ function vJour(){
     <div class="st">${m.dRep?"✓":"›"}</div>
   </div>
   <h2 class="sec">Outils</h2>
+  <div class="act hot" onclick="openTuner()">
+    <div class="ico">🎯</div><div class="t"><b>Accordeur</b><small>au micro, ±1 cent — accorde AVANT de jouer, sinon tout le reste ment</small></div><div class="st">›</div>
+  </div>
   <div class="act hot" onclick="openWarmup()">
     <div class="ico">🔥</div><div class="t"><b>Échauffement guidé — 5 min</b><small>avant tout travail rapide. Les tendons ne pardonnent pas.</small></div><div class="st">›</div>
   </div>
@@ -569,12 +594,21 @@ function vManche(){
     <div class="ico">👂</div><div class="t"><b>L'oreille</b><small>${S.game.earBest?"record "+S.game.earBest+"/10 · la palette s'élargit avec toi":"reconnais les intervalles au son de la corde. Le pont entre ta tête et tes doigts."}</small></div>
     <div class="st">›</div>
   </div>
+  <div class="act hot" onclick="openLive()">
+    <div class="ico">🎤</div><div class="t"><b>À la vraie guitare</b><small>${S.game.liveBest?"record "+S.game.liveBest+"/10 · le micro juge, pas toi":"l'app demande une note, TU la joues sur ta guitare, le micro juge. Le vrai test."}</small></div>
+    <div class="st">›</div>
+  </div>
   <div class="act" onclick="openCarte()">
     <div class="ico">🗺️</div><div class="t"><b>Ta carte du manche</b><small>tes zones aveugles, note par note — le jeu les vise automatiquement</small></div>
     <div class="st">›</div>
   </div>
-  <div class="act hot" onclick="openBacking()">
-    <div class="ico">🎚️</div><div class="t"><b>Backing tracks — où improviser</b><small>${BACKING.length} terrains d'impro, du drone de La au dorien</small></div>
+  <h2 class="sec">Jouer avec</h2>
+  <div class="act hot" onclick="openJamList()">
+    <div class="ico">🎛️</div><div class="t"><b>Jam Station</b><small>${JAMS.length} grilles jouées par l'app, 12 tonalités, hors-ligne — les gammes deviennent des phrases</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act" onclick="openChordDict()">
+    <div class="ico">📖</div><div class="t"><b>Dictionnaire d'accords</b><small>chaque note étiquetée en degré — tu vois POURQUOI ça sonne majeur, mineur, tendu</small></div>
     <div class="st">›</div>
   </div>
   <h2 class="sec">Cartographie & gammes</h2>`+
@@ -921,6 +955,261 @@ function openCarte(){
       :`<div class="crit">Pas encore de zone rouge identifiée — joue au jeu des 60 s pour nourrir la carte.</div>`));
 }
 
+// ================= MICRO : détection de hauteur (autocorrélation ACF+) =================
+function autoCorrelate(buf,sr){
+  let SIZE=buf.length,rms=0;
+  for(let i=0;i<SIZE;i++) rms+=buf[i]*buf[i];
+  rms=Math.sqrt(rms/SIZE);
+  if(rms<0.012) return -1;
+  let r1=0,r2=SIZE-1; const th=0.2;
+  for(let i=0;i<SIZE/2;i++) if(Math.abs(buf[i])<th){ r1=i; break; }
+  for(let i=1;i<SIZE/2;i++) if(Math.abs(buf[SIZE-i])<th){ r2=SIZE-i; break; }
+  const b=buf.slice(r1,r2); SIZE=b.length;
+  const c=new Array(SIZE).fill(0);
+  for(let i=0;i<SIZE;i++) for(let j=0;j<SIZE-i;j++) c[i]+=b[j]*b[j+i];
+  let d=0; while(d<SIZE-1&&c[d]>c[d+1]) d++;
+  let maxv=-1,maxp=-1;
+  for(let i=d;i<SIZE;i++) if(c[i]>maxv){ maxv=c[i]; maxp=i; }
+  let T0=maxp;
+  if(T0>0&&T0<SIZE-1){ const x1=c[T0-1],x2=c[T0],x3=c[T0+1],a=(x1+x3-2*x2)/2,bb=(x3-x1)/2; if(a) T0=T0-bb/(2*a); }
+  if(T0<=0) return -1;
+  return sr/T0;
+}
+function pitchInfo(f){ const mf=12*Math.log2(f/440)+69, m=Math.round(mf); return {midi:m,cents:Math.round((mf-m)*100)}; }
+const MICG={
+  stream:null,analyser:null,buf:null,raf:null,running:false,
+  async ensure(){
+    if(this.stream) return true;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) return false;
+    try{ this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}}); return true; }
+    catch(e){ return false; }
+  },
+  async run(cb){
+    if(!await this.ensure()) return false;
+    const ctx=metCtx(); if(ctx.state==="suspended") ctx.resume();
+    const src=ctx.createMediaStreamSource(this.stream);
+    this.analyser=ctx.createAnalyser(); this.analyser.fftSize=2048;
+    src.connect(this.analyser);
+    this.buf=new Float32Array(this.analyser.fftSize);
+    this.running=true;
+    const loop=()=>{ if(!this.running) return;
+      this.analyser.getFloatTimeDomainData(this.buf);
+      cb(autoCorrelate(this.buf,ctx.sampleRate));
+      this.raf=requestAnimationFrame(loop); };
+    loop(); return true;
+  },
+  stop(){ this.running=false; if(this.raf){cancelAnimationFrame(this.raf);this.raf=null;} },
+  release(){ this.stop(); if(this.stream){ this.stream.getTracks().forEach(t=>t.stop()); this.stream=null; this.analyser=null; } }
+};
+function midiNameFR(m){ return CHROM[((m%12)+12)%12]+(Math.floor(m/12)-1); }
+
+// ================= ACCORDEUR =================
+async function openTuner(){
+  openOv(ovTop("🎯 Accordeur")+`
+    <div class="tuner">
+      <div class="vnote" id="tnote">—</div>
+      <div class="vsub" id="tsub">Joue une corde à vide, laisse-la sonner.</div>
+      <div class="gauge" id="tgauge"><div class="zone"></div><div class="center"></div><div class="ndl" id="tndl"></div></div>
+    </div>
+    <div class="strow" id="tstr">${STRINGS.slice().reverse().map((s,i)=>`<button onclick="pluck(${s[2]},0,.5)">${["Mi₂","La","Ré","Sol","Si","Mi₄"][i]}</button>`).join("")}</div>
+    <div class="pt" style="margin-top:12px">L'aiguille au centre et verte = juste (±8 cents). Trop à gauche : trop grave, tends. Trop à droite : détends. Les boutons jouent la note de référence. Rien n'est enregistré.</div>`);
+  const ok=await MICG.run(f=>{
+    const note=document.getElementById("tnote"),sub=document.getElementById("tsub"),ndl=document.getElementById("tndl"),g=document.getElementById("tgauge");
+    if(!note) return;
+    if(f<0){ note.style.opacity=.35; return; }
+    const p=pitchInfo(f);
+    note.style.opacity=1; note.textContent=CHROM[((p.midi%12)+12)%12];
+    sub.textContent=midiNameFR(p.midi)+" · "+(p.cents>0?"+":"")+p.cents+" cents · "+f.toFixed(1)+" Hz";
+    ndl.style.left=(50+Math.max(-48,Math.min(48,p.cents)))+"%";
+    g.classList.toggle("intune",Math.abs(p.cents)<=8);
+    document.querySelectorAll("#tstr button").forEach((b,i)=>b.classList.toggle("hit",STRINGS.slice().reverse()[i][2]===p.midi&&Math.abs(p.cents)<=8));
+  });
+  if(!ok){ const s=document.getElementById("tsub"); if(s) s.textContent="⚠️ Micro refusé ou indisponible — autorise-le dans les réglages du navigateur."; }
+}
+
+// ================= JEU DU MANCHE — MODE VRAIE GUITARE =================
+let LV=null;
+function openLive(){
+  const best=S.game.liveBest||0;
+  openOv(ovTop("🎤 À la vraie guitare")+`
+    <div class="pt">Le mode des apps payantes, en mieux : l'app te demande une note <b>sur une corde précise</b>, tu la joues <b>sur ta guitare</b>, le micro juge. C'est le seul exercice qui relie le système au geste réel.</div>
+    <div class="crit"><b>10 notes, sans chrono.</b> Laisse sonner la note franchement. Guitare accordée obligatoire — passe par l'accordeur d'abord.${best?` Record : <b>${best}/10</b>.`:""}</div>
+    <button class="btn" onclick="startLive()">Commencer (micro requis)</button>`);
+}
+async function startLive(){
+  LV={n:0,score:0,cur:null,stab:0,lastM:-1,cooldown:0};
+  const ok=await MICG.run(f=>liveTick(f));
+  if(!ok){ openOv(ovTop("🎤 À la vraie guitare")+`<div class="result"><div class="big">🎙️</div><p>Micro refusé ou indisponible. Autorise-le, puis reviens — cet exercice en vaut la peine.</p></div><button class="btn ghost" onclick="closeOv()">Fermer</button>`); return; }
+  nextLV();
+}
+function nextLV(){
+  if(!LV) return;
+  if(LV.n>=10) return endLV();
+  const si=Math.floor(Math.random()*6), pc=pickNote();
+  const fret=((pc-STRINGS[si][1])%12+12)%12;
+  LV.cur={si,pc,fret,target:STRINGS[si][2]+fret};
+  LV.stab=0; LV.lastM=-1; LV.cooldown=Date.now()+350; // évite que la note précédente valide la suivante
+  openOv(ovTop("🎤 À la vraie guitare · "+(LV.n+1)+"/10")+`
+    <div class="game">
+      <div class="qnote">Joue <b>${CHROM[pc]}</b> sur la corde de <b>${STRINGS[si][0]}</b></div>
+      <div class="timer">score ${LV.score}/${LV.n} · <span id="lvheard" style="color:var(--dim)">j'écoute…</span></div>
+    </div>`+
+    fbHtml([],{})+`
+    <div class="exrow"><button class="btn ghost" onclick="pluck(${LV.cur.target},0,.5)">👂 Entendre la cible</button>
+    <button class="btn ghost" onclick="skipLV()">Je passe</button></div>`);
+}
+function liveTick(f){
+  if(!LV||!LV.cur||Date.now()<LV.cooldown) return;
+  const el=document.getElementById("lvheard");
+  if(f<0){ LV.stab=0; return; }
+  const p=pitchInfo(f);
+  if(Math.abs(p.cents)>42){ return; }
+  if(el) el.textContent="j'entends "+midiNameFR(p.midi);
+  if(p.midi===LV.lastM) LV.stab++; else { LV.lastM=p.midi; LV.stab=1; }
+  if(LV.stab>=5){ // ~5 frames stables ≈ une vraie note tenue
+    const heard=LV.lastM, c=LV.cur;
+    LV.cur=null;
+    const ok=heard===c.target || heard===c.target+12 || heard===c.target-12; // pardon d'octave (harmoniques micro)
+    LV.n++; recNote(c.pc,ok);
+    if(ok) LV.score++;
+    const marks=[{s:c.si,f:c.fret,cls:ok?"ok":"root",label:CHROM[c.pc].slice(0,2)}];
+    openOv(ovTop("🎤 À la vraie guitare · "+LV.n+"/10")+`
+      <div class="game"><div class="qnote">${ok?"✓ C'était bien "+CHROM[c.pc]:"✗ J'ai entendu "+midiNameFR(heard)+" — la cible était "+CHROM[c.pc]+", case "+c.fret}</div>
+      <div class="timer">score ${LV.score}/${LV.n}</div></div>`+fbHtml(marks,{})+
+      `<button class="btn" onclick="nextLV()">${LV.n>=10?"Résultat":"Note suivante"}</button>`);
+  }
+}
+function skipLV(){ if(!LV||!LV.cur) return; const c=LV.cur; LV.cur=null; LV.n++; recNote(c.pc,false);
+  openOv(ovTop("🎤 À la vraie guitare · "+LV.n+"/10")+`
+    <div class="game"><div class="qnote">${CHROM[c.pc]} était corde de ${STRINGS[c.si][0]}, case ${c.fret}</div>
+    <div class="timer">score ${LV.score}/${LV.n}</div></div>`+
+    fbHtml([{s:c.si,f:c.fret,cls:"ok",label:CHROM[c.pc].slice(0,2)}],{})+
+    `<button class="btn" onclick="nextLV()">${LV.n>=10?"Résultat":"Note suivante"}</button>`); }
+function endLV(){
+  const sc=LV.score; LV=null; MICG.stop();
+  const rec=sc>(S.game.liveBest||0); if(rec) S.game.liveBest=sc;
+  addXP(rec?15:6); checkMenu("manche","game"); save();
+  openOv(ovTop("🎤 Résultat")+`
+    <div class="result"><div class="big">${sc}/10</div>
+    <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Le manche, les doigts et l'oreille sont d'accord. C'est ça, connaître son instrument.":sc>=6?"Solide — le geste suit le système. Les erreurs restantes sont probablement des cases voisines : ralentis la main, pas la tête.":"C'est l'exercice le plus dur de l'app, et le plus payant. Refais-le accordé, note tenue franche."}</p></div>
+    <button class="btn" onclick="startLive()">Rejouer</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+// ================= JAM STATION =================
+const JAM={on:false,jam:null,key:0,bpm:90,idx:0,next:0,iv:null,click:true};
+function jamChordMidis(rel,type){
+  const root=40+((JAM.key+rel-4)%12+12)%12; // fondamentale entre Mi grave (40) et Ré# (51)
+  const iv={M:[0,7,12,16,19],m:[0,7,12,15,19],"7":[0,7,10,16,19],m7:[0,7,10,15,19],maj7:[0,7,11,16,19]}[type];
+  return iv.map(x=>root+x);
+}
+function jamChordName(rel,type){ return CHROM[(JAM.key+rel)%12]+({M:"",m:"m","7":"7",m7:"m7",maj7:"maj7"})[type]; }
+function strum(midis,when,vel,down=true){
+  const list=down?midis:[...midis].reverse();
+  list.forEach((m,i)=>pluck(m,when+i*0.014,vel*(1-i*0.06),1.6));
+}
+function jamStart(){
+  jamStop();
+  const c=metCtx(); if(c.state==="suspended") c.resume();
+  JAM.on=true; JAM.idx=0;
+  const spb=60/JAM.bpm;
+  JAM.next=c.currentTime+0.12;
+  // décompte d'une mesure
+  for(let i=0;i<4;i++) metClick(JAM.next+i*spb,i===0?2:1);
+  JAM.next+=4*spb;
+  JAM.iv=setInterval(jamSched,40);
+  jamUI();
+}
+function jamSched(){
+  const c=metCtx(), spb=60/JAM.bpm, look=0.15;
+  while(JAM.on&&JAM.next<c.currentTime+look){
+    const bar=JAM.jam.prog[JAM.idx%JAM.jam.prog.length];
+    const midis=jamChordMidis(bar[0],bar[1]);
+    // pompe : accord plein sur 1 et 3, remontée légère sur les "et" de 2 et 4
+    strum(midis,JAM.next,0.34,true);
+    if(JAM.click) metClick(JAM.next,2);
+    strum(midis.slice(1),JAM.next+1.5*spb,0.14,false);
+    strum(midis,JAM.next+2*spb,0.26,true);
+    if(JAM.click){ metClick(JAM.next+spb,1); metClick(JAM.next+2*spb,1); metClick(JAM.next+3*spb,1); }
+    strum(midis.slice(1),JAM.next+3.5*spb,0.14,false);
+    const at=JAM.idx;
+    setTimeout(()=>{ if(JAM.on) jamNow(at); },Math.max(0,(JAM.next-c.currentTime)*1000));
+    JAM.idx++; JAM.next+=4*spb;
+  }
+}
+function jamNow(i){
+  const p=JAM.jam.prog, cur=p[i%p.length], nx=p[(i+1)%p.length];
+  const el=document.getElementById("jamcur"); if(!el) return;
+  el.textContent=jamChordName(cur[0],cur[1]);
+  document.getElementById("jamnxt").textContent="puis : "+jamChordName(nx[0],nx[1])+" · mesure "+(i%p.length+1)+"/"+p.length;
+}
+function jamStop(){ JAM.on=false; if(JAM.iv){clearInterval(JAM.iv);JAM.iv=null;} jamUI(); }
+function jamUI(){ const b=document.getElementById("jamgo"); if(b) b.textContent=JAM.on?"⏸ Stop":"▶ Lancer le jam"; }
+function openJam(id){
+  const j=JAMS.find(x=>x.id===id);
+  JAM.jam=j; JAM.key=j.defKey; JAM.bpm=j.bpm;
+  openOv(ovTop(j.icon+" "+j.name)+`
+    <div class="jamnow"><div class="cur" id="jamcur">${jamChordName(j.prog[0][0],j.prog[0][1])}</div>
+    <div class="nxt" id="jamnxt">grille : ${j.prog.map(b=>jamChordName(b[0],b[1])).join(" · ")}</div></div>
+    <div class="crit"><b>Où improviser :</b> ${j.hint}</div>
+    <p class="sub" style="margin:10px 0 2px">Tonalité :</p>
+    <div class="keyrow">${CHROM.map((n,i)=>`<button class="${i===JAM.key?"on":""}" onclick="jamKey(${i},'${id}')">${n}</button>`).join("")}</div>
+    <p class="sub" style="margin:10px 0 2px">Tempo : <b id="jambpmv">${JAM.bpm}</b> BPM</p>
+    <input type="range" min="56" max="160" step="4" value="${JAM.bpm}" style="width:100%" oninput="JAM.bpm=+this.value;document.getElementById('jambpmv').textContent=this.value">
+    <button class="btn" id="jamgo" onclick="JAM.on?jamStop():jamStart()">▶ Lancer le jam</button>
+    <div class="xptxt" style="margin-top:8px;text-align:center">Guitare rythmique intégrée, hors-ligne. Décompte d'une mesure, puis c'est à toi par-dessus.</div>`);
+}
+function jamKey(k,id){ const was=JAM.on; jamStop(); JAM.key=k; openJam(id); JAM.key=k;
+  document.querySelectorAll(".keyrow button").forEach((b,i)=>b.classList.toggle("on",i===k));
+  if(was) jamStart(); }
+function openJamList(){
+  openOv(ovTop("🎛️ Jam Station")+`
+    <div class="pt">Des grilles jouées par l'app — guitare rythmique + clic — dans la tonalité et au tempo que tu veux. <b>Hors-ligne, sans YouTube.</b> C'est ici que les gammes deviennent des phrases.</div>`+
+    JAMS.map(j=>`<div class="act hot" onclick="openJam('${j.id}')">
+      <div class="ico">${j.icon}</div><div class="t"><b>${j.name}</b><small>${j.hint.slice(0,70)}…</small></div><div class="st">›</div></div>`).join("")+
+    `<div class="act" onclick="openBacking()"><div class="ico">🎚️</div><div class="t"><b>Backing tracks YouTube</b><small>pour des vrais sons de groupe, quand tu as du réseau</small></div><div class="st">›</div></div>`);
+}
+
+// ================= DICTIONNAIRE D'ACCORDS =================
+function chordMarks(ch){
+  const marks=[];
+  ch.frets.forEach((f,k)=>{
+    const s=5-k; // k=0 → Mi grave (rangée du bas)
+    if(f<0){ marks.push({s,f:0,cls:"h0",label:"✕"}); return; }
+    const pc=(STRINGS[s][1]+f)%12, deg=(pc-ch.root+12)%12;
+    const lab={0:"1",2:"2",3:"♭3",4:"3",5:"4",7:"5",9:"6",10:"♭7",11:"7"}[deg]||CHROM[pc].slice(0,2);
+    marks.push({s,f,cls:deg===0?"root":"ghost",label:lab});
+  });
+  return marks;
+}
+function strumChord(ch){
+  const midis=[];
+  ch.frets.forEach((f,k)=>{ if(f>=0) midis.push(STRINGS[5-k][2]+f); });
+  strum(midis,0,0.45,true);
+}
+function openChordDict(){
+  openOv(ovTop("📖 Dictionnaire d'accords")+`
+    <div class="pt">Chaque note étiquetée en <b>degré</b> (1, 3, ♭7…), pas seulement en nom — c'est la fiche f10 appliquée : tu vois <i>pourquoi</i> l'accord sonne majeur, mineur ou tendu. Touche un accord, écoute-le.</div>`+
+    CHORDLIB.map(cat=>`<h2 class="sec">${cat.cat}</h2>`+
+      cat.list.map(ch=>`<div class="act" onclick="openChord('${esc(ch.name).replace(/'/g,"\\'")}')">
+        <div class="ico">🎸</div><div class="t"><b>${ch.name}</b></div><div class="st">›</div></div>`).join("")).join(""));
+}
+function openChord(name){
+  let ch=null; CHORDLIB.forEach(c=>c.list.forEach(x=>{ if(x.name===name) ch=x; }));
+  if(!ch) return;
+  const degs=[...new Set(ch.frets.map((f,k)=>f<0?null:((STRINGS[5-k][1]+f)%12-ch.root+12)%12).filter(x=>x!==null))].sort((a,b)=>a-b);
+  const expl=degs.includes(4)?(degs.includes(10)?"1-3-5-♭7 : majeur à septième mineure — la tension du blues, elle veut résoudre.":degs.includes(11)?"1-3-5-7 : majeur septième — doux, jazzy, aucune urgence.":"1-3-5 : majeur — la tierce à 4 demi-tons fait le sourire.")
+    :degs.includes(3)?(degs.includes(10)?"1-♭3-5-♭7 : mineur septième — rond, soul, parfait pour les vamps.":"1-♭3-5 : mineur — la tierce baissée d'un demi-ton fait tout.")
+    :degs.includes(5)?"1-4-5 : suspendu — la quarte remplace la tierce, l'accord attend sa résolution."
+    :degs.includes(2)?"1-2-5 : sus2 — aérien, ni majeur ni mineur."
+    :"—";
+  openOv(ovTop("🎸 "+ch.name)+
+    fbHtml(chordMarks(ch),{})+
+    `<div class="pt"><b>${expl}</b>${ch.note?"<br><br>"+ch.note:""}</div>
+    <button class="btn" onclick='strumChord(CHORDLIB.flatMap(c=>c.list).find(x=>x.name==="${ch.name.replace(/"/g,'\\"')}"))'>🔊 Écouter (gratté)</button>
+    <button class="btn ghost" onclick="openChordDict()">← Tous les accords</button>`);
+}
+
 // ================= RÉPERTOIRE =================
 function pState(id){ return S.pieces[id]||{st:"todo",checks:[]}; }
 function tierDone(n){ return PIECES.filter(p=>p.tier===n&&pState(p.id).st==="ok").length; }
@@ -1018,6 +1307,7 @@ function vProfil(){
     <div class="stat"><b>${Math.max(gBest("fwd"),gBest("rev"))}</b><small>RECORD MANCHE 60s</small></div>
     <div class="stat"><b>${S.game.intBest||0}/10</b><small>INTERVALLES</small></div>
     <div class="stat"><b>${S.game.earBest||0}/10</b><small>OREILLE</small></div>
+    <div class="stat"><b>${S.game.liveBest||0}/10</b><small>VRAIE GUITARE 🎤</small></div>
   </div>
   <div class="card"><b style="font-size:14px">Tes 10 dernières semaines</b>${heatmap()}
     <div class="xptxt" style="margin-top:6px">Un carré = un jour validé. La mémoire musculaire lit ce calendrier.</div></div>
