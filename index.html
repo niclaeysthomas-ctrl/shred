@@ -159,6 +159,26 @@
   .tierbar{font-family:var(--mono);font-size:11px;color:var(--acc);margin-left:auto}
 
   .game{background:#080604;border:1px solid var(--line);border-radius:16px;padding:22px 14px;text-align:center;margin-bottom:12px}
+  /* manche visuel */
+  .fb{margin:12px 0;background:#0a0705;border:1px solid var(--line);border-radius:12px;padding:10px 6px 6px;overflow-x:auto}
+  .fb table{border-collapse:collapse;width:100%;min-width:430px}
+  .fb td{position:relative;height:30px;min-width:28px;border-right:2px solid #3a2f24;text-align:center;vertical-align:middle;cursor:pointer}
+  .fb td.nut{border-right:4px solid #6b5a44}
+  .fb td::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#8a7a63;opacity:.55}
+  .fb tr:nth-child(2) td::after{height:1px}
+  .fb tr:nth-child(7) td::after{height:2px}
+  .fb .dot{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:10.5px;font-weight:800;font-family:var(--mono)}
+  .fb .dot.root{background:var(--acc);color:#221200}
+  .fb .dot.ok{background:var(--ok);color:#02180b}
+  .fb .dot.ko{background:var(--bad);color:#fff}
+  .fb .dot.ghost{background:#2c3f5e;color:#cfe0ff}
+  .fb .dot.h0{background:#26201a;color:#6a5c4e}
+  .fb .dot.h1{background:#3a1a20;color:#ff9aa5}
+  .fb .dot.h2{background:#3a2c12;color:#ffce7a}
+  .fb .dot.h3{background:#12201a;color:#7ee2ab}
+  .fb .fnum{color:var(--dim);font-family:var(--mono);font-size:9.5px;height:16px;cursor:default}
+  .fb .sname{color:var(--dim);font-family:var(--mono);font-size:9.5px;padding-right:4px;cursor:default;border-right:none;text-align:right;min-width:22px}
+  .fb tr td.sname::after{display:none}
   .game .qnote{font-size:19px;font-weight:800;margin:8px 0 2px}
   .game .qnote b{color:var(--acc)}
   .game .timer{font-family:var(--mono);font-size:13px;color:var(--dim)}
@@ -193,7 +213,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=4"></script>
+<script src="data-guitar.js?v=5"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -313,8 +333,11 @@ function ensureMenu(){
     return;
   }
   const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+  // le créneau "manche" tourne : gammes un jour sur deux, et en alternance
+  // le jeu des notes, les intervalles, l'oreille — les trois réflexes du manche
+  const rot=["scale","game","scale","intervals","scale","ear"][doy%6];
   S.menu={date:t,mod:TMODS[doy%TMODS.length].id,
-    manche:(doy%3===2)?"game":SCALES[doy%SCALES.length].id,
+    manche:rot==="scale"?SCALES[doy%SCALES.length].id:rot,
     fond:nextFond?nextFond.id:null,
     dTech:false,dManche:false,dRep:false,validated:false};
   save();
@@ -344,13 +367,17 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v
 function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,rep:vRep,profil:vProfil})[view](); header(); }
 const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
 function openOv(h){ ovin.innerHTML=h; ov.classList.add("on"); ov.scrollTop=0; }
-function closeOv(){ ov.classList.remove("on"); metStop(); stopGame(); if(WU&&WU.iv){clearInterval(WU.iv);WU=null;} render(); }
+function closeOv(){ ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; FBTAP=null; if(WU&&WU.iv){clearInterval(WU.iv);WU=null;} render(); }
 function ovTop(t){ return `<div class="top"><button class="x" onclick="closeOv()">✕</button><b>${t}</b></div>`; }
 
 function vJour(){
   const m=S.menu,r=rank(),nr=nextRank();
   const md=tmod(m.mod);
-  const sc=m.manche==="game"?null:SCALES.find(s=>s.id===m.manche);
+  const MDRILLS={game:["🎮","Le manche en 60 s (jeu)","une partie chrono : nomme les notes","openGame()"],
+    intervals:["📐","Les intervalles sur le manche","10 questions : pose l'intervalle demandé","openIntervals()"],
+    ear:["👂","L'oreille","10 intervalles à reconnaître au son","openEar()"]};
+  const mdrill=MDRILLS[m.manche];
+  const sc=mdrill?null:SCALES.find(s=>s.id===m.manche);
   const cp=curPiece();
   const pct=nr?Math.min(100,Math.round((S.xp-r[1])/(nr[1]-r[1])*100)):100;
   const coach=m.validated?"Journée validée. La guitare ne compte pas les jours où tu joues — elle compte ceux où tu ne joues pas. <b>À demain.</b>":
@@ -370,7 +397,7 @@ function vJour(){
   <h2 class="sec">⛔ L'exercice imposé du jour</h2>
   <div class="sub" style="margin:-4px 0 10px">Pas de choix aujourd'hui. Le système du manche passe avant tout le reste — une fiche par jour, dans l'ordre.</div>
   <div class="act ${m.dFond?"done":"hot"}" onclick="openFiche('${m.fond}')">
-    <div class="ico">${m.dFond?"✓":"🧭"}</div><div class="t"><b>${f.title}</b><small>${m.dFond?"acquise aujourd'hui — la suivante demain, une par jour, ça infuse pendant la nuit":"fiche "+(THEORY.filter(x=>x.fond).findIndex(x=>x.id===m.fond)+1)+"/6 du système — lis, puis réponds aux 2 questions"}</small></div>
+    <div class="ico">${m.dFond?"✓":"🧭"}</div><div class="t"><b>${f.title}</b><small>${m.dFond?"acquise aujourd'hui — la suivante demain, une par jour, ça infuse pendant la nuit":"fiche "+(THEORY.filter(x=>x.fond).findIndex(x=>x.id===m.fond)+1)+"/"+THEORY.filter(x=>x.fond).length+" du système — lis, puis réponds aux 2 questions"}</small></div>
     <div class="st">${m.dFond?"✓":"›"}</div>
   </div>
   <h2 class="sec">Le reste (après)</h2>`;})():""}
@@ -378,8 +405,8 @@ function vJour(){
     <div class="ico">${md.icon}</div><div class="t"><b>Technique — ${md.name}</b><small>15 min sur un exo du module, et <b>logue ton BPM</b> (ou ton palier) pour valider</small></div>
     <div class="st">${m.dTech?"✓":"›"}</div>
   </div>
-  <div class="act ${m.dManche?"done":""}" onclick="${sc?`openScale('${sc.id}')`:"openGame()"}">
-    <div class="ico">${sc?sc.icon:"🎮"}</div><div class="t"><b>Manche — ${sc?sc.name:"Le manche en 60 s (jeu)"}</b><small>${sc?"10 min + évalue ton palier":"une partie chrono : nomme les notes"}</small></div>
+  <div class="act ${m.dManche?"done":""}" onclick="${sc?`openScale('${sc.id}')`:mdrill[3]}">
+    <div class="ico">${sc?sc.icon:mdrill[0]}</div><div class="t"><b>Manche — ${sc?sc.name:mdrill[1]}</b><small>${sc?"10 min + évalue ton palier":mdrill[2]}</small></div>
     <div class="st">${m.dManche?"✓":"›"}</div>
   </div>
   <div class="act ${m.dRep?"done":""}" onclick="${cp?`openPiece('${cp.id}')`:"nav('rep')"}">
@@ -511,7 +538,7 @@ function vManche(){
   const fondHtml=`<h2 class="sec">🧭 Le système du manche — ${fondOk}/${fonds.length}${fondDone?" ✓":" · commence ici"}</h2>
   <div class="sub" style="margin:-4px 0 10px">${fondDone
     ? "Fondations acquises. Le manche n'est plus une carte au trésor : c'est un système que tu calcules."
-    : "<b>Avant les gammes, le système.</b> Quelle case = quelle note, et pourquoi. Six fiches, dans l'ordre. Sans ça, tout le reste n'est que des formes apprises par cœur."}</div>`+
+    : `<b>Avant les gammes, le système.</b> Quelle case = quelle note, et pourquoi — puis ce que les notes construisent. ${fonds.length} fiches, dans l'ordre. Sans ça, tout le reste n'est que des formes apprises par cœur.`}</div>`+
   fonds.map((t,i)=>{
     const done=S.fiches[t.id]!==undefined;
     const isToday=S.menu.fond===t.id&&!S.menu.dFond;
@@ -528,9 +555,22 @@ function vManche(){
   return `<h1 class="page">Le manche</h1>
   <div class="sub">Pentas, éolien, liaisons, triades — l'objectif : que le manche devienne UN territoire connu, pas cinq cages.</div>
   ${fondHtml}
-  ${fondDone?"":`<div class="crit" style="margin:14px 0">Le reste de l'onglet reste accessible — mais tant que le système n'est pas acquis, tu joues des dessins sans savoir ce qu'ils disent. Fais les six fiches d'abord.</div>`}
+  ${fondDone?"":`<div class="crit" style="margin:14px 0">Le reste de l'onglet reste accessible — mais tant que le système n'est pas acquis, tu joues des dessins sans savoir ce qu'ils disent. Fais les fiches d'abord.</div>`}
+  <h2 class="sec">Les trois réflexes</h2>
   <div class="act hot" onclick="openGame()">
-    <div class="ico">🎮</div><div class="t"><b>Le manche en 60 secondes</b><small>${S.game.runs?"records "+gBest("fwd")+" (lecture) / "+gBest("rev")+" (impro) · "+S.game.runs+" parties":"deux sens : lire le manche ET trouver une note. Jamais tenté."}</small></div>
+    <div class="ico">🎮</div><div class="t"><b>Le manche en 60 secondes</b><small>${S.game.runs?"records "+gBest("fwd")+" (lecture) / "+gBest("rev")+" (impro) · "+S.game.runs+" parties":"deux sens : lire le manche ET trouver une note — maintenant SUR le manche, avec le son."}</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act hot" onclick="openIntervals()">
+    <div class="ico">📐</div><div class="t"><b>Les intervalles sur le manche</b><small>${S.game.intBest?"record "+S.game.intBest+"/10 · les formes, pas les calculs":"vois la fondamentale, pose la quinte, la tierce, l'octave. Les formes, en vrai."}</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act hot" onclick="openEar()">
+    <div class="ico">👂</div><div class="t"><b>L'oreille</b><small>${S.game.earBest?"record "+S.game.earBest+"/10 · la palette s'élargit avec toi":"reconnais les intervalles au son de la corde. Le pont entre ta tête et tes doigts."}</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act" onclick="openCarte()">
+    <div class="ico">🗺️</div><div class="t"><b>Ta carte du manche</b><small>tes zones aveugles, note par note — le jeu les vise automatiquement</small></div>
     <div class="st">›</div>
   </div>
   <div class="act hot" onclick="openBacking()">
@@ -600,7 +640,60 @@ function ficheEnd(){
 
 // jeu du manche
 const CHROM=["Do","Do#","Ré","Ré#","Mi","Fa","Fa#","Sol","Sol#","La","La#","Si"];
-const STRINGS=[["Mi aigu",4],["Si",11],["Sol",7],["Ré",2],["La",9],["Mi grave",4]];
+// [nom, index chromatique de la corde à vide, midi à vide]
+const STRINGS=[["Mi aigu",4,64],["Si",11,59],["Sol",7,55],["Ré",2,50],["La",9,45],["Mi grave",4,40]];
+
+// ---- son de corde : synthèse Karplus-Strong (une vraie corde pincée, pas un bip) ----
+function pluck(midi,when=0,vel=.5,dur=1.4){
+  try{
+    const c=metCtx(); if(c.state==="suspended") c.resume();
+    const sr=c.sampleRate, f=440*Math.pow(2,(midi-69)/12);
+    const N=Math.max(2,Math.round(sr/f));
+    const buf=c.createBuffer(1,Math.floor(sr*dur),sr), d=buf.getChannelData(0);
+    const ring=new Float32Array(N);
+    for(let i=0;i<N;i++) ring[i]=Math.random()*2-1;
+    let idx=0;
+    for(let i=0;i<d.length;i++){ const nx=(idx+1)%N; ring[idx]=.498*(ring[idx]+ring[nx]); d[i]=ring[idx]; idx=nx; }
+    const src=c.createBufferSource(); src.buffer=buf;
+    const g=c.createGain(); g.gain.setValueAtTime(vel,c.currentTime+when);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+when+dur);
+    src.connect(g); g.connect(c.destination); src.start(c.currentTime+when);
+  }catch(e){}
+}
+function pluckSF(s,f,when=0,vel=.5){ pluck(STRINGS[s][2]+f,when,vel); }
+
+// ---- manche visuel interactif ----
+// marks: [{s,f,cls:'root|ok|ko|ghost|h0..h3',label}] · tap: nom d'une fonction globale(s,f)
+let FBTAP=null;
+function fbHtml(marks,opts){
+  opts=opts||{};
+  const frets=opts.frets??12;
+  const mk={}; (marks||[]).forEach(m=>mk[m.s+"_"+m.f]={cls:m.cls,label:m.label??""});
+  FBTAP=opts.tap||null;
+  let h=`<div class="fb"><table>`;
+  h+=`<tr><td class="sname"></td>${Array.from({length:frets+1},(_,f)=>`<td class="fnum">${[3,5,7,9,12].includes(f)?f:""}</td>`).join("")}</tr>`;
+  for(let s=0;s<6;s++){
+    h+=`<tr><td class="sname">${STRINGS[s][0].replace(" grave","g").replace(" aigu","a")}</td>`;
+    for(let f=0;f<=frets;f++){
+      const m=mk[s+"_"+f];
+      h+=`<td class="${f===0?"nut":""}" onclick="fbTap(${s},${f})">${m?`<span class="dot ${m.cls}">${m.label}</span>`:""}</td>`;
+    }
+    h+=`</tr>`;
+  }
+  return h+`</table></div>`;
+}
+function fbTap(s,f){ if(FBTAP) FBTAP(s,f); }
+
+// ---- stats par note : qui sont tes zones aveugles ? ----
+function noteStat(pc){ if(!S.noteStats) S.noteStats={}; return S.noteStats[pc]||(S.noteStats[pc]={ok:0,tot:0}); }
+function recNote(pc,ok){ const n=noteStat(pc); n.tot++; if(ok) n.ok++; save(); }
+// tirage adaptatif : les notes ratées sortent plus souvent
+function pickNote(){
+  const w=CHROM.map((_,pc)=>{ const n=(S.noteStats||{})[pc]; if(!n||n.tot<3) return 3; return 1+6*(1-n.ok/n.tot); });
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let pc=0;pc<12;pc++){ r-=w[pc]; if(r<=0) return pc; }
+  return 11;
+}
 let G=null;
 function gBest(m){ return (S.game.best&&typeof S.game.best==="object")?(S.game.best[m]||0):(m==="fwd"?(S.game.best||0):0); }
 function setGBest(m,v){ if(!S.game.best||typeof S.game.best!=="object") S.game.best={fwd:(S.game.best||0),rev:0}; S.game.best[m]=v; }
@@ -627,16 +720,18 @@ function nextQ(){
   if(!G) return;
   const si=Math.floor(Math.random()*6), open=STRINGS[si][1];
   if(G.mode==="fwd"){
-    const fret=Math.floor(Math.random()*13), note=CHROM[(open+fret)%12];
+    // adaptatif : la case posée vise plus souvent tes notes faibles
+    const pc=pickNote(), fret=((pc-open)%12+12)%12;
+    const note=CHROM[pc];
     const opts=new Set([note]); while(opts.size<4) opts.add(CHROM[Math.floor(Math.random()*12)]);
-    G.cur={note,opts:[...opts].sort(()=>Math.random()-.5)};
+    G.cur={note,pc,opts:[...opts].sort(()=>Math.random()-.5)};
     openOv(gameShell(`Corde de <b>${STRINGS[si][0]}</b> · case <b>${fret}</b>`,G.cur.opts));
   } else {
-    // note → case : on demande LA case (0-12) de la note sur la corde
-    const targetNote=Math.floor(Math.random()*12), correctFret=((targetNote-open)%12+12)%12;
-    const opts=new Set([correctFret]); while(opts.size<4){ let f=Math.floor(Math.random()*13); if(f!==correctFret) opts.add(f); }
-    G.cur={fret:correctFret,opts:[...opts].sort((a,b)=>a-b)};
-    openOv(gameShell(`<b>${CHROM[targetNote]}</b> sur la corde de <b>${STRINGS[si][0]}</b> — quelle case ? (0-12)`,G.cur.opts.map(f=>"case "+f)));
+    // note → case, SUR le manche : tape la case (0 et 12 valent tous les deux)
+    const pc=pickNote(), correctFret=((pc-open)%12+12)%12;
+    G.cur={pc,si,fret:correctFret};
+    openOv(gameShell(`Place <b>${CHROM[pc]}</b> sur la corde de <b>${STRINGS[si][0]}</b>`,null)+
+      fbHtml([],{tap:(s,f)=>answerFB(s,f)}));
   }
 }
 function gameShell(prompt,opts){
@@ -645,17 +740,36 @@ function gameShell(prompt,opts){
       <div class="timer" id="gtimer">${G.left} s</div>
       <div class="qnote">${prompt}</div>
       <div class="timer">score ${G.score}/${G.total}</div>
-      <div class="gopts">${opts.map((o,i)=>`<button onclick="answerG(${i})">${o}</button>`).join("")}</div>
+      ${opts?`<div class="gopts">${opts.map((o,i)=>`<button onclick="answerG(${i})">${o}</button>`).join("")}</div>`:""}
     </div>`;
+}
+function answerFB(s,f){
+  if(!G||!G.cur) return;
+  const ok=(s===G.cur.si)&&((f%12)===(G.cur.fret%12));
+  G.total++; recNote(G.cur.pc,ok);
+  pluckSF(s,f,0,.45);
+  if(ok){
+    G.score++;
+    openOv(gameShell(`Place <b>${CHROM[G.cur.pc]}</b> sur la corde de <b>${STRINGS[G.cur.si][0]}</b>`,null)+
+      fbHtml([{s,f,cls:"ok",label:CHROM[G.cur.pc].slice(0,2)}],{}));
+    setTimeout(nextQ,420);
+  } else {
+    const marks=[{s,f,cls:"ko"}]; // ta réponse, puis la bonne (et son octave si case 0)
+    marks.push({s:G.cur.si,f:G.cur.fret,cls:"ok",label:CHROM[G.cur.pc].slice(0,2)});
+    if(G.cur.fret===0) marks.push({s:G.cur.si,f:12,cls:"ok",label:CHROM[G.cur.pc].slice(0,2)});
+    openOv(gameShell(`Place <b>${CHROM[G.cur.pc]}</b> sur la corde de <b>${STRINGS[G.cur.si][0]}</b>`,null)+fbHtml(marks,{}));
+    setTimeout(()=>{ pluckSF(G.cur.si,G.cur.fret,0,.5); setTimeout(nextQ,700); },260);
+  }
 }
 function answerG(i){
   if(!G) return;
-  const ok=G.mode==="fwd"?(G.cur.opts[i]===G.cur.note):(G.cur.opts[i]===G.cur.fret);
-  G.total++;
+  const ok=G.cur.opts[i]===G.cur.note;
+  G.total++; recNote(G.cur.pc,ok);
+  pluck(48+G.cur.pc,0,.4);
   if(ok){ G.score++; nextQ(); }
   else{
     document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
-      const good=G.mode==="fwd"?(G.cur.opts[k]===G.cur.note):(G.cur.opts[k]===G.cur.fret);
+      const good=G.cur.opts[k]===G.cur.note;
       if(good) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
     setTimeout(nextQ,650);
   }
@@ -673,6 +787,138 @@ function endGame(){
     <button class="btn" onclick="startGame('${mode}')">Rejouer (${mode==="fwd"?"case→note":"note→case"})</button>
     <button class="btn ghost" onclick="openGame()">Changer de sens</button>
     <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+// ================= SALLE INTERVALLES =================
+// Le but : les intervalles comme FORMES. Tu vois la fondamentale, tu poses l'intervalle.
+const INTVS=[["tierce mineure",3],["tierce majeure",4],["quarte",5],["quinte",7],["sixte majeure",9],["septième mineure",10],["octave",12]];
+let IV=null;
+function openIntervals(){
+  const best=(S.game.intBest||0);
+  openOv(ovTop("📐 Les intervalles sur le manche")+`
+    <div class="pt">On te montre une <b>fondamentale</b>. Tu poses l'intervalle demandé — n'importe quelle position juste compte. C'est l'application directe des fiches : les intervalles sont des <b>formes</b>, et l'anomalie du Si les décale d'une case.</div>
+    <div class="crit"><b>10 questions, sans chrono.</b> Ici on cherche la compréhension, pas le réflexe — le réflexe, c'est le jeu des 60 s.${best?` Record : <b>${best}/10</b>.`:""}</div>
+    <button class="btn" onclick="startIntervals()">Commencer</button>`);
+}
+function startIntervals(){ IV={n:0,score:0}; nextIV(); }
+function nextIV(){
+  if(!IV) return;
+  if(IV.n>=10) return endIV();
+  // fondamentale sur cordes graves (2-5), cases 1-7 ; cible : toute position exacte (même octave)
+  for(let tries=0;tries<50;tries++){
+    const rs=2+Math.floor(Math.random()*4), rf=1+Math.floor(Math.random()*7);
+    const iv=INTVS[Math.floor(Math.random()*INTVS.length)];
+    const rootMidi=STRINGS[rs][2]+rf, target=rootMidi+iv[1];
+    const valid=[];
+    for(let s=0;s<6;s++){ const f=target-STRINGS[s][2]; if(f>=0&&f<=12) valid.push({s,f}); }
+    if(!valid.length) continue;
+    IV.cur={rs,rf,iv,rootMidi,valid};
+    pluckSF(rs,rf,0,.5);
+    openOv(ovTop("📐 Intervalles · "+(IV.n+1)+"/10")+`
+      <div class="game"><div class="qnote">Depuis 🟠, pose la <b>${iv[0]}</b> <span style="color:var(--dim)">(+${iv[1]} demi-tons, vers l'aigu)</span></div>
+      <div class="timer">score ${IV.score}/${IV.n}</div></div>`+
+      fbHtml([{s:rs,f:rf,cls:"root",label:CHROM[(STRINGS[rs][1]+rf)%12].slice(0,2)}],{tap:(s,f)=>answerIV(s,f)}));
+    return;
+  }
+  endIV();
+}
+function answerIV(s,f){
+  if(!IV||!IV.cur) return;
+  const c=IV.cur, ok=c.valid.some(v=>v.s===s&&v.f===f);
+  IV.n++;
+  pluckSF(c.rs,c.rf,0,.45); pluckSF(s,f,.35,.45);
+  const marks=[{s:c.rs,f:c.rf,cls:"root",label:CHROM[(STRINGS[c.rs][1]+c.rf)%12].slice(0,2)}];
+  if(ok){ IV.score++; marks.push({s,f,cls:"ok"}); c.valid.filter(v=>!(v.s===s&&v.f===f)).forEach(v=>marks.push({s:v.s,f:v.f,cls:"ghost"})); }
+  else { marks.push({s,f,cls:"ko"}); c.valid.forEach(v=>marks.push({s:v.s,f:v.f,cls:"ok"})); }
+  openOv(ovTop("📐 Intervalles · "+IV.n+"/10")+`
+    <div class="game"><div class="qnote">${ok?"✓ "+c.iv[0]:"✗ — voilà les positions justes de la "+c.iv[0]}</div>
+    <div class="timer">${ok?"les points bleus : les AUTRES endroits où elle vivait — c'est la même forme qui se répète":"écoute-la, regarde la forme, elle ne changera jamais"}</div></div>`+
+    fbHtml(marks,{})+`<button class="btn" onclick="nextIV()">${IV.n>=10?"Résultat":"Question suivante"}</button>`);
+}
+function endIV(){
+  const sc=IV.score; IV=null;
+  const rec=sc>(S.game.intBest||0); if(rec) S.game.intBest=sc;
+  addXP(rec?12:5); checkMenu("manche","intervals"); save();
+  openOv(ovTop("📐 Résultat")+`
+    <div class="result"><div class="big">${sc}/10</div>
+    <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Les formes sont à toi. L'impro n'est plus une loterie.":sc>=6?"Ça prend. Les erreurs viennent presque toujours de la corde Si — vérifie.":"Reprends la fiche th1 et la f6 : un intervalle est un dessin, pas un calcul."}</p></div>
+    <button class="btn" onclick="startIntervals()">Rejouer</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+// ================= SALLE OREILLE =================
+// Reconnaître un intervalle au son — le pont entre le manche et la musique.
+let ER=null;
+function earSet(){
+  const b=S.game.earBest||0;
+  if(b>=9) return INTVS; // palette complète
+  if(b>=7) return INTVS.filter(x=>[3,4,5,7,9,12].includes(x[1]));
+  return INTVS.filter(x=>[3,4,7,12].includes(x[1]));
+}
+function openEar(){
+  const b=S.game.earBest||0, set=earSet();
+  openOv(ovTop("👂 L'oreille")+`
+    <div class="pt">L'app joue <b>deux notes</b> (à la guitare). Tu nommes l'intervalle. C'est LA compétence qui relie le manche à ce que tu entends dans ta tête — sans elle, tu recopies ; avec elle, tu joues.</div>
+    <div class="crit"><b>Palette actuelle : ${set.map(x=>x[0]).join(", ")}.</b> Elle s'élargit avec ton record (${b}/10)${b>=9?" — palette complète, respect":""}.</div>
+    <div class="pt" style="font-size:12.5px">Repères qui aident : la quinte = « Star Wars » · l'octave = « Somewhere over the rainbow » · la tierce mineure = « Smoke on the Water » (le riff) · la quarte = « Amazing Grace ».</div>
+    <button class="btn" onclick="startEar()">Commencer (10 questions)</button>`);
+}
+function startEar(){ ER={n:0,score:0,set:earSet()}; nextER(); }
+function playER(){ if(!ER||!ER.cur) return; pluck(ER.cur.root,0,.5); pluck(ER.cur.root+ER.cur.iv[1],.55,.5); }
+function nextER(){
+  if(!ER) return;
+  if(ER.n>=10) return endER();
+  const iv=ER.set[Math.floor(Math.random()*ER.set.length)];
+  const root=45+Math.floor(Math.random()*15);
+  ER.cur={root,iv};
+  const opts=new Set([iv[0]]); while(opts.size<Math.min(4,ER.set.length)) opts.add(ER.set[Math.floor(Math.random()*ER.set.length)][0]);
+  ER.cur.opts=[...opts].sort(()=>Math.random()-.5);
+  openOv(ovTop("👂 Oreille · "+(ER.n+1)+"/10")+`
+    <div class="game"><div class="qnote">Quel est cet intervalle ?</div>
+    <div class="timer">score ${ER.score}/${ER.n}</div>
+    <div class="gopts" style="grid-template-columns:repeat(2,1fr)">${ER.cur.opts.map((o,i)=>`<button onclick="answerER(${i})">${o}</button>`).join("")}</div></div>
+    <button class="btn ghost" onclick="playER()">🔁 Réécouter</button>`);
+  setTimeout(playER,250);
+}
+function answerER(i){
+  if(!ER||!ER.cur) return;
+  const ok=ER.cur.opts[i]===ER.cur.iv[0];
+  ER.n++;
+  if(ok){ ER.score++; nextER(); }
+  else{
+    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
+      if(ER.cur.opts[k]===ER.cur.iv[0]) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
+    playER();
+    setTimeout(nextER,1100);
+  }
+}
+function endER(){
+  const sc=ER.score; ER=null;
+  const rec=sc>(S.game.earBest||0); if(rec) S.game.earBest=sc;
+  addXP(rec?12:5); checkMenu("manche","ear"); save();
+  openOv(ovTop("👂 Résultat")+`
+    <div class="result"><div class="big">${sc}/10</div>
+    <p>${rec?"<b style='color:var(--acc)'>RECORD</b>":""}${rec&&sc>=7?" · la palette s'élargit — de nouveaux intervalles entrent en jeu":""}</p>
+    <p>${sc>=9?"Ton oreille précède tes doigts, c'est exactement l'ordre voulu.":sc>=6?"Solide. Chante l'intervalle AVANT de répondre : la voix ne triche pas.":"Normal au début. Accroche chaque intervalle à sa chanson-repère, ça rentre en une semaine."}</p></div>
+    <button class="btn" onclick="startEar()">Rejouer</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+// ================= CARTE DU MANCHE =================
+function openCarte(){
+  const st=S.noteStats||{};
+  const marks=[];
+  for(let s=0;s<6;s++) for(let f=0;f<=12;f++){
+    const pc=(STRINGS[s][1]+f)%12, n=st[pc];
+    const cls=!n||n.tot<3?"h0":(n.ok/n.tot>=0.8?"h3":n.ok/n.tot>=0.5?"h2":"h1");
+    marks.push({s,f,cls,label:CHROM[pc].slice(0,2)});
+  }
+  const weak=Object.entries(st).filter(([,n])=>n.tot>=3&&n.ok/n.tot<0.6).map(([pc])=>CHROM[pc]);
+  openOv(ovTop("🗺️ Ta carte du manche")+`
+    <div class="pt">Construite depuis tes parties du jeu des 60 s. <b style="color:#7ee2ab">Vert</b> : acquis · <b style="color:#ffce7a">ambre</b> : fragile · <b style="color:#ff9aa5">rouge</b> : zone aveugle · gris : pas assez de données. Le jeu <b>vise automatiquement tes zones rouges</b> plus souvent.</div>`+
+    fbHtml(marks,{})+
+    (weak.length?`<div class="crit"><b>Tes notes aveugles : ${weak.join(", ")}.</b> Ce n'est pas un hasard : tout le monde connaît Mi-La-Ré (les cordes à vide) et ignore les altérations. Dix parties et cette carte change de couleur.</div>`
+      :`<div class="crit">Pas encore de zone rouge identifiée — joue au jeu des 60 s pour nourrir la carte.</div>`));
 }
 
 // ================= RÉPERTOIRE =================
@@ -770,6 +1016,8 @@ function vProfil(){
     <div class="stat"><b>${logs}</b><small>BPM LOGUÉS</small></div>
     <div class="stat"><b>${pcs}/${PIECES.length}</b><small>MORCEAUX VALIDÉS</small></div>
     <div class="stat"><b>${Math.max(gBest("fwd"),gBest("rev"))}</b><small>RECORD MANCHE 60s</small></div>
+    <div class="stat"><b>${S.game.intBest||0}/10</b><small>INTERVALLES</small></div>
+    <div class="stat"><b>${S.game.earBest||0}/10</b><small>OREILLE</small></div>
   </div>
   <div class="card"><b style="font-size:14px">Tes 10 dernières semaines</b>${heatmap()}
     <div class="xptxt" style="margin-top:6px">Un carré = un jour validé. La mémoire musculaire lit ce calendrier.</div></div>

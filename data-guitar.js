@@ -386,6 +386,42 @@ q:[
 {q:"Depuis la corde de Ré, l'octave sur la corde de Si demande :",opts:["+2 cases","+3 cases (l'anomalie du Si)","+1 case","Même case"],a:1,exp:"La forme traverse la corde Si → on ajoute une case : +3 au lieu de +2. Toujours la même anomalie G→B, qui explique tout."}]},
 
 // ============ Théorie express (la suite) ============
+{id:"f7", fond:true, title:"La gamme majeure est une formule : 2-2-1-2-2-2-1",
+content:[
+"Le système, niveau 2. Tu sais maintenant OÙ sont les notes. Ces quatre fiches t'apprennent POURQUOI on en choisit certaines. On commence par l'objet le plus important de la musique occidentale : la gamme majeure.",
+"Ce n'est pas une liste de notes, c'est une <b>formule de distances</b> : <b>2-2-1-2-2-2-1</b> (en demi-tons, donc en cases). Prends UNE corde et applique-la depuis n'importe quelle case : +2, +2, +1, +2, +2, +2, +1 — tu viens de jouer une gamme majeure, n'importe laquelle. Depuis Do : Do-Ré-Mi-Fa-Sol-La-Si-Do. Et remarque où tombent les +1 : entre Mi-Fa et Si-Do. <b>Les deux marches sans dièse de la fiche 2 ne sont pas un hasard : le clavier a été construit autour de Do majeur.</b>",
+"Joue-la vraiment sur une seule corde, du grave à l'aigu. C'est physiquement idiot (grands déplacements) — et c'est exactement le but : tu VOIS la formule. Les « positions » de gammes que tout le monde apprend par cœur ne sont que cette formule répartie sur 6 cordes pour éviter de bouger la main.",
+"Conséquence énorme : une gamme = une fondamentale + une formule. Il n'y a pas 12 gammes majeures à apprendre, il y en a UNE, qui démarre à 12 endroits."],
+q:[
+{q:"La formule de la gamme majeure, en cases, est :",opts:["2-2-1-2-2-2-1","2-1-2-2-1-2-2","1-2-2-2-1-2-2","3-2-2-3-2"],a:0,exp:"Deux tons, un demi-ton, trois tons, un demi-ton. C'est LA formule — tout le reste de l'harmonie en découle."},
+{q:"Pourquoi Do majeur n'a-t-il aucun dièse ?",opts:["Convention arbitraire des solfègistes","Les demi-tons de la formule (+1) tombent pile sur Mi-Fa et Si-Do, les deux marches naturelles","Parce que Do est la note la plus grave","Il en a, mais cachés"],a:1,exp:"La formule exige des demi-tons aux 3e-4e et 7e-8e degrés — exactement là où l'alphabet musical en a déjà. Le système est cohérent de bout en bout."}]},
+{id:"f8", fond:true, title:"L'harmonisation : pourquoi Am habite chez Do",
+content:[
+"Pourquoi C, G, Am et F sonnent-ils « ensemble » ? Parce qu'ils habitent la même maison. Une tonalité n'est pas qu'une gamme de notes : c'est aussi une <b>famille de 7 accords</b>, construits en empilant les notes de la gamme deux par deux.",
+"Sur chaque degré de Do majeur, empile une note sur deux : Do-Mi-Sol (C), Ré-Fa-La (Dm), Mi-Sol-Si (Em), Fa-La-Do (F), Sol-Si-Ré (G), La-Do-Mi (Am), Si-Ré-Fa (B°). La qualité tombe TOUJOURS dans le même ordre, quelle que soit la tonalité : <b>Majeur, mineur, mineur, Majeur, Majeur, mineur, diminué</b> — qu'on écrit I, ii, iii, IV, V, vi, vii°.",
+"Voilà pourquoi la moitié des morceaux que tu joues sont I-V-vi-IV (en Do : C-G-Am-F). Ce ne sont pas des accords qui « vont bien ensemble » par magie : c'est la même gamme, découpée en piles de trois.",
+"Et la fiche th3 (les relatives) devient évidente : Am est le degré vi de Do — même famille, même notes, autre point de départ. Quand tu improvises en Am pentatonique sur du C majeur, tu ne changes pas de maison, tu changes de fauteuil."],
+q:[
+{q:"L'ordre des qualités d'accords d'une tonalité majeure est :",opts:["M-m-m-M-M-m-dim","M-M-m-m-M-m-dim","m-M-m-M-m-M-dim","M-m-M-m-M-m-M"],a:0,exp:"I majeur, ii et iii mineurs, IV et V majeurs, vi mineur, vii diminué. Le même ordre dans les 12 tonalités — apprends-le une fois, sers-t'en partout."},
+{q:"C-G-Am-F, en degrés de Do majeur, c'est :",opts:["I-V-vi-IV","I-IV-V-I","I-vi-ii-V","V-I-IV-vi"],a:0,exp:"LA progression pop. La connaître en degrés te permet de la reconnaître (et la jouer) dans n'importe quelle tonalité en 5 secondes."}]},
+{id:"f9", fond:true, title:"Les triades : l'accord nu, partout sur le manche",
+content:[
+"Un accord de Do, ce n'est PAS la forme en bas du manche que tu connais. C'est trois notes : <b>fondamentale, tierce, quinte (1-3-5)</b> — Do-Mi-Sol. La grosse forme ouverte n'est qu'un arrangement de ces trois notes avec des doublures. L'accord nu, c'est la <b>triade</b>.",
+"Majeur ou mineur, tout se joue sur UNE note : la tierce. 1-3-5 avec la tierce à 4 cases de la fondamentale = majeur. Descends-la d'une case (3 cases) = mineur. Une seule note change le genre de l'accord — celle du milieu.",
+"Sur les trois cordes aiguës (Sol-Si-Mi), les triades existent en trois empilements : fondamentale en bas (1-3-5), tierce en bas (3-5-1), quinte en bas (5-1-3). Trois petites formes de trois cases, déplaçables partout. Les guitaristes de funk, de pop et de studio jouent ÇA en permanence — pas les grosses formes qui mangent les fréquences du bassiste et du clavier.",
+"Exercice concret : trouve Do-Mi-Sol sur les cordes Sol-Si-Mi autour de la case 5 (Sol : case 5 = Do... à toi). Puis déplace la même forme de 2 cases pour avoir Ré majeur. Tu viens de comprendre pourquoi les pros bougent si peu la main."],
+q:[
+{q:"Ce qui distingue une triade majeure d'une mineure :",opts:["La quinte, plus haute d'une case","La tierce : 4 cases au-dessus de la fondamentale (majeure) ou 3 (mineure)","La fondamentale, doublée","Le nombre de cordes jouées"],a:1,exp:"Une seule note fait le genre : la tierce. +4 cases = majeur, +3 = mineur. La quinte, elle, ne bouge pas."},
+{q:"Une triade renversée « 3-5-1 », c'est :",opts:["Une erreur d'accordage","La même triade avec la tierce comme note la plus grave","Un accord de trois fondamentales","Un accord diminué"],a:1,exp:"Mêmes trois notes, autre étage en bas. Le renversement change la couleur et la position sur le manche, pas l'identité de l'accord."}]},
+{id:"f10", fond:true, title:"Penser en degrés : la fin des cases",
+content:[
+"Dernière fiche du système, et c'est un changement de langue. Jusqu'ici tu penses « case 7 de la corde La = Mi ». Les musiciens qui improvisent vraiment pensent autrement : ils pensent <b>en degrés par rapport à la fondamentale</b> — « je suis sur la quinte », « je vise la tierce », « je résous sur la fondamentale ».",
+"Pourquoi c'est supérieur : les NOMS de notes changent avec la tonalité (la tierce de Sol est Si, celle de La est Do#…), mais les DEGRÉS et leurs formes sur le manche, jamais. Penser en degrés, c'est penser une fois pour les 12 tonalités.",
+"Chaque degré a un caractère, et ton oreille les connaît déjà : la <b>fondamentale</b> = la maison, zéro tension. La <b>quinte</b> = stable, neutre. La <b>tierce</b> = celle qui dit majeur/mineur, la note la plus « émotive ». La <b>7e mineure</b> = la tension bluesy qui veut descendre. La <b>quarte</b> = suspendue, en apesanteur (les accords sus4 !).",
+"Le programme est bouclé : tu sais OÙ sont les notes (f1-f6), CE QU'ELLES construisent (f7-f9), et maintenant COMMENT les penser. Les salles d'entraînement de cet onglet — le jeu, les intervalles, l'oreille — servent exactement à automatiser ça. Le manche n'est plus une grille : c'est une carte de tensions et de résolutions."],
+q:[
+{q:"Penser en degrés plutôt qu'en noms de notes est supérieur parce que :",opts:["C'est plus rapide à prononcer","Les degrés et leurs formes sont identiques dans les 12 tonalités ; les noms changent à chaque fois","Les noms de notes sont faux sur une guitare","Ça impressionne les autres guitaristes"],a:1,exp:"Une seule carte mentale pour 12 tonalités au lieu de 12 cartes. C'est le langage réel de l'improvisation."},
+{q:"La note qui décide si un accord sonne majeur ou mineur est :",opts:["La fondamentale","La quinte","La tierce","La 7e"],a:2,exp:"Toujours elle. La tierce est la note émotive — et c'est pour ça que la penta (qui l'esquive dans le blues) sonne si libre : elle laisse le doute planer."}]},
 {id:"th1", title:"Les intervalles ont une FORME sur le manche",
 content:[
 "Oublie le solfège une seconde : sur la guitare, chaque intervalle est un DESSIN. L'octave ? Deux cordes plus haut, deux cases plus loin. La quinte ? Une corde plus haut, deux cases plus loin. La tierce mineure ? Même corde, 3 cases. Ces formes sont IDENTIQUES partout sur le manche (sauf en traversant la corde Si, où tout se décale d'une case — la fameuse anomalie de l'accordage).",
