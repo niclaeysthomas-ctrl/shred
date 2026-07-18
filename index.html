@@ -235,7 +235,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=7"></script>
+<script src="data-guitar.js?v=8"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -396,9 +396,19 @@ function nav(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.cl
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v));
 function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,rep:vRep,profil:vProfil})[view](); header(); }
 const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
-function openOv(h){ ovin.innerHTML=h; ov.classList.add("on"); ov.scrollTop=0; }
+function openOv(h){
+  ovin.innerHTML=h;
+  // séance guidée en cours : le temps restant du bloc suit Thomas dans chaque exercice
+  if(typeof SEA!=="undefined"&&SEA&&SEA.active){
+    const b=document.createElement("div"); b.id="seaBadge";
+    b.style.cssText="position:fixed;top:14px;right:14px;z-index:80;background:var(--bg3);border:1px solid #4a3823;color:var(--acc);font-family:var(--mono);font-weight:800;font-size:12.5px;padding:7px 10px;border-radius:10px;pointer-events:none";
+    b.textContent=SEA.left===0?"⏱ bloc fini ✓":"⏱ "+seaFmt();
+    ovin.appendChild(b);
+  }
+  ov.classList.add("on"); ov.scrollTop=0;
+}
 function closeOv(){
-  ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; FBTAP=null;
+  ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; TU=null; FBTAP=null;
   if(typeof LV!=="undefined") LV=null;
   if(typeof MICG!=="undefined") MICG.release();
   if(typeof JAM!=="undefined"&&JAM.on) jamStop();
@@ -635,6 +645,10 @@ function vManche(){
     <div class="ico">👂</div><div class="t"><b>L'oreille</b><small>${S.game.earBest?"record "+S.game.earBest+"/10 · la palette s'élargit avec toi":"reconnais les intervalles au son de la corde. Le pont entre ta tête et tes doigts."}</small></div>
     <div class="st">›</div>
   </div>
+  <div class="act hot" onclick="openTuneEar()">
+    <div class="ico">🔧</div><div class="t"><b>L'oreille de l'accordeur</b><small>${S.game.tuneBest?"record "+S.game.tuneBest+"/10 · écart ±"+((S.game.tuneBest>=9)?10:(S.game.tuneBest>=7)?15:25)+" cents":"trop grave, juste, trop aigu ? Apprends à accorder sans machine — la case 5 t'attend."}</small></div>
+    <div class="st">›</div>
+  </div>
   <div class="act hot" onclick="openLive()">
     <div class="ico">🎤</div><div class="t"><b>À la vraie guitare</b><small>${S.game.liveBest?"record "+S.game.liveBest+"/10 · le micro juge, pas toi":"l'app demande une note, TU la joues sur ta guitare, le micro juge. Le vrai test."}</small></div>
     <div class="st">›</div>
@@ -660,7 +674,7 @@ function vManche(){
       <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
   }).join("")+
   `<h2 class="sec">Théorie express</h2>`+
-  THEORY.filter(t=>!t.fond).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
+  THEORY.filter(t=>!t.fond&&!t.culture).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
     <div class="ico">📖</div><div class="t"><b>${t.title}</b></div>
     <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
 }
@@ -707,7 +721,7 @@ function ficheEnd(){
   }
   const first=S.fiches[FQ.id]===undefined;
   S.fiches[FQ.id]=FQ.good;
-  if(first) schedFiche(FQ.id,0); // la mémoire s'entretient : premier rappel dans 3 jours
+  if(first&&!f.culture) schedFiche(FQ.id,0); // la mémoire s'entretient — sauf la culture, lue par plaisir
   addXP(first?8+FQ.good*2:FQ.good); save();
   if(f.fond&&first) checkMenu("fond",FQ.id);
   toast(FQ.good===2?"📖 <b>Fiche acquise, 2/2.</b> Rappel dans 3 jours — c'est là que ça se grave.":"📖 Fiche lue — "+FQ.good+"/2, relis-la dans quelques jours.");
@@ -1029,6 +1043,61 @@ function endER(){
     <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
 }
 
+// ================= L'OREILLE DE L'ACCORDEUR =================
+// Entendre si une corde est trop grave, juste, ou trop aiguë — le geste
+// physique de l'accordage (fiche th7 : la méthode de la case 5).
+let TU=null;
+function tuDetune(){ const b=S.game.tuneBest||0; return b>=9?10:b>=7?15:25; } // cents — se resserre avec le record
+function openTuneEar(){
+  const b=S.game.tuneBest||0;
+  openOv(ovTop("🔧 L'oreille de l'accordeur")+`
+    <div class="pt">Deux fois la même corde : une <b>référence juste</b>, puis la corde « à vérifier ». Elle est trop grave, juste, ou trop aiguë ? C'est exactement le jugement que tu fais en accordant à l'oreille — la méthode de la case 5 (fiche 📖 dans Théorie express).</div>
+    <div class="crit"><b>Écart actuel : ±${tuDetune()} cents.</b> Il se resserre avec ton record (${b}/10) : 25 → 15 → 10 cents. À ±10 tu entends mieux que la moitié des guitaristes en activité.${b?"":" Astuce : ne compare pas les hauteurs, écoute si « ça flotte »."}</div>
+    <button class="btn" onclick="startTuneEar()">Commencer (10 questions)</button>`);
+}
+function startTuneEar(){ TU={n:0,score:0,det:tuDetune()}; nextTU(); }
+function playTU(){ if(!TU||!TU.cur) return; pluck(TU.cur.m,0,.5,1.6); pluck(TU.cur.m+TU.cur.c/100,1.1,.5,1.6); }
+function nextTU(){
+  if(!TU) return;
+  if(TU.n>=10) return endTU();
+  const m=STRINGS[Math.floor(Math.random()*6)][2];
+  const dir=[-1,0,1][Math.floor(Math.random()*3)];
+  TU.cur={m,c:dir*TU.det,dir};
+  openOv(ovTop("🔧 Accordeur · "+(TU.n+1)+"/10")+`
+    <div class="game"><div class="qnote">Référence… puis la corde à vérifier. Verdict ?</div>
+    <div class="timer">score ${TU.score}/${TU.n} · écart ±${TU.det} cents</div>
+    <div class="gopts" style="grid-template-columns:repeat(3,1fr)">
+      <button onclick="answerTU(-1)">⬇️ Trop grave<br><small>tends-la</small></button>
+      <button onclick="answerTU(0)">✓ Juste</button>
+      <button onclick="answerTU(1)">⬆️ Trop aiguë<br><small>détends-la</small></button>
+    </div></div>
+    <button class="btn ghost" onclick="playTU()">🔁 Réécouter</button>`);
+  setTimeout(playTU,250);
+}
+function answerTU(dir){
+  if(!TU||!TU.cur) return;
+  const ok=dir===TU.cur.dir;
+  TU.n++;
+  if(ok){ TU.score++; nextTU(); }
+  else{
+    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
+      if([-1,0,1][k]===TU.cur.dir) b.classList.add("ok"); else if([-1,0,1][k]===dir) b.classList.add("ko"); });
+    playTU();
+    setTimeout(nextTU,1600);
+  }
+}
+function endTU(){
+  const sc=TU.score, det=TU.det; TU=null;
+  const rec=sc>(S.game.tuneBest||0); if(rec) S.game.tuneBest=sc;
+  addXP(rec?12:5); save();
+  openOv(ovTop("🔧 Résultat")+`
+    <div class="result"><div class="big">${sc}/10</div>
+    <p>à ±${det} cents${rec?" · <b style='color:var(--acc)'>RECORD</b>":""}${rec&&sc>=7?" — l'écart se resserre à la prochaine partie":""}</p>
+    <p>${sc>=9?"Ton oreille est un accordeur. Prochaine étape : accorde ta vraie guitare à la case 5, puis VÉRIFIE avec l'accordeur micro — l'écart te dira la vérité.":sc>=6?"Solide. Le piège classique : confondre « différent » et « plus grave ». Chante la référence avant de juger.":"Normal : ±"+det+" cents, c'est fin. Écoute le FLOTTEMENT entre les deux notes plutôt que leur hauteur — c'est lui qui trahit le désaccord."}</p></div>
+    <button class="btn" onclick="startTuneEar()">Rejouer</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
 // ================= CARTE DU MANCHE =================
 function openCarte(){
   const st=S.noteStats||{};
@@ -1061,7 +1130,10 @@ function startSeance(){
     {icon:tmod(m.mod).icon,name:"Technique — "+tmod(m.mod).name,dur:720,desc:"Un exo du module, au métronome. Logue ton BPM avant la fin du bloc.",open:`openMod('${m.mod}')`},
     sc?{icon:sc.icon,name:"Manche — "+sc.name,dur:480,desc:"La gamme du jour, lentement, en NOMMANT les notes.",open:`openScale('${sc.id}')`}
       :{icon:MD[m.manche][0],name:"Manche — "+MD[m.manche][1],dur:480,desc:"Une ou deux parties, concentré.",open:MD[m.manche][2]},
-    {icon:"🎵",name:"Répertoire — "+(cp?cp.title:"choisis ton morceau"),dur:600,desc:cp?"Travail ciblé sur le passage qui coince, pas sur ce que tu sais déjà.":"Va d'abord choisir un morceau en cours.",open:cp?`openPiece('${cp.id}')`:"nav('rep')"}
+    {icon:"🎵",name:"Répertoire — "+(cp?cp.title:"choisis ton morceau"),dur:300,desc:cp?"Travail ciblé sur LE passage qui coince, pas sur ce que tu sais déjà. Cinq minutes denses.":"Va d'abord choisir un morceau en cours.",open:cp?`openPiece('${cp.id}')`:"nav('rep')"},
+    (d=>({icon:d?"🎺":"🌑",name:"Impro — "+(d?"blues 12 mesures":"vamp éolien"),dur:300,
+      desc:"Cinq minutes de liberté encadrée : la Jam Station tient la grille, toi tu phrases en penta"+(d?" + blue note":" / éolien")+". Phrases courtes, silences, atterris sur la fondamentale.",
+      open:d?"openJam('blues')":"openJam('aeol')"}))(new Date().getDate()%2===0)
   ];
   SEA={active:true,blocks,i:0,left:blocks[0].dur,paused:false,iv:setInterval(seaTick,1000)};
   seaScreen();
@@ -1072,6 +1144,7 @@ function seaTick(){
   if(SEA.left>0){
     SEA.left--;
     const el=document.getElementById("seaT"); if(el) el.textContent=seaFmt();
+    const bg=document.getElementById("seaBadge"); if(bg) bg.textContent=SEA.left===0?"⏱ bloc fini ✓":"⏱ "+seaFmt();
     if(SEA.left===0){ buzzWU(); toast("⏱️ <b>Bloc terminé.</b> Enchaîne quand tu es prêt — l'écran séance t'attend."); }
   }
 }
@@ -1388,7 +1461,12 @@ function vRep(){
         <div class="t"><b>${p.title}</b><small>${p.artist} · ${p.focus.join(" · ")}</small></div>
         <div class="st">${st.st==="ok"?"✓":st.st==="cur"?"EN COURS":"›"}</div></div>`;
     }).join("");
-  }).join("");
+  }).join("")+
+  `<h2 class="sec">📚 La grande histoire — en accès libre</h2>
+  <div class="sub" style="margin:-4px 0 10px">Du Delta au djent : d'où viennent les sons que tu travailles. Hors entraînement, hors révisions — on lit par plaisir, dans l'ordre ou pas.</div>`+
+  THEORY.filter(t=>t.culture).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
+    <div class="ico">📚</div><div class="t"><b>${t.title}</b></div>
+    <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
 }
 function openPiece(id){
   const p=PIECES.find(x=>x.id===id), st=pState(id);
