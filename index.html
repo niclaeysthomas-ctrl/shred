@@ -235,7 +235,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=6"></script>
+<script src="data-guitar.js?v=7"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -252,6 +252,7 @@ function load(){
 function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
 function today(){ return new Date().toISOString().slice(0,10); }
 function yesterday(){ return new Date(Date.now()-864e5).toISOString().slice(0,10); }
+function addDays(n){ return new Date(Date.now()+n*864e5).toISOString().slice(0,10); }
 function esc(x){ return String(x??"").replace(/</g,"&lt;"); }
 function rank(){ let r=RANKS[0]; for(const x of RANKS){ if(S.xp>=x[1]) r=x; } return r; }
 function nextRank(){ for(const x of RANKS){ if(S.xp<x[1]) return x; } return null; }
@@ -346,6 +347,13 @@ function metHtml(){
 // ================= MENU DU JOUR =================
 function ensureMenu(){
   const t=today();
+  // fiches acquises avant l'arrivée de la révision espacée : on les met au programme,
+  // étalées sur 3 jours pour ne pas créer un mur de rappels
+  if(S.frev===undefined){
+    S.frev={};
+    for(const id in S.fiches){ if(THEORY.find(x=>x.id===id)) S.frev[id]={step:0,due:addDays(1+Math.floor(Math.random()*3))}; }
+    save();
+  }
   const nextFond=THEORY.filter(x=>x.fond).find(x=>S.fiches[x.id]===undefined);
   if(S.menu&&S.menu.date===t){
     // Un menu créé AVANT l'ajout des fondations n'a pas de champ `fond` : sans ça,
@@ -389,7 +397,16 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v
 function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,rep:vRep,profil:vProfil})[view](); header(); }
 const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
 function openOv(h){ ovin.innerHTML=h; ov.classList.add("on"); ov.scrollTop=0; }
-function closeOv(){ ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; FBTAP=null; if(typeof LV!=="undefined") LV=null; if(typeof MICG!=="undefined") MICG.release(); if(typeof JAM!=="undefined"&&JAM.on) jamStop(); if(WU&&WU.iv){clearInterval(WU.iv);WU=null;} render(); }
+function closeOv(){
+  ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; FBTAP=null;
+  if(typeof LV!=="undefined") LV=null;
+  if(typeof MICG!=="undefined") MICG.release();
+  if(typeof JAM!=="undefined"&&JAM.on) jamStop();
+  if(WU&&WU.iv){clearInterval(WU.iv);WU=null;}
+  // séance guidée en cours : on ne rend pas la main, on revient à l'écran séance
+  if(typeof SEA!=="undefined"&&SEA&&SEA.active){ render(); seaScreen(); return; }
+  render();
+}
 function ovTop(t){ return `<div class="top"><button class="x" onclick="closeOv()">✕</button><b>${t}</b></div>`; }
 
 function vJour(){
@@ -415,6 +432,10 @@ function vJour(){
     <div class="xptxt">${nr?nr[1]-S.xp+" XP avant "+nr[0]:"Grade maximal — reste affûté."}</div>
   </div>
   <div class="coach">${coach}</div>
+  ${m.validated?"":`<div class="act hot" onclick="startSeance()">
+    <div class="ico">⏱️</div><div class="t"><b>Séance guidée — 35 min enchaînés</b><small>échauffement → technique → manche → morceau, chronométrés. Tu ne décides plus, tu joues.</small></div>
+    <div class="st">▶</div>
+  </div>`}
   ${m.fond?(()=>{const f=THEORY.find(x=>x.id===m.fond);return `
   <h2 class="sec">⛔ L'exercice imposé du jour</h2>
   <div class="sub" style="margin:-4px 0 10px">Pas de choix aujourd'hui. Le système du manche passe avant tout le reste — une fiche par jour, dans l'ordre.</div>
@@ -423,6 +444,11 @@ function vJour(){
     <div class="st">${m.dFond?"✓":"›"}</div>
   </div>
   <h2 class="sec">Le reste (après)</h2>`;})():""}
+  ${(()=>{const due=fichesDue().slice(0,2); if(!due.length) return "";
+    return due.map(id=>{const f=THEORY.find(x=>x.id===id);
+      return `<div class="act" onclick="openFicheRev('${id}')">
+        <div class="ico">🧠</div><div class="t"><b>Rappel éclair — ${f.title}</b><small>2 questions, sans relire. 90 secondes qui valent une relecture entière.</small></div>
+        <div class="st">›</div></div>`;}).join("");})()}
   <div class="act ${m.dTech?"done":""}" onclick="openMod('${m.mod}')">
     <div class="ico">${md.icon}</div><div class="t"><b>Technique — ${md.name}</b><small>15 min sur un exo du module, et <b>logue ton BPM</b> (ou ton palier) pour valider</small></div>
     <div class="st">${m.dTech?"✓":"›"}</div>
@@ -509,12 +535,27 @@ function openMod(mid){
         <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
     }).join(""));
 }
+// Analyse de plateau : les logs BPM parlent, l'app doit les écouter.
+function plateauCoach(id){
+  const logs=S.bpm[id]||[];
+  if(logs.length>=3){
+    const [a,b,c]=logs.slice(0,3).map(h=>h.v);
+    if(Math.max(a,b,c)-Math.min(a,b,c)<=2)
+      return `<div class="coach">📉 <b>Plateau détecté</b> — trois séances autour de ${a} BPM. Un plateau ne se force pas par le haut, il se casse <b>par le bas</b> : aujourd'hui, joue à ${a-10} BPM en exagérant la propreté (chaque note égale, zéro tension dans la main). Demain, remonte à ${a+4}. C'est contre-intuitif et ça marche depuis cent ans.</div>`;
+  }
+  if(logs.length){
+    const days=Math.round((Date.now()-new Date(logs[0].d))/864e5);
+    if(days>=10) return `<div class="coach">🕸️ <b>${days} jours sans toucher cet exo.</b> La mémoire musculaire s'évapore vite : ton record de ${logs[0].v} BPM n'est probablement plus vrai. Reprends 10 BPM en dessous, sans ego — il reviendra en deux séances.</div>`;
+  }
+  return "";
+}
 function openExo(id){
   const x=exo(id), lvl=palierOf(x), p=pb(id);
   MET.bpm=x.bpm?(p?Math.min(240,p+2):x.bpm[0]):MET.bpm;
   const hist=(S.bpm[id]||[]).slice(0,5).map(h=>h.v+" ("+h.d.slice(5).split("-").reverse().join("/")+")").join(" · ");
   openOv(ovTop(x.name)+`
     <div class="meta"><span class="tag">${tmod(x.mod).name}</span><span class="tag b">Niveau ${x.tier}</span>${lvl?`<span class="tag g">Palier ${lvl}/4</span>`:""}</div>
+    ${plateauCoach(id)}
     <pre class="tab">${esc(x.tab)}</pre>
     <div class="pt">${x.consigne}</div>
     <div class="crit"><b>Palier atteint :</b> ${x.crit}</div>
@@ -666,10 +707,60 @@ function ficheEnd(){
   }
   const first=S.fiches[FQ.id]===undefined;
   S.fiches[FQ.id]=FQ.good;
+  if(first) schedFiche(FQ.id,0); // la mémoire s'entretient : premier rappel dans 3 jours
   addXP(first?8+FQ.good*2:FQ.good); save();
   if(f.fond&&first) checkMenu("fond",FQ.id);
-  toast(FQ.good===2?"📖 <b>Fiche acquise, 2/2.</b>":"📖 Fiche lue — "+FQ.good+"/2, relis-la dans quelques jours.");
+  toast(FQ.good===2?"📖 <b>Fiche acquise, 2/2.</b> Rappel dans 3 jours — c'est là que ça se grave.":"📖 Fiche lue — "+FQ.good+"/2, relis-la dans quelques jours.");
   closeOv(); render();
+}
+
+// ---- Révision espacée des fiches : lire ne suffit pas, il faut se rappeler ----
+// Échelle 3 → 7 → 21 → 60 jours. Rater un rappel renvoie 2 jours plus tard, même barreau.
+const FSTEPS=[3,7,21,60];
+function schedFiche(id,step){ if(!S.frev) S.frev={}; S.frev[id]={step:Math.min(step,3), due:addDays(FSTEPS[Math.min(step,3)])}; }
+function fichesDue(){
+  if(!S.frev) return [];
+  const t=today();
+  return Object.entries(S.frev).filter(([id,r])=>r.due<=t&&THEORY.find(x=>x.id===id)).map(([id])=>id);
+}
+let RQ=null;
+function openFicheRev(id){
+  const f=THEORY.find(x=>x.id===id);
+  RQ={id,i:0,good:0};
+  ficheRevQ();
+}
+function ficheRevQ(){
+  const f=THEORY.find(x=>x.id===RQ.id), q=f.q[RQ.i];
+  RQ.map=q.opts.map((_,k)=>k).sort(()=>Math.random()-.5);
+  openOv(ovTop("🧠 Rappel — "+f.title)+`
+    <div class="sub" style="margin-bottom:10px">Sans relire. C'est l'effort de rappel qui grave — pas la relecture.</div>
+    <div class="qq" style="font-size:16px;font-weight:700;margin-bottom:10px">${q.q}</div>
+    ${RQ.map.map((oi,k)=>`<button class="btn ghost opt" style="margin-top:7px;text-align:left" onclick="ficheRevA(${k})">${f.q[RQ.i].opts[oi]}</button>`).join("")}
+    <div id="fexp"></div>`);
+}
+function ficheRevA(p){
+  const f=THEORY.find(x=>x.id===RQ.id), q=f.q[RQ.i], ok=RQ.map[p]===q.a;
+  if(ok) RQ.good++;
+  document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(RQ.map[k]===q.a) b.classList.add("ok"); else if(k===p) b.classList.add("ko"); });
+  document.getElementById("fexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non."}</b> ${q.exp}</div>
+    <button class="btn" onclick="${RQ.i===0?"RQ.i=1;ficheRevQ()":"ficheRevEnd()"}">${RQ.i===0?"Question suivante":"Terminer le rappel"}</button>`;
+}
+function ficheRevEnd(){
+  const id=RQ.id, good=RQ.good, r=S.frev[id]; RQ=null;
+  if(good===2){
+    const nxt=Math.min(r.step+1,3);
+    schedFiche(id,nxt); addXP(6); save();
+    toast("🧠 <b>Rappel tenu.</b> Prochain dans "+FSTEPS[nxt]+" jours. +6 XP");
+    closeOv();
+  } else {
+    S.frev[id]={step:r.step, due:addDays(2)}; addXP(2); save();
+    const f=THEORY.find(x=>x.id===id);
+    openOv(ovTop("🧠 Rappel — "+f.title)+`
+      <div class="result"><div class="big">${good}/2</div>
+      <p>La mémoire a lâché — c'est une information, pas une honte. Relis la fiche maintenant : la relecture APRÈS l'échec de rappel est le moment où le cerveau accroche le mieux. Nouveau rappel dans 2 jours.</p></div>
+      <button class="btn" onclick="openFiche('${id}')">Relire la fiche</button>
+      <button class="btn ghost" onclick="closeOv()">Plus tard</button>`);
+  }
 }
 
 // jeu du manche
@@ -953,6 +1044,76 @@ function openCarte(){
     fbHtml(marks,{})+
     (weak.length?`<div class="crit"><b>Tes notes aveugles : ${weak.join(", ")}.</b> Ce n'est pas un hasard : tout le monde connaît Mi-La-Ré (les cordes à vide) et ignore les altérations. Dix parties et cette carte change de couleur.</div>`
       :`<div class="crit">Pas encore de zone rouge identifiée — joue au jeu des 60 s pour nourrir la carte.</div>`));
+}
+
+// ================= SÉANCE GUIDÉE =================
+// Le menu dit QUOI ; la séance dit QUAND. Quatre blocs chronométrés, enchaînés.
+// Le minuteur survit pendant que tu es dans un exercice, et l'écran séance
+// te récupère quand tu le fermes.
+let SEA=null;
+function startSeance(){
+  const m=S.menu;
+  const MD={game:["🎮","Le manche en 60 s","openGame()"],intervals:["📐","Intervalles","openIntervals()"],ear:["👂","Oreille","openEar()"]};
+  const sc=MD[m.manche]?null:SCALES.find(s=>s.id===m.manche);
+  const cp=curPiece();
+  const blocks=[
+    {icon:"🔥",name:"Échauffement",dur:300,desc:"Mains chaudes, tendons réveillés — obligatoire avant les BPM.",open:"openWarmup()"},
+    {icon:tmod(m.mod).icon,name:"Technique — "+tmod(m.mod).name,dur:720,desc:"Un exo du module, au métronome. Logue ton BPM avant la fin du bloc.",open:`openMod('${m.mod}')`},
+    sc?{icon:sc.icon,name:"Manche — "+sc.name,dur:480,desc:"La gamme du jour, lentement, en NOMMANT les notes.",open:`openScale('${sc.id}')`}
+      :{icon:MD[m.manche][0],name:"Manche — "+MD[m.manche][1],dur:480,desc:"Une ou deux parties, concentré.",open:MD[m.manche][2]},
+    {icon:"🎵",name:"Répertoire — "+(cp?cp.title:"choisis ton morceau"),dur:600,desc:cp?"Travail ciblé sur le passage qui coince, pas sur ce que tu sais déjà.":"Va d'abord choisir un morceau en cours.",open:cp?`openPiece('${cp.id}')`:"nav('rep')"}
+  ];
+  SEA={active:true,blocks,i:0,left:blocks[0].dur,paused:false,iv:setInterval(seaTick,1000)};
+  seaScreen();
+}
+function seaFmt(){ const mn=Math.floor(SEA.left/60),s2=SEA.left%60; return mn+":"+String(s2).padStart(2,"0"); }
+function seaTick(){
+  if(!SEA||SEA.paused) return;
+  if(SEA.left>0){
+    SEA.left--;
+    const el=document.getElementById("seaT"); if(el) el.textContent=seaFmt();
+    if(SEA.left===0){ buzzWU(); toast("⏱️ <b>Bloc terminé.</b> Enchaîne quand tu es prêt — l'écran séance t'attend."); }
+  }
+}
+function seaScreen(){
+  if(!SEA) return;
+  const b=SEA.blocks[SEA.i];
+  ovin.innerHTML=`<div class="top"><button class="x" onclick="seaQuit()">✕</button><b>⏱️ Séance guidée · bloc ${SEA.i+1}/${SEA.blocks.length}</b></div>
+    <div class="game" style="text-align:center">
+      <div class="qnote" style="font-size:22px">${b.icon} ${b.name}</div>
+      <div class="timer" id="seaT" style="font-size:44px;font-weight:800;color:${SEA.left===0?"var(--ok)":"var(--txt)"}">${SEA.left===0?"✓":seaFmt()}</div>
+    </div>
+    <div class="pt">${b.desc}</div>
+    <button class="btn" onclick='${b.open.replace(/'/g,"&#39;")}'>Ouvrir l'exercice</button>
+    <div class="exrow">
+      <button class="btn ghost" onclick="SEA.paused=!SEA.paused;this.textContent=SEA.paused?'▶ Reprendre':'⏸ Pause'">⏸ Pause</button>
+      <button class="btn ghost" onclick="seaNext()">Bloc suivant →</button>
+    </div>
+    <h2 class="sec">La séance</h2>
+    ${SEA.blocks.map((x,k)=>`<div class="act ${k<SEA.i?"done":""}" style="${k===SEA.i?"border-color:#4a3823":""};pointer-events:none">
+      <div class="ico">${k<SEA.i?"✓":x.icon}</div><div class="t"><b>${x.name}</b><small>${Math.round(x.dur/60)} min</small></div>
+    </div>`).join("")}`;
+  ov.classList.add("on"); ov.scrollTop=0;
+}
+function seaNext(){
+  if(!SEA) return;
+  SEA.i++;
+  if(SEA.i>=SEA.blocks.length) return seaEnd();
+  SEA.left=SEA.blocks[SEA.i].dur; SEA.paused=false;
+  seaScreen();
+}
+function seaEnd(){
+  clearInterval(SEA.iv); SEA=null;
+  addXP(10); save();
+  ovin.innerHTML=ovTop("⏱️ Séance bouclée")+`
+    <div class="result"><div class="big">🤘</div><div class="xp">+10 XP</div>
+    <p>Trente-cinq minutes structurées valent deux heures de noodling. Si tu as logué tes exercices pendant la séance, ta journée est déjà validée — sinon les cases du menu t'attendent.</p></div>
+    <button class="btn" onclick="closeOv()">Terminer</button>`;
+  ov.classList.add("on");
+}
+function seaQuit(){
+  if(SEA){ clearInterval(SEA.iv); SEA=null; }
+  closeOv();
 }
 
 // ================= MICRO : détection de hauteur (autocorrélation ACF+) =================
@@ -1309,6 +1470,21 @@ function vProfil(){
     <div class="stat"><b>${S.game.earBest||0}/10</b><small>OREILLE</small></div>
     <div class="stat"><b>${S.game.liveBest||0}/10</b><small>VRAIE GUITARE 🎤</small></div>
   </div>
+  ${(()=>{ // le diagnostic : ce que les données disent de ton prochain combat
+    const items=[];
+    const st=S.noteStats||{};
+    const weak=Object.entries(st).filter(([,n])=>n.tot>=3&&n.ok/n.tot<0.6).map(([pc])=>CHROM[pc]);
+    if(weak.length) items.push("🗺️ Notes aveugles : <b>"+weak.join(", ")+"</b> — le jeu des 60 s les vise déjà, joue.");
+    let plateaux=0;
+    for(const id in S.bpm){ const l=S.bpm[id]; if(l.length>=3){ const v=l.slice(0,3).map(h=>h.v); if(Math.max(...v)-Math.min(...v)<=2) plateaux++; } }
+    if(plateaux) items.push("📉 <b>"+plateaux+" exo"+(plateaux>1?"s":"")+" en plateau</b> — la sortie est par le bas : −10 BPM ultra-propre.");
+    const due=fichesDue().length;
+    if(due) items.push("🧠 <b>"+due+" rappel"+(due>1?"s":"")+" de théorie</b> en attente sur l'écran du jour.");
+    if((S.game.earBest||0)<(S.game.intBest||0)-2) items.push("👂 Ton oreille est en retard sur tes yeux ("+(S.game.earBest||0)+"/10 contre "+(S.game.intBest||0)+"/10) — priorité à la salle Oreille.");
+    if(!items.length) items.push("Rien d'alarmant dans les données. Le combat du jour : ton morceau en cours, au métronome.");
+    return `<div class="card"><b style="font-size:14px">🎯 Ton prochain combat</b>
+      ${items.map(i=>`<div class="xptxt" style="margin-top:8px;line-height:1.5;font-size:12px">${i}</div>`).join("")}</div>`;
+  })()}
   <div class="card"><b style="font-size:14px">Tes 10 dernières semaines</b>${heatmap()}
     <div class="xptxt" style="margin-top:6px">Un carré = un jour validé. La mémoire musculaire lit ce calendrier.</div></div>
   <div class="card"><b style="font-size:14px">La hiérarchie</b>

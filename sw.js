@@ -1,5 +1,8 @@
-// SHRED — service worker : cache-first, app 100 % hors-ligne
-const CACHE = "shred-v6";
+// SHRED — service worker : network-first avec repli cache.
+// Le réseau d'abord (les mises à jour arrivent immédiatement), le cache
+// en secours (l'app reste 100 % hors-ligne). Cache-first nous servait des
+// versions périmées après chaque déploiement.
+const CACHE = "shred-v7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -20,15 +23,14 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || !e.request.url.startsWith(self.location.origin)) return;
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit =>
-      hit ||
-      fetch(e.request).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
-        return res;
-      })
+    fetch(e.request).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+      return res;
+    }).catch(() =>
+      caches.match(e.request, { ignoreSearch: true }).then(hit => hit || caches.match("./index.html"))
     )
   );
 });
