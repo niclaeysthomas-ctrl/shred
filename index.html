@@ -231,6 +231,7 @@
   <button data-v="jour"><i>🎯</i>Jour</button>
   <button data-v="tech"><i>🎸</i>Technique</button>
   <button data-v="manche"><i>🗺️</i>Manche</button>
+  <button data-v="theorie"><i>📖</i>Théorie</button>
   <button data-v="rep"><i>🎵</i>Répertoire</button>
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
@@ -394,7 +395,7 @@ function curPiece(){ const e=Object.entries(S.pieces).find(([id,p])=>p.st==="cur
 let view="jour";
 function nav(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v));
-function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,rep:vRep,profil:vProfil})[view](); header(); }
+function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,theorie:vTheorie,rep:vRep,profil:vProfil})[view](); header(); }
 const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
 function openOv(h){
   ovin.innerHTML=h;
@@ -1637,6 +1638,157 @@ function openChord(name){
     `<div class="pt"><b>${expl}</b>${ch.note?"<br><br>"+ch.note:""}</div>
     <button class="btn" onclick='strumChord(CHORDLIB.flatMap(c=>c.list).find(x=>x.name==="${ch.name.replace(/"/g,'\\"')}"))'>🔊 Écouter (gratté)</button>
     <button class="btn ghost" onclick="openChordDict()">← Tous les accords</button>`);
+}
+
+// ================= THÉORIE — le manuel de référence =================
+// Pas des fiches à quiz : le manuel brut, toujours ouvert, avec les 12 tonalités
+// calculées en direct et un détecteur de tonalité par harmonisation.
+const MAJ=[0,2,4,5,7,9,11];
+const DEGN=["I","ii","iii","IV","V","vi","vii°"];
+const DEGTYPE=["","m","m","","","m","°"];
+const DEGROLE=["tonique — la maison","sus-tonique","médiante — elle dit majeur/mineur","sous-dominante — l'appel","dominante — la tension qui veut rentrer","sus-dominante (relative mineure !)","sensible — à un demi-ton de la maison"];
+let THK=0; // tonalité affichée dans les chapitres 2-3
+const INTS=[["Seconde mineure",1,"Les Dents de la mer","frottement, menace"],["Seconde majeure",2,"Frère Jacques","un pas tranquille"],["Tierce mineure",3,"Smoke on the Water (riff)","le voile mineur"],["Tierce majeure",4,"Oh When the Saints","le sourire majeur"],["Quarte juste",5,"Amazing Grace","suspendue, solennelle"],["Triton",6,"Les Simpson (« The Simp- »)","le diable en musique"],["Quinte juste",7,"Star Wars","stable, puissante — le power chord"],["Sixte mineure",8,"The Entertainer (début)","mélancolie qui penche"],["Sixte majeure",9,"My Way / NBC","élan chaleureux"],["Septième mineure",10,"The Winner Takes It All","la tension blues"],["Septième majeure",11,"Take On Me (saut)","brillante, presque douloureuse"],["Octave",12,"Somewhere Over the Rainbow","la même, plus haut"]];
+function scaleOf(k){ return MAJ.map(x=>CHROM[(k+x)%12]); }
+function diatonic(k){ return MAJ.map((x,i)=>({name:CHROM[(k+x)%12]+DEGTYPE[i], roman:DEGN[i], pc:(k+x)%12, type:i===6?"dim":(DEGTYPE[i]==="m"?"min":"maj")})); }
+function playInt(st){ pluck(52,0,.5); pluck(52+st,.55,.5); setTimeout(()=>{ pluck(52,0,.35); pluck(52+st,.02,.35); },1300); }
+function scaleFB(k){
+  const marks=[];
+  for(let s=0;s<6;s++) for(let f=0;f<=12;f++){
+    const deg=MAJ.indexOf(((STRINGS[s][1]+f)%12-k+12)%12);
+    if(deg>=0) marks.push({s,f,cls:deg===0?"root":"ghost",label:String(deg+1)});
+  }
+  return fbHtml(marks,{tap:(s,f)=>pluckSF(s,f,0,.45)});
+}
+function thKeyRow(fn){
+  return `<div class="keyrow">${CHROM.map((n,i)=>`<button class="${i===THK?"on":""}" onclick="THK=${i};${fn}()">${n}</button>`).join("")}</div>`;
+}
+function vTheorie(){
+  const CH=[["🧱","La matière première","12 notes, les intervalles — avec leurs sons et leurs chansons","openTh1()"],
+    ["☀️","La gamme majeure","la formule, les 7 degrés, dans les 12 tonalités sur TON manche","openTh2()"],
+    ["🏠","L'harmonisation","pourquoi ces accords-là vont ensemble — la famille de chaque tonalité","openTh3()"],
+    ["🌙","Le mineur, la penta, les modes","la relative, l'éolien, et pourquoi ta penta marche","openTh4()"],
+    ["🔑","Trouver la tonalité d'une chanson","LA compétence d'impro — méthode + détecteur interactif","openTh5()"],
+    ["🎤","Improviser dans la tonalité","quelle gamme sur quoi, les notes cibles, et où s'entraîner","openTh6()"]];
+  return `<h1 class="page">La théorie</h1>
+  <div class="sub">Le manuel brut, sans quiz, toujours ouvert. Lis dans l'ordre la première fois — chaque chapitre s'appuie sur le précédent.</div>`+
+  CH.map(c=>`<div class="act hot" onclick="${c[3]}">
+    <div class="ico">${c[0]}</div><div class="t"><b>${c[1]}</b><small>${c[2]}</small></div><div class="st">›</div></div>`).join("")+
+  `<div class="crit" style="margin-top:14px"><b>Théorie ≠ fiches.</b> Les fiches du Manche t'interrogent et reviennent en rappel ; ce manuel, lui, répond quand TU as la question. Les deux se complètent.</div>`;
+}
+function openTh1(){
+  openOv(ovTop("🧱 La matière première")+`
+    <div class="story">
+    <p>Toute la musique occidentale tient dans <b>12 notes</b> qui se répètent : Do, Do#, Ré, Ré#, Mi, Fa, Fa#, Sol, Sol#, La, La#, Si. L'écart minimal entre deux d'entre elles est le <b>demi-ton</b> — sur ta guitare, <b>une case</b>. Deux cases = un <b>ton</b>. C'est tout le vocabulaire de base.</p>
+    <p>Un <b>intervalle</b> est une distance entre deux notes, comptée en demi-tons. Chacun a un nom, un caractère, et une chanson qui te le rappellera à vie. <b>Écoute-les</b> — c'est un tableau à entendre, pas à lire :</p></div>
+    ${INTS.map(iv=>`<div class="act" onclick="playInt(${iv[1]})">
+      <div class="ico" style="font-family:var(--mono);font-size:13px">${iv[1]}</div>
+      <div class="t"><b>${iv[0]}</b><small>${iv[3]} · repère : ${iv[2]}</small></div>
+      <div class="st">🔊</div></div>`).join("")}
+    <div class="pt">Note le motif : chaque intervalle existe en version <b>mineure</b> (plus courte d'un demi-ton, plus sombre) et <b>majeure</b> — sauf la quarte, la quinte et l'octave, dites <b>justes</b> : ni majeures ni mineures, juste stables. C'est pour ça que le power chord (fondamentale + quinte) sonne ni triste ni gai : il est neutre.</div>`);
+}
+function openTh2(){
+  const sc=scaleOf(THK);
+  openOv(ovTop("☀️ La gamme majeure")+`
+    <div class="story">
+    <p>LA structure-mère. Ce n'est pas une liste de notes : c'est une <b>formule de distances</b>, en tons et demi-tons : <b>2-2-1-2-2-2-1</b> (en cases). Applique-la depuis n'importe quelle note, tu obtiens SA gamme majeure. Il n'y a donc pas 12 gammes à apprendre — il y en a UNE, qui démarre à 12 endroits.</p></div>
+    <p class="sub" style="margin:8px 0 2px">Choisis ta tonalité :</p>
+    ${thKeyRow("openTh2")}
+    <div class="pt" style="margin-top:10px"><b>Gamme de ${CHROM[THK]} majeur :</b> ${sc.join(" – ")} – ${CHROM[THK]}</div>
+    <h2 class="sec">Les 7 degrés — la gamme déclinée en intervalles</h2>
+    ${MAJ.map((x,i)=>`<div class="act" onclick="pluck(52+THK,0,.45);pluck(52+THK+x,.5,.45)">
+      <div class="ico" style="font-family:var(--mono)">${i+1}</div>
+      <div class="t"><b>${sc[i]} — ${i===0?"unisson":INTS.find(v=>v[1]===x)[0].toLowerCase()} (${x} ½t)</b><small>${DEGROLE[i]}</small></div>
+      <div class="st">🔊</div></div>`).join("")}
+    <h2 class="sec">Sur ton manche (touche = écoute)</h2>
+    ${scaleFB(THK)}
+    <div class="pt">🟠 = la tonique, les chiffres = les degrés. Regarde le DESSIN : il est identique dans les 12 tonalités, juste décalé. C'est exactement pour ça que penser en degrés (fiche f10) bat penser en notes.</div>`);
+}
+function openTh3(){
+  const d=diatonic(THK);
+  openOv(ovTop("🏠 L'harmonisation")+`
+    <div class="story">
+    <p>Pourquoi certains accords « vont ensemble » ? Parce qu'ils habitent la même maison. Sur chaque degré de la gamme, empile une note sur deux (des tierces) : tu obtiens les <b>7 accords de la tonalité</b>. Leur qualité tombe TOUJOURS dans le même ordre : <b>M · m · m · M · M · m · dim</b>.</p></div>
+    <p class="sub" style="margin:8px 0 2px">Tonalité :</p>
+    ${thKeyRow("openTh3")}
+    <div class="prow" style="grid-template-columns:repeat(7,1fr);margin-top:10px">
+      ${d.map((c,i)=>`<div class="p ${i===0?"hit":""}" style="cursor:pointer" onclick="pluck(${48+c.pc},0,.4);pluck(${48+c.pc+(c.type==='maj'?4:3)},.03,.3);pluck(${48+c.pc+(c.type==='dim'?6:7)},.06,.3)">
+        <small>${c.roman}</small><b style="font-size:12.5px">${c.name}</b></div>`).join("")}
+    </div>
+    <div class="pt">En <b>${CHROM[THK]} majeur</b>, ces 7 accords sont « à la maison ». Un morceau qui les utilise est (presque sûrement) dans cette tonalité — c'est la clé du chapitre 🔑.</div>
+    <h2 class="sec">Les enchaînements qui font 90 % des chansons</h2>
+    <div class="pt"><b>I – V – vi – IV</b> (${d[0].name} – ${d[4].name} – ${d[5].name} – ${d[3].name}) : LA progression pop.<br>
+    <b>I – IV – V</b> (${d[0].name} – ${d[3].name} – ${d[4].name}) : le rock'n'roll et le blues.<br>
+    <b>ii – V – I</b> (${d[1].name} – ${d[4].name} – ${d[0].name}) : la cadence jazz.<br>
+    <b>vi – IV – I – V</b> (${d[5].name} – ${d[3].name} – ${d[0].name} – ${d[4].name}) : la pop « mélancolique ».</div>
+    <div class="crit">Le moteur de tout : <b>V veut rentrer vers I</b>. La dominante contient la sensible (à un demi-ton de la tonique) — cette attraction est LE ressort de la musique tonale. Écoute ${d[4].name} → ${d[0].name} dans la Jam Station : tu ne pourras plus ne plus l'entendre.</div>`);
+}
+function openTh4(){
+  openOv(ovTop("🌙 Le mineur, la penta, les modes")+`
+    <div class="story">
+    <p><b>La relative mineure.</b> Chaque gamme majeure cache une jumelle : démarre la MÊME gamme sur son 6e degré, et tout devient sombre. Do majeur et La mineur : mêmes 7 notes, autre maison. C'est le degré <b>vi</b> de l'harmonisation — d'où « Am est dans la famille de Do ».</p>
+    <p><b>La gamme mineure naturelle</b> (= le mode éolien, ton chantier) a donc sa formule : <b>2-1-2-2-1-2-2</b>. Son caractère vient de la <b>tierce mineure</b> (le voile) et de la <b>sixte mineure</b> (la note qui pleure).</p>
+    <p><b>La pentatonique</b> n'est pas une gamme de plus : c'est la majeure (ou la mineure) <b>moins ses deux notes risquées</b> — celles à un demi-ton d'une note d'accord. Penta majeure = 1-2-3-5-6. Penta mineure = 1-b3-4-5-b7. Cinq notes qui ne peuvent pas frotter : voilà pourquoi « ça marche toujours ».</p>
+    <p><b>Les modes</b>, en une phrase chacun : la même gamme démarrée sur un autre degré. Ionien (=majeur), <b>dorien</b> (mineur qui sourit — sixte majeure, Santana), phrygien (mineur espagnol — seconde mineure), lydien (majeur rêveur — quarte augmentée), <b>mixolydien</b> (majeur rock — septième mineure, AC/DC), <b>éolien</b> (=mineur naturel), locrien (le théorique). Règle d'apprentissage : jamais comme des gammes neuves, toujours comme <b>UNE note qui change</b> par rapport à ce que tu connais.</p></div>
+    <div class="crit"><b>Ce qu'il faut retenir :</b> majeur et mineur relatif = mêmes notes. Donc trouver la tonalité majeure d'un morceau te donne AUSSI sa mineure — et ta penta mineure relative marche dessus. Chapitre suivant : comment la trouver.</div>`);
+}
+// ---- détecteur de tonalité ----
+let THDET=new Set();
+function thChip(pc,type){ const k=pc+"_"+type; if(THDET.has(k)) THDET.delete(k); else THDET.add(k); openTh5(); }
+function thDetect(){
+  if(THDET.size<2) return null;
+  const sel=[...THDET].map(s=>{ const [pc,t]=s.split("_"); return {pc:+pc,t}; });
+  const scores=CHROM.map((_,k)=>{
+    const d=diatonic(k);
+    let hit=0;
+    sel.forEach(c=>{ if(d.some(x=>x.pc===c.pc && ((c.t==="maj"&&x.type==="maj")||(c.t==="min"&&x.type==="min")))) hit++; });
+    return {k,hit};
+  }).sort((a,b)=>b.hit-a.hit);
+  return {best:scores[0], second:scores[1], total:sel.length};
+}
+function openTh5(){
+  const det=thDetect();
+  let verdict="";
+  if(det){
+    const k=det.best.k, d=diatonic(k), rel=CHROM[(k+9)%12];
+    const sure=det.best.hit===det.total && det.best.hit>det.second.hit;
+    verdict=`<div class="crit"><b>${det.best.hit}/${det.total} accords collent avec ${CHROM[k]} majeur</b>${det.best.hit===det.second.hit?" (ex æquo avec "+CHROM[det.second.k]+" majeur — ajoute un accord pour trancher)":""}.
+    ${sure?`<br><br>🔑 <b>Tonalité : ${CHROM[k]} majeur</b> (relative : ${rel} mineur).<br>
+    🎸 <b>Improvise avec :</b> la penta mineure de <b>${rel}</b> (ta box 1, fondamentale sur ${rel}) = la penta majeure de ${CHROM[k]}. Gamme complète : ${scaleOf(k).join(" ")}.<br>
+    🎯 Note d'atterrissage : <b>${CHROM[k]}</b> (ou ${rel} si le morceau sonne mineur).`
+    :det.best.hit<det.total?`<br>Le ou les accords étrangers sont peut-être des emprunts (fréquent) — ou le morceau est dans une autre couleur. Vérifie l'accord sur lequel le morceau <b>se pose</b>.`:""}</div>`;
+  }
+  openOv(ovTop("🔑 Trouver la tonalité")+`
+    <div class="story">
+    <p>La compétence qui déverrouille l'impro sur N'IMPORTE QUEL morceau. Quatre méthodes, de la plus simple à la plus sûre :</p>
+    <p><b>1. L'accord maison.</b> Le morceau se REPOSE quelque part — souvent le dernier accord, ou celui qui revient comme un aimant. Cet accord est presque toujours le I (ou le vi si ça sonne triste). Écoute où « ça atterrit ».</p>
+    <p><b>2. La note qui marche partout.</b> Guitare en main sur le morceau : tiens une note, écoute. Trop de frottement ? Monte d'une case. La note qui sonne <b>posée sur tous les accords</b> est la tonique. Deux minutes, infaillible avec un peu d'oreille.</p>
+    <p><b>3. L'inventaire des accords</b> — la méthode du détecteur ci-dessous : liste les accords du morceau, cherche la tonalité dont la famille les contient tous (chapitre 🏠). C'est mathématique.</p>
+    <p><b>4. Majeur ou mineur ?</b> Même famille = deux réponses possibles (Do majeur / La mineur). Tranche à l'oreille : ça sourit ou ça se voile ? Et regarde l'accord maison : s'il est mineur, pense « relative mineure ».</p></div>
+    <h2 class="sec">🧪 Le détecteur — coche les accords que tu entends</h2>
+    <div class="sub" style="margin:-2px 0 8px">Trouve les accords du morceau (tabs, oreille, YouTube) et coche-les. L'app fait l'inventaire.</div>
+    <div class="prow" style="grid-template-columns:repeat(6,1fr)">
+      ${CHROM.map((n,pc)=>`<div class="p ${THDET.has(pc+"_maj")?"hit":""}" style="cursor:pointer" onclick="thChip(${pc},'maj')"><b style="font-size:12px">${n}</b></div>`).join("")}
+    </div>
+    <div class="prow" style="grid-template-columns:repeat(6,1fr);margin-top:4px">
+      ${CHROM.map((n,pc)=>`<div class="p ${THDET.has(pc+"_min")?"hit":""}" style="cursor:pointer" onclick="thChip(${pc},'min')"><b style="font-size:12px">${n}m</b></div>`).join("")}
+    </div>
+    ${verdict||`<div class="pt" style="margin-top:10px">Coche au moins 2 accords — exemple : un morceau avec C, G, Am et F → coche-les et regarde.</div>`}
+    ${THDET.size?`<button class="btn ghost" onclick="THDET.clear();openTh5()">Effacer</button>`:""}
+    <div class="pt" style="font-size:12.5px;margin-top:10px"><b>Cas particuliers :</b> tout en accords de 7 (A7, D7, E7) = un <b>blues</b> — la règle des familles ne s'applique pas, joue la penta mineure de la tonique du I. Un capo décale tout : trouve les formes, ajoute le numéro de la case du capo. Riffs métal sur corde de Mi à vide : tonalité de Mi, neuf fois sur dix.</div>`);
+}
+function openTh6(){
+  openOv(ovTop("🎤 Improviser dans la tonalité")+`
+    <div class="story">
+    <p>Tu connais la tonalité. Voici la table de correspondance, du plus sûr au plus riche :</p></div>
+    <div class="pt"><b>Le morceau est en X majeur :</b><br>· Penta majeure de X (= penta mineure de sa relative, ta box 1 décalée) — zéro risque<br>· Gamme majeure de X complète — plus mélodique, deux notes à surveiller<br><br>
+    <b>Le morceau est en X mineur :</b><br>· Penta mineure de X — ta maison<br>· + la blue note (b5) si ça sent le blues<br>· Éolien de X complet — la sixte mineure pour l'émotion<br><br>
+    <b>C'est un blues en X (accords de 7) :</b><br>· Penta mineure de X + blue note, même sur les accords majeurs — le mensonge magnifique (fiche th4)</div>
+    <h2 class="sec">Les trois niveaux du soliste</h2>
+    <div class="pt"><b>Niveau 1 — la bonne gamme.</b> Tu ne joues aucune fausse note. Nécessaire, pas suffisant : tout le monde s'arrête là.<br><br>
+    <b>Niveau 2 — les notes cibles.</b> Tu vises une note DE L'ACCORD en cours aux changements (sa fondamentale ou sa tierce). C'est ça, « jouer les changements » — la salle 📐 Intervalles t'y entraîne.<br><br>
+    <b>Niveau 3 — le phrasé.</b> Phrases courtes, silences, question/réponse, et atterrir sur la tonique pour conclure (fiche th5). C'est le niveau où on te reconnaît.</div>
+    <div class="crit"><b>Où pratiquer, là, maintenant :</b> la 🎛️ Jam Station (onglet Manche) — choisis une grille, la tonalité que tu veux, et applique ce chapitre. La théorie sans les mains n'est que de la lecture.</div>`);
 }
 
 // ================= RÉPERTOIRE =================
