@@ -236,7 +236,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=9"></script>
+<script src="data-guitar.js?v=10"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -1818,12 +1818,14 @@ function vRep(){
 function pieceTempoHtml(id){
   const logs=(S.pieceT&&S.pieceT[id])||[];
   const last=logs[0]?logs[0].v:null;
+  const bpm=(typeof PIECE_X!=="undefined"&&PIECE_X[id]&&PIECE_X[id].bpm)||null;
   let coach="";
   if(logs.length>=3){ const [a,b2,c]=logs.slice(0,3).map(h=>h.v);
-    if(Math.max(a,b2,c)-Math.min(a,b2,c)<=5) coach=`<div class="xptxt" style="margin-top:6px;color:var(--acc)">📉 Trois séances autour de ${a} % — plateau. Isole LE passage qui bloque et boucle-le seul à ${a-15} %, pas le morceau entier.</div>`; }
-  return `<p class="sub" style="margin:12px 0 4px">À quel % du tempo du disque le joues-tu <b>proprement</b> ?</p>
+    if(Math.max(a,b2,c)-Math.min(a,b2,c)<=5) coach=`<div class="xptxt" style="margin-top:6px;color:var(--acc)">📉 Trois séances autour de ${a} % — plateau. Isole LE passage qui bloque et boucle-le seul à ${a-15} %${bpm?" ("+Math.round(bpm*(a-15)/100)+" BPM)":""}, pas le morceau entier.</div>`; }
+  return `<p class="sub" style="margin:12px 0 4px">À quel % du tempo du disque${bpm?" (≈"+bpm+" BPM)":""} le joues-tu <b>proprement</b> ?</p>
   <div class="selfrow">${[50,60,70,80,90,100].map(v=>`<button class="${last===v?"on":""}" style="font-size:12px" onclick="logPieceT('${id}',${v})">${v}%</button>`).join("")}</div>
   ${logs.length?`<div class="xptxt" style="margin-top:8px">Derniers : ${logs.slice(0,5).map(h=>h.v+"%").join(" · ")} · record <b style="color:var(--acc)">${Math.max(...logs.map(h=>h.v))}%</b></div>`:`<div class="xptxt" style="margin-top:8px">Premier log = ta référence. 100 % propre = le critère ultime de validation.</div>`}
+  ${bpm&&last?`<button class="btn ghost" onclick="MET.bpm=${Math.round(bpm*Math.min(100,last+5)/100)};openMet()">🕰️ Métronome à ${Math.round(bpm*Math.min(100,last+5)/100)} BPM (ton ${last} % +5)</button>`:""}
   ${coach}`;
 }
 function logPieceT(id,v){
@@ -1841,6 +1843,9 @@ function openPiece(id){
   openOv(ovTop(p.title)+`
     <div class="meta">${p.artist} · <span class="tag">Palier ${p.tier}</span>${p.focus.map(f=>`<span class="tag b">${f}</span>`).join("")}</div>
     <div class="pt"><b>Pourquoi ce morceau :</b> ${p.why}</div>
+    ${(typeof PIECE_X!=="undefined"&&PIECE_X[p.id])?(x=>`
+    <div class="pt">🎼 <b>Tonalité : ${x.key}</b> · tempo du disque ≈ <b>${x.bpm} BPM</b><br>🎤 ${x.imp}</div>
+    ${st.st!=="ok"&&x.plan?`<p class="sub" style="margin:10px 0 4px">Le plan de travail :</p>${x.plan.map((s2,i)=>`<div class="pt" style="font-size:13px;padding:9px 12px"><b style="color:var(--acc)">${i+1}.</b> ${s2}</div>`).join("")}`:""}`)(PIECE_X[p.id]):""}
     ${st.st==="ok"?`<div class="crit"><b>Validé.</b> Rejoue-le une fois par mois — un morceau qu'on ne joue plus se désapprend.</div>`:`
     ${st.st==="cur"?pieceTempoHtml(id):""}
     <p class="sub" style="margin:12px 0 6px">Critères de validation — coche seulement ce qui est VRAI, enregistrement à l'appui :</p>

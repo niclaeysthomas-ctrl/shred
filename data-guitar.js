@@ -613,8 +613,242 @@ checks:["Un chorus complet note pour note","Le vibrato 'large et lent' tenu sans
 {id:"pc16", tier:4, title:"Master of Puppets — rythmique complète", artist:"Metallica",
 why:"L'option 'main droite' de la porte expert : 8 minutes de downpicking à 212 BPM, la référence mondiale de l'endurance rythmique. Ton exo r4 poussé à sa conclusion logique.",
 focus:["Downpicking 212","Endurance","Précision métal"],
-checks:["L'intro et le riff principal à 212 en downpicking strict","Le morceau entier à 90 % du tempo minimum","La section mélodique centrale (arpèges) propre"]}
+checks:["L'intro et le riff principal à 212 en downpicking strict","Le morceau entier à 90 % du tempo minimum","La section mélodique centrale (arpèges) propre"]},
+{id:"pc17", tier:1, title:"Le vent nous portera — riff", artist:"Noir Désir",
+why:"Le riff français le plus hypnotique qui soit : deux notes de mélodie sur un bourdon, en boucle parfaite. Un examen de RÉGULARITÉ pure — et un morceau que tout le monde reconnaît en 2 secondes.",
+focus:["Régularité","Son clair","Endurance calme"],
+checks:["Le riff en boucle 3 min sans variation de tempo (métronome témoin)","Les liaisons hammer/pull au même volume que le reste","Jouable en tenant une conversation — l'automatisme complet"]},
+{id:"pc18", tier:1, title:"Back in Black — riff", artist:"AC/DC",
+why:"Trois accords et LE cours de rythme du rock : les silences font le riff. Angus ne remplit jamais. Si tu rushes les silences, tout s'entend — c'est la Pompe (salle 🥁) en conditions réelles.",
+focus:["Silences","Pompe","Attaque franche"],
+checks:["Le riff avec les silences EXACTS (enregistre-toi : compare les blancs)","Les fills chromatiques propres au tempo","5 tours de suite sans dériver du clic à 94"]},
+{id:"pc19", tier:2, title:"Long Train Runnin' — rythmique", artist:"The Doobie Brothers",
+why:"LA rythmique funk à la guitare : main droite en croches perpétuelles, main gauche qui ouvre et ferme (muting). Ton niveau 5 de la Pompe appliqué à un vrai morceau — le groove ou rien.",
+focus:["Muting","Pompe continue","Groove funk"],
+checks:["La main droite ne s'arrête JAMAIS pendant 16 mesures","Les notes fantômes (étouffées) audibles comme percussion","Au tempo avec l'original, indiscernable du disque sur 8 mesures"]},
+{id:"pc20", tier:3, title:"Blackbird — complet", artist:"The Beatles",
+why:"Le sommet du fingerpicking mélodique : pouce + index, deux voix simultanées (basse + mélodie) en dixièmes harmonisées. L'indépendance des doigts, version examen.",
+focus:["Fingerpicking","Deux voix","Legato doux"],
+checks:["L'intro et le couplet complets, les deux voix distinctes","Le morceau entier sans regarder la main droite","Au tempo, en chantonnant la mélodie par-dessus"]},
+{id:"pc21", tier:4, title:"Snow (Hey Oh) — intro/couplet", artist:"Red Hot Chili Peppers",
+why:"Le pattern de doubles-croches le plus économe et le plus impitoyable du rock moderne : chaque note identique à la précédente, pendant des minutes. Frusciante y joue du métronome — toi aussi, ou ça s'entend.",
+focus:["Économie de mouvement","Endurance précision","Hammer-on parfaits"],
+checks:["Le pattern en boucle 2 min à 80 % sans crispation (surveille l'épaule)","Les hammer-on du motif au volume des notes attaquées","L'intro au tempo, enregistrée : régularité de machine"]},
 ];
+/* Enrichissement répertoire : tempo disque, tonalité, impro, plan de travail */
+const PIECE_X={
+"pc1": {
+"bpm": 104,
+"key": "Ré mineur (dorien)",
+"imp": "Improvise dessus : penta mineure de Ré — le solo original n'en sort presque pas.",
+"plan": [
+"Les 4 premières phrases seules, à 70 %, bends vérifiés note à note",
+"Le solo entier à 85 % en respectant les silences",
+"Au tempo, enregistré, comparé à Gilmour"
+]
+},
+"pc2": {
+"bpm": 120,
+"key": "sur disque : accordage –1 ton ; en standard, pense Mi mineur",
+"imp": "Improvise dessus : penta mineure de Mi.",
+"plan": [
+"Le riff en boucle, PROPRE avant vite — chaque note de la corde à vide égale",
+"Le solo (il double la mélodie du chant : chante-le d'abord)",
+"Riff → solo → riff sans rupture, au tempo"
+]
+},
+"pc3": {
+"bpm": 96,
+"key": "La mineur",
+"imp": "Improvise dessus : penta mineure de La, box 1-2 — le terrain exact de Frusciante.",
+"plan": [
+"L'arpège du riff à 60 %, zéro note étouffée",
+"Les double stops du solo isolés, puis en contexte",
+"Riff au groove : enregistre-toi PAR-DESSUS l'original"
+]
+},
+"pc4": {
+"bpm": 84,
+"key": "Mi mineur",
+"imp": "Improvise dessus : penta mineure de Mi + la sixte éolienne pour pleurer.",
+"plan": [
+"La grille au médiator, contraste couplet/refrain exagéré",
+"Les motifs lead par-dessus la grille bouclée",
+"Le morceau en chantant — si la main perd le rythme, recommence"
+]
+},
+"pc5": {
+"bpm": 46,
+"key": "Mi mineur",
+"imp": "Improvise dessus : éolien de Mi complet — le morceau EST une leçon d'éolien.",
+"plan": [
+"L'intro aux doigts, pouce autonome sur les basses",
+"Les couplets + l'interlude harmoniques",
+"Le solo : les bends hauts d'abord, lents et justes"
+]
+},
+"pc6": {
+"bpm": 62,
+"key": "Sol majeur (licks en Mi mineur relatif)",
+"imp": "Improvise dessus : penta mineure de Mi — la relative de Sol, tes cases connues.",
+"plan": [
+"Les licks de l'intro isolés (hammer/pull au MÊME volume que le gratté)",
+"L'intro complète, fluide",
+"La rythmique chantée, qui respire — pas un métronome de bois"
+]
+},
+"pc7": {
+"bpm": 148,
+"key": "Ré mineur",
+"imp": "Improvise dessus : penta mineure de Ré + les triades de la grille (Dm-C-Bb-A).",
+"plan": [
+"Les phrases une par une à 60 % — l'aller-retour strict",
+"Les triplets roulés de la fin en boucle, 2 min par jour",
+"Solo entier à 90 % assumé avant de viser le tempo"
+]
+},
+"pc8": {
+"bpm": 76,
+"key": "Mi — penta teintée de plans majeurs, à la Hendrix",
+"imp": "Improvise dessus : penta de Mi en mélangeant mineure et majeure — le secret du son McCready.",
+"plan": [
+"Les bends unisson isolés (les deux cordes à la MÊME hauteur)",
+"Le solo par tiers : construis l'intensité, ne la subis pas",
+"30 s d'impro « à la manière de » pour prouver le vocabulaire"
+]
+},
+"pc9": {
+"bpm": 98,
+"key": "La mineur",
+"imp": "Improvise dessus : penta mineure de La puis éolien — exactement ton chantier.",
+"plan": [
+"Acte 1 (lyrique) parfait avant de toucher l'acte 3",
+"Les triplets finaux en boucle à 70 %, mains synchrones",
+"Le solo entier enregistré — timing et bends jugés à froid"
+]
+},
+"pc10": {
+"bpm": 63,
+"key": "Si mineur",
+"imp": "Improvise dessus : penta mineure de Si, PEU de notes — Gilmour en joue 4 par phrase.",
+"plan": [
+"Chaque bend du solo 1 vérifié à l'accordeur (oui, vraiment)",
+"Le vibrato : lent, large, régulier — LE morceau pour le forger",
+"Solo entier dans le tempo, avec les silences de plomb"
+]
+},
+"pc11": {
+"bpm": 60,
+"key": "La mineur",
+"imp": "Improvise dessus : penta mineure de La + sixte éolienne — l'école de la note qui pleure.",
+"plan": [
+"Le thème note à note, vibrato sur CHAQUE note longue",
+"Les montées rapides isolées, legato propre",
+"Thème + 1 chorus d'impro dans le style"
+]
+},
+"pc12": {
+"bpm": 74,
+"key": "Si mineur",
+"imp": "Improvise dessus : penta mineure de Si en SUIVANT les accords qui descendent, pas la gamme seule.",
+"plan": [
+"La grille d'arpèges du duo final, voix par voix",
+"Les deux voix harmonisées séparément puis ensemble",
+"Le duo final au tempo — c'est lui, l'examen"
+]
+},
+"pc13": {
+"bpm": 125,
+"key": "Ré (couplets) → Mi mineur (solo final)",
+"imp": "Improvise sur la fin : penta mineure de Mi, wah si tu as.",
+"plan": [
+"L'intro : le pattern en boucle, PARFAITEMENT égal (un exo d'aller-retour déguisé)",
+"Le solo lent (partie mélodique) au tempo",
+"Le solo final en Mi mineur par sections de 4 mesures"
+]
+},
+"pc14": {
+"bpm": 68,
+"key": "Mi mineur",
+"imp": "Improvise dessus : penta mineure de Mi + doubles stops majeurs — l'accord-mélodie hendrixien.",
+"plan": [
+"Chaque mesure de l'intro = UN accord embelli : apprends-les un par un",
+"L'intro entière rubato, puis en rythme",
+"Les embellissements replacés sur ta grille Am-G-F (Jam Station)"
+]
+},
+"pc15": {
+"bpm": 57,
+"key": "Sol (blues lent)",
+"imp": "Improvise dessus : penta mineure de Sol + blue note, phrasé shuffle — le disque entier est un cours.",
+"plan": [
+"Le vibrato SRV : large, en rythme — 5 min par jour rien que ça",
+"L'intro note à note (le toucher fait tout)",
+"1 chorus original + 1 chorus à toi sur un backing en Sol"
+]
+},
+"pc16": {
+"bpm": 212,
+"key": "Mi mineur",
+"imp": "Pas d'impro ici : un examen d'endurance. Downpicking ou rien.",
+"plan": [
+"Le riff principal à 140, DOWNPICKING STRICT, 1 min sans tension",
+"Paliers +8 BPM par SEMAINE — pas par séance",
+"Les breaks propres avant la vitesse ; le tempo du disque est un objectif à 6 mois"
+]
+},
+"pc17": {
+"bpm": 110,
+"key": "Mi mineur",
+"imp": "Improvise dessus : penta mineure de Mi, sobre — le morceau punit le bavardage.",
+"plan": [
+"Le riff à 70 % jusqu'à l'automatisme (test : parler en jouant)",
+"Au tempo, métronome témoin, 3 min",
+"Ajoute le chant ou un fredon par-dessus"
+]
+},
+"pc18": {
+"bpm": 94,
+"key": "Mi",
+"imp": "Improvise dessus : penta mineure de Mi + blue note — Angus ne fait que ça.",
+"plan": [
+"Le riff SANS les fills, silences comptés à voix haute",
+"Les fills chromatiques seuls, lents",
+"Le tout à 94, enregistré : les silences se jugent à l'oreille"
+]
+},
+"pc19": {
+"bpm": 115,
+"key": "Sol mineur",
+"imp": "Improvise dessus : penta mineure de Sol — mais ici la rythmique EST le solo.",
+"plan": [
+"Main droite seule sur cordes 100 % étouffées, 2 min de croches",
+"Ouvre l'accord 1 temps sur 4, le reste étouffé",
+"Le pattern complet à 90 BPM, puis par paliers vers 115"
+]
+},
+"pc20": {
+"bpm": 94,
+"key": "Sol majeur",
+"imp": "Improvise dessus : gamme de Sol majeur, douce — ou écris ta propre pièce en dixièmes, le vrai examen.",
+"plan": [
+"Le motif d'intro : le pouce régulier AVANT la mélodie",
+"Le couplet par phrases de 2 mesures, mains ensemble",
+"Le morceau entier lent, puis au tempo, sans tension"
+]
+},
+"pc21": {
+"bpm": 105,
+"key": "Sol# mineur (famille de Si majeur)",
+"imp": "Improvise dessus : penta mineure de Sol# — après avoir survécu au pattern.",
+"plan": [
+"Le motif de base à 60 %, chronomètre la crispation (stop dès que l'avant-bras durcit)",
+"80 % en boucle 2 min, épaule basse",
+"Paliers +5 BPM par SEMAINE vers 105 — un marathon, pas un sprint"
+]
+}
+};
+
 
 
 /* ================= DICTIONNAIRE D'ACCORDS =================
