@@ -235,7 +235,7 @@
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
-<script src="data-guitar.js?v=8"></script>
+<script src="data-guitar.js?v=9"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -363,9 +363,9 @@ function ensureMenu(){
     return;
   }
   const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
-  // le créneau "manche" tourne : gammes un jour sur deux, et en alternance
-  // le jeu des notes, les intervalles, l'oreille — les trois réflexes du manche
-  const rot=["scale","game","scale","intervals","scale","ear"][doy%6];
+  // le créneau "manche" tourne sur 8 jours : gammes, notes, intervalles,
+  // oreille, octaves, rythme — tous les réflexes, sans choix à faire
+  const rot=["scale","game","intervals","scale","ear","pompe","scale","oct"][doy%8];
   S.menu={date:t,mod:TMODS[doy%TMODS.length].id,
     manche:rot==="scale"?SCALES[doy%SCALES.length].id:rot,
     fond:nextFond?nextFond.id:null,
@@ -408,7 +408,7 @@ function openOv(h){
   ov.classList.add("on"); ov.scrollTop=0;
 }
 function closeOv(){
-  ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; TU=null; FBTAP=null;
+  ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; TU=null; EC=null; OC=null; PJ=null; FBTAP=null;
   if(typeof LV!=="undefined") LV=null;
   if(typeof MICG!=="undefined") MICG.release();
   if(typeof JAM!=="undefined"&&JAM.on) jamStop();
@@ -424,7 +424,9 @@ function vJour(){
   const md=tmod(m.mod);
   const MDRILLS={game:["🎮","Le manche en 60 s (jeu)","une partie chrono : nomme les notes","openGame()"],
     intervals:["📐","Les intervalles sur le manche","10 questions : pose l'intervalle demandé","openIntervals()"],
-    ear:["👂","L'oreille","10 intervalles à reconnaître au son","openEar()"]};
+    ear:["👂","L'oreille","intervalles ou accords, au son","openEar()"],
+    pompe:["🥁","La Pompe (rythme)","aller-retour jugés contre le clic","openPompe()"],
+    oct:["🔁","Les octaves","retrouve la note une octave plus haut","openOct()"]};
   const mdrill=MDRILLS[m.manche];
   const sc=mdrill?null:SCALES.find(s=>s.id===m.manche);
   const cp=curPiece();
@@ -642,7 +644,15 @@ function vManche(){
     <div class="st">›</div>
   </div>
   <div class="act hot" onclick="openEar()">
-    <div class="ico">👂</div><div class="t"><b>L'oreille</b><small>${S.game.earBest?"record "+S.game.earBest+"/10 · la palette s'élargit avec toi":"reconnais les intervalles au son de la corde. Le pont entre ta tête et tes doigts."}</small></div>
+    <div class="ico">👂</div><div class="t"><b>L'oreille</b><small>${S.game.earBest||S.game.earChBest?"intervalles "+(S.game.earBest||0)+"/10 · accords "+(S.game.earChBest||0)+"/10":"intervalles ET accords au son de la corde. Le pont entre ta tête et tes doigts."}</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act hot" onclick="openOct()">
+    <div class="ico">🔁</div><div class="t"><b>Les octaves</b><small>${S.game.octBest?"record "+S.game.octBest+"/10 · le manche plié en deux":"la forme f6 en muscle : retrouve la note une octave plus haut, partout."}</small></div>
+    <div class="st">›</div>
+  </div>
+  <div class="act hot" onclick="openPompe()">
+    <div class="ico">🥁</div><div class="t"><b>La Pompe — rythmique</b><small>${S.game.pompeLvl?"niveau "+S.game.pompeLvl+"/"+POMPE_LVLS.length+" · la main ne s'arrête jamais":"aller ⬇ retour ⬆ jugés contre le clic. La moitié de l'instrument commence ici."}</small></div>
     <div class="st">›</div>
   </div>
   <div class="act hot" onclick="openTuneEar()">
@@ -995,12 +1005,62 @@ function earSet(){
   return INTVS.filter(x=>[3,4,7,12].includes(x[1]));
 }
 function openEar(){
-  const b=S.game.earBest||0, set=earSet();
+  const b=S.game.earBest||0, set=earSet(), bc=S.game.earChBest||0;
   openOv(ovTop("👂 L'oreille")+`
-    <div class="pt">L'app joue <b>deux notes</b> (à la guitare). Tu nommes l'intervalle. C'est LA compétence qui relie le manche à ce que tu entends dans ta tête — sans elle, tu recopies ; avec elle, tu joues.</div>
-    <div class="crit"><b>Palette actuelle : ${set.map(x=>x[0]).join(", ")}.</b> Elle s'élargit avec ton record (${b}/10)${b>=9?" — palette complète, respect":""}.</div>
-    <div class="pt" style="font-size:12.5px">Repères qui aident : la quinte = « Star Wars » · l'octave = « Somewhere over the rainbow » · la tierce mineure = « Smoke on the Water » (le riff) · la quarte = « Amazing Grace ».</div>
-    <button class="btn" onclick="startEar()">Commencer (10 questions)</button>`);
+    <div class="pt">LA compétence qui relie le manche à ce que tu entends dans ta tête — sans elle tu recopies, avec elle tu joues. Deux salles :</div>
+    <div class="act hot" onclick="startEar()">
+      <div class="ico">📏</div><div class="t"><b>Intervalles</b><small>${set.map(x=>x[0]).join(", ")} · record ${b}/10${b>=9?" — palette complète":""}</small></div><div class="st">›</div>
+    </div>
+    <div class="act hot" onclick="startEarCh()">
+      <div class="ico">🎸</div><div class="t"><b>Accords</b><small>${earChSet().map(x=>x[0]).join(", ")} · record ${bc}/10 — majeur ou mineur, la tierce décide</small></div><div class="st">›</div>
+    </div>
+    <div class="pt" style="font-size:12.5px">Repères : la quinte = « Star Wars » · l'octave = « Somewhere over the rainbow » · la tierce mineure = « Smoke on the Water » · majeur = ça sourit, mineur = ça se voile — et l'accord 7 « demande » à bouger.</div>`);
+}
+// ---- oreille : les accords (majeur / mineur / 7) grattés ----
+let EC=null;
+function earChSet(){
+  const b=S.game.earChBest||0;
+  const all=[["majeur",[0,4,7,12]],["mineur",[0,3,7,12]],["septième (7)",[0,4,7,10]],["maj7 (doux)",[0,4,7,11]]];
+  return b>=9?all : b>=6?all.slice(0,3) : all.slice(0,2);
+}
+function startEarCh(){ EC={n:0,score:0,set:earChSet()}; nextEC(); }
+function playEC(){ if(!EC||!EC.cur) return; EC.cur.iv[1].forEach((x,i)=>pluck(EC.cur.root+x,i*0.03,.42,1.6)); }
+function nextEC(){
+  if(!EC) return;
+  if(EC.n>=10) return endEC();
+  const iv=EC.set[Math.floor(Math.random()*EC.set.length)];
+  EC.cur={root:45+Math.floor(Math.random()*12),iv};
+  const opts=new Set([iv[0]]); while(opts.size<Math.min(4,EC.set.length)) opts.add(EC.set[Math.floor(Math.random()*EC.set.length)][0]);
+  EC.cur.opts=[...opts].sort(()=>Math.random()-.5);
+  openOv(ovTop("👂 Accords · "+(EC.n+1)+"/10")+`
+    <div class="game"><div class="qnote">Quelle couleur d'accord ?</div>
+    <div class="timer">score ${EC.score}/${EC.n}</div>
+    <div class="gopts" style="grid-template-columns:repeat(2,1fr)">${EC.cur.opts.map((o,i)=>`<button onclick="answerEC(${i})">${o}</button>`).join("")}</div></div>
+    <button class="btn ghost" onclick="playEC()">🔁 Réécouter</button>`);
+  setTimeout(playEC,250);
+}
+function answerEC(i){
+  if(!EC||!EC.cur) return;
+  const ok=EC.cur.opts[i]===EC.cur.iv[0];
+  EC.n++;
+  if(ok){ EC.score++; nextEC(); }
+  else{
+    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
+      if(EC.cur.opts[k]===EC.cur.iv[0]) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
+    playEC();
+    setTimeout(nextEC,1200);
+  }
+}
+function endEC(){
+  const sc=EC.score; EC=null;
+  const rec=sc>(S.game.earChBest||0); if(rec) S.game.earChBest=sc;
+  addXP(rec?12:5); checkMenu("manche","ear"); save();
+  openOv(ovTop("👂 Résultat")+`
+    <div class="result"><div class="big">${sc}/10</div>
+    <p>${rec?"<b style='color:var(--acc)'>RECORD</b>":""}${rec&&sc>=6?" · la palette s'élargit":""}</p>
+    <p>${sc>=9?"Tu entends la tierce — la note qui décide de tout (fiche f10, en actes).":sc>=6?"Solide. Le 7 se repère à sa TENSION : il veut aller quelque part, les autres sont posés.":"Concentre-toi sur une seule chose : ça sourit (majeur) ou ça se voile (mineur) ? Le reste viendra."}</p></div>
+    <button class="btn" onclick="startEarCh()">Rejouer</button>
+    <button class="btn ghost" onclick="openEar()">Changer de salle</button>`);
 }
 function startEar(){ ER={n:0,score:0,set:earSet()}; nextER(); }
 function playER(){ if(!ER||!ER.cur) return; pluck(ER.cur.root,0,.5); pluck(ER.cur.root+ER.cur.iv[1],.55,.5); }
@@ -1098,6 +1158,141 @@ function endTU(){
     <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
 }
 
+// ================= LA POMPE — rythmique jugée =================
+// La moitié de l'instrument, enfin travaillée : aller ⬇ / retour ⬆ tapés
+// sur deux pads, jugés en temps ET en sens contre le métronome.
+const POMPE_LVLS=[
+  {name:"Les noires",       pat:["D",null,"D",null,"D",null,"D",null], tip:"Un aller par temps, avec le clic. Le poignet reste souple — c'est lui qui joue, pas le bras."},
+  {name:"Le débit croches", pat:["D","U","D","U","D","U","D","U"],     tip:"La main ne s'arrête JAMAIS : aller sur le temps, retour sur le « et ». C'est le moteur de toute rythmique."},
+  {name:"La demi-pompe",    pat:["D",null,"D","U","D",null,"D","U"],   tip:"La main continue son débit croches, mais certains passages ne touchent PAS les cordes. Le geste est le même — tu ouvres et fermes le contact."},
+  {name:"LA pompe folk",    pat:["D",null,"D","U",null,"U","D","U"],   tip:"D · DU ·U DU — le pattern le plus joué de l'histoire. Le piège : le temps 3 est VIDE, mais ta main descend quand même, à blanc."},
+  {name:"Le contretemps ska",pat:[null,"U",null,"U",null,"U",null,"U"],tip:"Que des retours, sur les « et ». Ta main descend sur chaque temps À BLANC — sans ça, impossible de tenir le contretemps."}
+];
+function pjJudge(expected,taps,WIN){
+  taps=[...taps]; let good=0, wrongDir=0;
+  expected.forEach(e=>{
+    let bi=-1,bd=WIN;
+    taps.forEach((tp,i)=>{ const d=Math.abs(tp.t-e.t); if(d<=bd){ bd=d; bi=i; } });
+    if(bi>=0){ if(taps[bi].dir===e.dir) good++; else wrongDir++; taps.splice(bi,1); }
+  });
+  return {good,wrongDir,extras:taps.length,total:expected.length,
+          pass: good>=Math.ceil(expected.length*.8)&&taps.length<=2};
+}
+let PJ=null;
+function openPompe(){
+  const lv=S.game.pompeLvl||0;
+  openOv(ovTop("🥁 La Pompe")+`
+    <div class="pt">La rythmique, c'est la moitié de l'instrument — et le premier truc qu'un autre musicien entend chez toi. Ici : deux pads, <b>⬇ aller</b> et <b>⬆ retour</b>, jugés en temps (±0,2 s) ET en sens contre le clic.</div>
+    <div class="crit"><b>Niveau atteint : ${lv}/${POMPE_LVLS.length}.</b> La règle d'or de tous les niveaux : <b>la main ne s'arrête jamais</b> — elle descend sur les temps, remonte sur les « et », et touche ou ne touche pas les cordes. Sur ta vraie guitare : cordes étouffées de la main gauche, et le même pattern.</div>
+    ${POMPE_LVLS.map((L,i)=>`<div class="act ${i<lv?"done":""}" style="${i>lv?"opacity:.45":""}" onclick="${i<=lv?`startPompe(${i})`:`toast('Passe d\\'abord le niveau ${i}.')`}">
+      <div class="ico">${i<lv?"✓":i===lv?"🥁":"🔒"}</div>
+      <div class="t"><b>${L.name}</b><small>${L.pat.map(x=>x||"·").join(" ")}</small></div>
+      <div class="st">${i<lv?"✓":i===lv?"›":""}</div></div>`).join("")}`);
+}
+function startPompe(lvl){
+  const L=POMPE_LVLS[lvl], bpm=80, beat=60/bpm, BARS=4, WIN=.2;
+  const c=metCtx(); if(c.state==="suspended") c.resume();
+  const t0=c.currentTime+.25+4*beat;
+  for(let b=0;b<4;b++) metClick(c.currentTime+.25+b*beat,b===0?2:1);
+  for(let bar=0;bar<BARS;bar++) for(let b=0;b<4;b++) metClick(t0+(bar*4+b)*beat,b===0?2:1);
+  const expected=[];
+  for(let bar=0;bar<BARS;bar++) L.pat.forEach((d,k)=>{ if(d) expected.push({t:t0+(bar*4+k*.5)*beat,dir:d}); });
+  PJ={lvl,t0,expected,taps:[],end:t0+BARS*4*beat+WIN+.05,beat};
+  openOv(ovTop("🥁 "+L.name)+`
+    <div class="sub">${L.tip}</div>
+    <div id="pjGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:12px 0">
+      ${L.pat.map((d,k)=>`<div style="text-align:center;padding:9px 2px;border-radius:9px;font-weight:800;font-size:14px;
+        background:${d?"var(--acc)":"var(--bg3)"};color:${d?"#221200":"var(--dim)"};border:1px solid ${d?"var(--acc)":"var(--line)"}">
+        ${d==="D"?"⬇":d==="U"?"⬆":"·"}<br><small style="font-size:9px;font-weight:700">${k%2===0?(k/2+1):"&"}</small></div>`).join("")}
+    </div>
+    <div class="timer" id="pjFb" style="text-align:center;font-family:var(--mono);color:var(--dim)">Décompte… la main bouge déjà, à blanc.</div>
+    <div class="exrow" style="margin-top:12px">
+      <button class="btn" style="padding:30px 0;font-size:22px" onclick="pjTap('D')">⬇<br><small style="font-size:10px">ALLER</small></button>
+      <button class="btn ghost" style="padding:30px 0;font-size:22px;border-color:var(--acc)" onclick="pjTap('U')">⬆<br><small style="font-size:10px">RETOUR</small></button>
+    </div>`);
+  setTimeout(()=>{ const f=document.getElementById("pjFb"); if(f&&PJ) f.textContent="Joue !"; },(t0-c.currentTime)*1000);
+  setTimeout(()=>{ if(PJ) endPompe(); },(PJ.end-c.currentTime)*1000+120);
+}
+function pjTap(dir){
+  if(!PJ) return;
+  // gratté étouffé : bruit court, l'aller un poil plus fort
+  pluck(40,0,dir==="D"?.35:.24,.09); pluck(47,0,dir==="D"?.25:.16,.09);
+  PJ.taps.push({t:metCtx().currentTime,dir});
+}
+function endPompe(){
+  const v=pjJudge(PJ.expected,PJ.taps,.2), lvl=PJ.lvl; PJ=null;
+  const L=POMPE_LVLS[lvl];
+  if(v.pass){
+    if(lvl>=(S.game.pompeLvl||0)) S.game.pompeLvl=lvl+1;
+    addXP(10); checkMenu("manche","pompe"); save();
+    openOv(ovTop("🥁 Résultat")+`
+      <div class="result"><div class="big">${v.good}/${v.total}</div>
+      <p><b style="color:var(--ok)">Niveau ${lvl+1} tenu.</b>${v.wrongDir?" ("+v.wrongDir+" bon timing mais mauvais sens — le poignet triche encore.)":""}</p>
+      <p>${lvl+1>=POMPE_LVLS.length?"La Pompe est à toi. Transfère sur ta guitare, cordes étouffées, puis sur un vrai accord — même pattern, même clic.":"Maintenant sur ta vraie guitare, cordes étouffées, même pattern. Puis reviens pour le niveau suivant."}</p></div>
+      ${lvl+1<POMPE_LVLS.length?`<button class="btn" onclick="startPompe(${lvl+1})">Niveau suivant — ${POMPE_LVLS[lvl+1].name}</button>`:""}
+      <button class="btn ghost" onclick="openPompe()">Tous les niveaux</button>`);
+  } else {
+    openOv(ovTop("🥁 Résultat")+`
+      <div class="result"><div class="big">${v.good}/${v.total}</div>
+      <p>${v.wrongDir?v.wrongDir+" frappe(s) au bon moment mais dans le MAUVAIS SENS — relis le pattern : aller sur les temps, retour sur les « et ».":v.extras>2?"Trop de frappes en trop : tu remplis les silences. Un silence est une note.":"Compte à voix haute « 1 et 2 et… » — la bouche tient le poignet."}</p></div>
+      <button class="btn" onclick="startPompe(${lvl})">Réessayer</button>
+      <button class="btn ghost" onclick="openPompe()">Tous les niveaux</button>`);
+  }
+}
+
+// ================= LES OCTAVES — la forme f6 en actes =================
+let OC=null;
+function openOct(){
+  const best=S.game.octBest||0;
+  openOv(ovTop("🔁 Les octaves")+`
+    <div class="pt">Ta fiche f6 en muscle : on te montre une note, tu la retrouves <b>UNE OCTAVE PLUS HAUT</b>, n'importe où. La forme : +2 cordes, +2 cases — +3 en traversant le Si. C'est LE geste qui déverrouille tout le manche.</div>
+    <div class="crit"><b>10 questions, sans chrono.</b>${best?` Record : <b>${best}/10</b>.`:" Astuce : calcule d'abord avec la forme, vérifie ensuite avec les cordes-mères."}</div>
+    <button class="btn" onclick="startOct()">Commencer</button>`);
+}
+function startOct(){ OC={n:0,score:0}; nextOC(); }
+function nextOC(){
+  if(!OC) return;
+  if(OC.n>=10) return endOC();
+  for(let tries=0;tries<50;tries++){
+    const rs=2+Math.floor(Math.random()*4), rf=Math.floor(Math.random()*8);
+    const rootMidi=STRINGS[rs][2]+rf, target=rootMidi+12;
+    const valid=[];
+    for(let s=0;s<6;s++){ const f=target-STRINGS[s][2]; if(f>=0&&f<=12&&!(s===rs&&f===rf)) valid.push({s,f}); }
+    if(!valid.length) continue;
+    OC.cur={rs,rf,valid,pc:(STRINGS[rs][1]+rf)%12};
+    pluckSF(rs,rf,0,.5);
+    openOv(ovTop("🔁 Octaves · "+(OC.n+1)+"/10")+`
+      <div class="game"><div class="qnote">La même note, <b>une octave plus haut</b></div>
+      <div class="timer">score ${OC.score}/${OC.n}</div></div>`+
+      fbHtml([{s:rs,f:rf,cls:"root",label:CHROM[OC.cur.pc].slice(0,2)}],{tap:(s,f)=>answerOC(s,f)}));
+    return;
+  }
+  endOC();
+}
+function answerOC(s,f){
+  if(!OC||!OC.cur) return;
+  const c=OC.cur, ok=c.valid.some(v=>v.s===s&&v.f===f);
+  OC.n++;
+  pluckSF(c.rs,c.rf,0,.45); pluckSF(s,f,.3,.45);
+  const marks=[{s:c.rs,f:c.rf,cls:"root",label:CHROM[c.pc].slice(0,2)}];
+  if(ok){ OC.score++; marks.push({s,f,cls:"ok"}); c.valid.filter(v=>!(v.s===s&&v.f===f)).forEach(v=>marks.push({s:v.s,f:v.f,cls:"ghost"})); }
+  else { marks.push({s,f,cls:"ko"}); c.valid.forEach(v=>marks.push({s:v.s,f:v.f,cls:"ok"})); }
+  openOv(ovTop("🔁 Octaves · "+OC.n+"/10")+`
+    <div class="game"><div class="qnote">${ok?"✓ La forme a parlé":"✗ — les positions justes, et regarde la FORME qu'elles dessinent"}</div>
+    <div class="timer">${ok?"les points bleus : ses autres octaves — même dessin, partout":"+2 cordes +2 cases (+3 via le Si). Compte, puis retiens le dessin."}</div></div>`+
+    fbHtml(marks,{})+`<button class="btn" onclick="nextOC()">${OC.n>=10?"Résultat":"Question suivante"}</button>`);
+}
+function endOC(){
+  const sc=OC.score; OC=null;
+  const rec=sc>(S.game.octBest||0); if(rec) S.game.octBest=sc;
+  addXP(rec?12:5); checkMenu("manche","oct"); save();
+  openOv(ovTop("🔁 Résultat")+`
+    <div class="result"><div class="big">${sc}/10</div>
+    <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Le manche est plié en deux dans ta tête — c'est exactement le but.":sc>=6?"La forme rentre. Tes erreurs sont sûrement des traversées du Si : +3, pas +2.":"Relis f6, puis rejoue lentement : la forme d'abord, la vitesse jamais."}</p></div>
+    <button class="btn" onclick="startOct()">Rejouer</button>
+    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
 // ================= CARTE DU MANCHE =================
 function openCarte(){
   const st=S.noteStats||{};
@@ -1122,7 +1317,7 @@ function openCarte(){
 let SEA=null;
 function startSeance(){
   const m=S.menu;
-  const MD={game:["🎮","Le manche en 60 s","openGame()"],intervals:["📐","Intervalles","openIntervals()"],ear:["👂","Oreille","openEar()"]};
+  const MD={game:["🎮","Le manche en 60 s","openGame()"],intervals:["📐","Intervalles","openIntervals()"],ear:["👂","Oreille","openEar()"],pompe:["🥁","La Pompe","openPompe()"],oct:["🔁","Octaves","openOct()"]};
   const sc=MD[m.manche]?null:SCALES.find(s=>s.id===m.manche);
   const cp=curPiece();
   const blocks=[
@@ -1468,6 +1663,26 @@ function vRep(){
     <div class="ico">📚</div><div class="t"><b>${t.title}</b></div>
     <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
 }
+function pieceTempoHtml(id){
+  const logs=(S.pieceT&&S.pieceT[id])||[];
+  const last=logs[0]?logs[0].v:null;
+  let coach="";
+  if(logs.length>=3){ const [a,b2,c]=logs.slice(0,3).map(h=>h.v);
+    if(Math.max(a,b2,c)-Math.min(a,b2,c)<=5) coach=`<div class="xptxt" style="margin-top:6px;color:var(--acc)">📉 Trois séances autour de ${a} % — plateau. Isole LE passage qui bloque et boucle-le seul à ${a-15} %, pas le morceau entier.</div>`; }
+  return `<p class="sub" style="margin:12px 0 4px">À quel % du tempo du disque le joues-tu <b>proprement</b> ?</p>
+  <div class="selfrow">${[50,60,70,80,90,100].map(v=>`<button class="${last===v?"on":""}" style="font-size:12px" onclick="logPieceT('${id}',${v})">${v}%</button>`).join("")}</div>
+  ${logs.length?`<div class="xptxt" style="margin-top:8px">Derniers : ${logs.slice(0,5).map(h=>h.v+"%").join(" · ")} · record <b style="color:var(--acc)">${Math.max(...logs.map(h=>h.v))}%</b></div>`:`<div class="xptxt" style="margin-top:8px">Premier log = ta référence. 100 % propre = le critère ultime de validation.</div>`}
+  ${coach}`;
+}
+function logPieceT(id,v){
+  if(!S.pieceT) S.pieceT={};
+  S.pieceT[id]=S.pieceT[id]||[];
+  const old=S.pieceT[id][0]?Math.max(...S.pieceT[id].map(h=>h.v)):0;
+  S.pieceT[id].unshift({d:today(),v}); S.pieceT[id]=S.pieceT[id].slice(0,40);
+  let xp=3, msg="🎵 "+v+" % logué.";
+  if(v>old&&old>0){ xp=10; msg="🏆 <b>"+v+" % — record de tempo !</b>"; }
+  addXP(xp); checkMenu("rep",id); save(); toast(msg); openPiece(id);
+}
 function openPiece(id){
   const p=PIECES.find(x=>x.id===id), st=pState(id);
   const allChecked=st.checks.length===p.checks.length;
@@ -1475,6 +1690,7 @@ function openPiece(id){
     <div class="meta">${p.artist} · <span class="tag">Palier ${p.tier}</span>${p.focus.map(f=>`<span class="tag b">${f}</span>`).join("")}</div>
     <div class="pt"><b>Pourquoi ce morceau :</b> ${p.why}</div>
     ${st.st==="ok"?`<div class="crit"><b>Validé.</b> Rejoue-le une fois par mois — un morceau qu'on ne joue plus se désapprend.</div>`:`
+    ${st.st==="cur"?pieceTempoHtml(id):""}
     <p class="sub" style="margin:12px 0 6px">Critères de validation — coche seulement ce qui est VRAI, enregistrement à l'appui :</p>
     ${p.checks.map((c,i)=>`<label class="chk ${st.checks.includes(i)?"on":""}"><input type="checkbox" ${st.checks.includes(i)?"checked":""} onchange="togCheck('${id}',${i})"><span>${c}</span></label>`).join("")}
     ${st.st==="cur"
@@ -1547,6 +1763,8 @@ function vProfil(){
     <div class="stat"><b>${S.game.intBest||0}/10</b><small>INTERVALLES</small></div>
     <div class="stat"><b>${S.game.earBest||0}/10</b><small>OREILLE</small></div>
     <div class="stat"><b>${S.game.liveBest||0}/10</b><small>VRAIE GUITARE 🎤</small></div>
+    <div class="stat"><b>${S.game.pompeLvl||0}/5</b><small>LA POMPE 🥁</small></div>
+    <div class="stat"><b>${S.game.octBest||0}/10</b><small>OCTAVES 🔁</small></div>
   </div>
   ${(()=>{ // le diagnostic : ce que les données disent de ton prochain combat
     const items=[];
