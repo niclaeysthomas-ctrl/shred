@@ -237,6 +237,7 @@
 </div></nav>
 
 <script src="data-guitar.js?v=10"></script>
+<script src="data-boussole.js?v=1"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -675,6 +676,11 @@ function vManche(){
   </div>
   <div class="act" onclick="openChordDict()">
     <div class="ico">📖</div><div class="t"><b>Dictionnaire d'accords</b><small>chaque note étiquetée en degré — tu vois POURQUOI ça sonne majeur, mineur, tendu</small></div>
+    <div class="st">›</div>
+  </div>
+  <h2 class="sec">Le parcours</h2>
+  <div class="act hot" onclick="openBoussole()">
+    <div class="ico">🧭</div><div class="t"><b>La Boussole</b><small>intervalles → 5 positions → modes → improviser en visant. 8 paliers, débutant à expert, exercices sur le manche</small></div>
     <div class="st">›</div>
   </div>
   <h2 class="sec">Cartographie & gammes</h2>`+
@@ -1524,6 +1530,253 @@ function endLV(){
     <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Le manche, les doigts et l'oreille sont d'accord. C'est ça, connaître son instrument.":sc>=6?"Solide — le geste suit le système. Les erreurs restantes sont probablement des cases voisines : ralentis la main, pas la tête.":"C'est l'exercice le plus dur de l'app, et le plus payant. Refais-le accordé, note tenue franche."}</p></div>
     <button class="btn" onclick="startLive()">Rejouer</button>
     <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+}
+
+// ================= LA BOUSSOLE : intervalles → positions → modes → viser =================
+const MAJ_DEG_G=[0,2,4,5,7,9,11];
+const DEGLBL=["1","2","3","4","5","6","7"];
+const POS_OFF=[0,2,4,7,9];   // les 5 positions démarrent sur les degrés 1,2,3,5,6
+const IV_LIST=[[2,"la seconde"],[3,"la tierce mineure"],[4,"la tierce majeure"],[5,"la quarte"],
+               [7,"la quinte"],[9,"la sixte"],[10,"la septième mineure"],[12,"l'octave"]];
+
+/* noms de TONALITÉS : on dit Si♭ majeur, pas La# majeur (La# n'est pas une tonalité praticable) */
+const KEYNAME=["Do","Ré♭","Ré","Mi♭","Mi","Fa","Fa#","Sol","La♭","La","Si♭","Si"];
+function kName(pc){ return KEYNAME[((pc%12)+12)%12]; }
+function rootFretE(pc){ return ((pc-4)%12+12)%12; }              // Mi grave à vide = pc 4
+function posWin(pc,p){ const lo=(rootFretE(pc)+POS_OFF[p])%12; return {lo,hi:lo+4}; }
+function posNotes(pc,p){
+  const w=posWin(pc,p), out=[];
+  for(let s=0;s<6;s++) for(let f=w.lo;f<=w.hi;f++){
+    const d=MAJ_DEG_G.indexOf(((STRINGS[s][2]+f-pc)%12+12)%12);
+    if(d>-1) out.push({s,f,deg:d});
+  }
+  return out;
+}
+function boussoleStat(id){ if(!S.bous) S.bous={}; return S.bous[id]||{n:0,best:0}; }
+function boussoleNext(){ for(const P of BOUSSOLE){ if(boussoleStat(P.id).best<80) return P.id; } return BOUSSOLE[BOUSSOLE.length-1].id; }
+
+let CR=null;
+function openBoussole(){
+  const reco=boussoleNext();
+  let h=ovTop("🧭 La Boussole")+`<p class="lead">Des intervalles jusqu'à l'improvisation ciblée. Chaque palier se termine par un exercice <b>sur le manche</b>, pas par une fiche à lire.</p>`;
+  BOUSSOLE.forEach(P=>{
+    const st=boussoleStat(P.id), isR=(P.id===reco);
+    h+=`<div class="act${isR?" hot":""}" onclick="boussoleBrief('${P.id}')">
+      <div class="ico">${P.icon}</div>
+      <div class="t"><b>${P.title}</b><small>${P.lvl}${st.n?` · record ${st.best}%`:""}${isR?" · <b style='color:var(--acc)'>COMMENCE ICI</b>":""}</small></div>
+      <div class="st">${st.best>=80?"✓":"›"}</div></div>`;
+  });
+  openOv(h);
+}
+function boussoleBrief(id){
+  const P=BOUSSOLE.find(x=>x.id===id);
+  openOv(ovTop("🧭 "+P.title)+`
+    <p class="lead" style="color:var(--acc)"><b>Pourquoi ce palier</b><br>${P.why}</p>
+    <div class="fiche">${P.brief}</div>
+    <button class="big" onclick="boussoleRun('${id}')">${P.drill.type==="practice"?"✓ J'ai fait le protocole":"Lancer l'exercice"}</button>
+    <button class="big alt" onclick="openBoussole()">← Retour aux paliers</button>`);
+}
+function boussoleDone(id,pct){
+  const st=boussoleStat(id);
+  S.bous[id]={n:st.n+1,best:Math.max(st.best,pct)};
+  addXP(pct>=80?10:4); save();
+  openOv(ovTop("🧭 Résultat")+`<div class="result"><div class="big">${pct}%</div>
+    <p>${pct>=80?"Palier tenu. Tu peux monter.":pct>=60?"Ça vient — refais-le, c'est la répétition qui installe la carte.":"Reste sur ce palier. Relis le pourquoi avant de recommencer."}</p></div>
+    <button class="big" onclick="boussoleBrief('${id}')">↻ Refaire</button>
+    <button class="big alt" onclick="openBoussole()">← Les paliers</button>`);
+}
+function boussoleRun(id){
+  const P=BOUSSOLE.find(x=>x.id===id);
+  const d=P.drill;
+  if(d.type==="practice"){ boussoleDone(id,100); return; }
+  CR={id,type:d.type,cfg:d,i:0,n:d.n,score:0,sel:[],cur:null};
+  crNext();
+}
+function crHead(txt,sub){
+  return ovTop("🧭 "+BOUSSOLE.find(x=>x.id===CR.id).title)+
+    `<div class="game"><div class="timer">${CR.i+1}/${CR.n}</div>
+     <div class="qnote">${txt}</div><div class="timer">score ${CR.score}</div></div>
+     ${sub?`<p class="lead" style="text-align:center">${sub}</p>`:""}`;
+}
+function crEnd(){ const pct=Math.round(CR.score/CR.n*100); const id=CR.id; CR=null; boussoleDone(id,pct); }
+function crNext(){
+  if(!CR) return;
+  if(CR.i>=CR.n) return crEnd();
+  ({interval:crInterval,degree:crDegree,color:crColor,chordmode:crChordMode,connect:crConnect})[CR.type]();
+}
+
+/* --- palier 1 : placer un intervalle depuis une tonique --- */
+function crInterval(){
+  let root,iv,targets;
+  do{
+    const si=3+Math.floor(Math.random()*3);            // cordes Ré / La / Mi grave
+    const fr=Math.floor(Math.random()*8);
+    root={s:si,f:fr,midi:STRINGS[si][2]+fr};
+    iv=IV_LIST[Math.floor(Math.random()*IV_LIST.length)];
+    targets=[];
+    for(let s=0;s<6;s++){ const f=root.midi+iv[0]-STRINGS[s][2];
+      if(f>=0&&f<=12&&!(s===root.s&&f===root.f)) targets.push({s,f}); }
+  } while(!targets.length);
+  CR.cur={root,iv,targets};
+  const marks=[{s:root.s,f:root.f,cls:"root",label:"1"}];
+  openOv(crHead(`Place <b>${iv[1]}</b> au-dessus de la tonique`,"Vise la forme, ne compte pas les cases une à une.")+
+    fbHtml(marks,{tap:crTapInterval}));
+  pluckSF(root.s,root.f,0,.45);
+}
+function crTapInterval(s,f){
+  if(!CR||!CR.cur) return;
+  const c=CR.cur, ok=c.targets.some(t=>t.s===s&&t.f===f);
+  pluckSF(s,f,0,.45);
+  if(ok) CR.score++;
+  const marks=[{s:c.root.s,f:c.root.f,cls:"root",label:"1"},{s,f,cls:ok?"ok":"ko"}];
+  if(!ok) c.targets.forEach(t=>marks.push({s:t.s,f:t.f,cls:"ok",label:"✓"}));
+  openOv(crHead(ok?`✓ ${c.iv[1]}`:`✗ c'était ici`,"")+fbHtml(marks,{}));
+  setTimeout(()=>{ CR.i++; crNext(); }, ok?600:1700);
+}
+
+/* --- paliers 2/4 : allumer tous les degrés demandés dans une position --- */
+function crDegree(){
+  const cfg=CR.cfg;
+  const pc=Math.floor(Math.random()*12);
+  const p=cfg.anyPos?Math.floor(Math.random()*5):(cfg.pos||0);
+  const deg=cfg.degs?cfg.degs[Math.floor(Math.random()*cfg.degs.length)]:cfg.deg;
+  const notes=posNotes(pc,p);
+  const targets=notes.filter(n=>n.deg===deg);
+  if(!targets.length){ crDegree(); return; }
+  CR.cur={pc,p,deg,notes,targets,found:[]};
+  crDrawDegree();
+}
+function crDrawDegree(){
+  const c=CR.cur;
+  const lbl=["la TONIQUE","la seconde","la TIERCE","la quarte","la QUINTE","la sixte","la septième"][c.deg];
+  const marks=c.notes.map(n=>{
+    const hit=c.found.some(x=>x.s===n.s&&x.f===n.f);
+    return {s:n.s,f:n.f,cls:hit?"ok":"ghost",label:hit?DEGLBL[n.deg]:""};
+  });
+  openOv(crHead(`Position ${c.p+1} en <b>${kName(c.pc)}</b> — allume <b>${lbl}</b>`,
+    `${c.found.length}/${c.targets.length} trouvée(s). Les points gris sont la position.`)+
+    fbHtml(marks,{tap:crTapDegree,frets:15}));
+}
+function crTapDegree(s,f){
+  if(!CR||!CR.cur) return;
+  const c=CR.cur;
+  pluckSF(s,f,0,.45);
+  const t=c.targets.find(x=>x.s===s&&x.f===f);
+  if(t&&!c.found.some(x=>x.s===s&&x.f===f)){
+    c.found.push({s,f});
+    if(c.found.length===c.targets.length){
+      CR.score++;
+      setTimeout(()=>{ CR.i++; crNext(); },700);
+    }
+    crDrawDegree();
+  } else if(!t){
+    const marks=c.notes.map(n=>({s:n.s,f:n.f,cls:"ghost"}));
+    marks.push({s,f,cls:"ko"});
+    c.targets.forEach(x=>marks.push({s:x.s,f:x.f,cls:"ok",label:DEGLBL[c.deg]}));
+    openOv(crHead(`✗ Les voici`,"Regarde bien, puis on enchaîne.")+fbHtml(marks,{frets:15}));
+    setTimeout(()=>{ CR.i++; crNext(); },1900);
+  }
+}
+
+/* --- palier 5 : la note qui donne la couleur du mode --- */
+function crColor(){
+  const usable=GMODES.filter(m=>m.col!==null);
+  const m=usable[Math.floor(Math.random()*usable.length)];
+  const rootPc=Math.floor(Math.random()*12);
+  const parent=((rootPc-MAJ_DEG_G[m.deg-1])%12+12)%12;
+  const colPc=(rootPc+m.p[m.col])%12;
+  const p=Math.floor(Math.random()*5);
+  const notes=posNotes(parent,p);
+  const targets=notes.filter(n=>(STRINGS[n.s][2]+n.f)%12===colPc);
+  if(!targets.length){ crColor(); return; }
+  CR.cur={m,rootPc,parent,colPc,notes,targets,found:[]};
+  crDrawColor();
+}
+function crDrawColor(){
+  const c=CR.cur;
+  const marks=c.notes.map(n=>{
+    const hit=c.found.some(x=>x.s===n.s&&x.f===n.f);
+    return {s:n.s,f:n.f,cls:hit?"ok":"ghost",label:hit?CHROM[c.colPc].slice(0,2):""};
+  });
+  openOv(crHead(`<b>${kName(c.rootPc)} ${c.m.n}</b> — allume ${c.m.colTxt}`,
+    `Les notes de ${kName(c.parent)} majeur sont affichées. ${c.found.length}/${c.targets.length} trouvée(s).`)+
+    fbHtml(marks,{tap:crTapColor,frets:15}));
+}
+function crTapColor(s,f){
+  if(!CR||!CR.cur) return;
+  const c=CR.cur;
+  pluckSF(s,f,0,.45);
+  const t=c.targets.find(x=>x.s===s&&x.f===f);
+  if(t&&!c.found.some(x=>x.s===s&&x.f===f)){
+    c.found.push({s,f});
+    if(c.found.length===c.targets.length){ CR.score++; setTimeout(()=>{ CR.i++; crNext(); },700); }
+    crDrawColor();
+  } else if(!t){
+    const marks=c.notes.map(n=>({s:n.s,f:n.f,cls:"ghost"}));
+    marks.push({s,f,cls:"ko"});
+    c.targets.forEach(x=>marks.push({s:x.s,f:x.f,cls:"ok",label:CHROM[c.colPc].slice(0,2)}));
+    openOv(crHead(`✗ ${c.m.colTxt} de ${kName(c.rootPc)} ${c.m.n} = <b>${CHROM[c.colPc]}</b>`,"")+fbHtml(marks,{frets:15}));
+    setTimeout(()=>{ CR.i++; crNext(); },2100);
+  }
+}
+
+/* --- palier 6 : quel mode sur quel accord --- */
+function crChordMode(){
+  const rows=CHORD_MODE.filter(r=>r.modes[0]!=="melmin");
+  const r=rows[Math.floor(Math.random()*rows.length)];
+  const pc=Math.floor(Math.random()*12);
+  const good=GMODES.find(m=>m.id===r.modes[0]).n;
+  const pool=GMODES.filter(m=>m.n!==good).map(m=>m.n).sort(()=>Math.random()-.5).slice(0,3);
+  const opts=[good,...pool].sort(()=>Math.random()-.5);
+  CR.cur={good,opts,why:r.why,ch:kName(pc)+r.ch};
+  openOv(crHead(`Sur <b>${CR.cur.ch}</b>, quel mode ?`,"")+
+    `<div class="gopts">${opts.map((o,i)=>`<button onclick="crAnsChord(${i})">${o}</button>`).join("")}</div>`);
+}
+function crAnsChord(i){
+  if(!CR||!CR.cur) return;
+  const c=CR.cur, ok=c.opts[i]===c.good;
+  if(ok) CR.score++;
+  document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
+    if(c.opts[k]===c.good) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
+  const box=document.createElement("p"); box.className="lead";
+  box.style.cssText="margin-top:12px;color:var(--acc)";
+  box.innerHTML=(ok?"✓ ":"✗ ")+c.why;
+  ovin.appendChild(box);
+  setTimeout(()=>{ CR.i++; crNext(); }, ok?1400:2600);
+}
+
+/* --- palier 7 : la même note cible, à trois endroits --- */
+function crConnect(){
+  const pc=Math.floor(Math.random()*12);
+  const spots=[];
+  for(let s=0;s<6;s++) for(let f=0;f<=12;f++) if((STRINGS[s][2]+f)%12===pc) spots.push({s,f});
+  CR.cur={pc,spots,found:[]};
+  crDrawConnect();
+}
+function crDrawConnect(){
+  const c=CR.cur;
+  const marks=c.found.map(x=>({s:x.s,f:x.f,cls:"ok",label:CHROM[c.pc].slice(0,2)}));
+  openOv(crHead(`Trouve <b>${CHROM[c.pc]}</b> à <b>3 endroits</b> différents`,
+    `${c.found.length}/3. Ces points sont tes portes entre positions.`)+
+    fbHtml(marks,{tap:crTapConnect}));
+}
+function crTapConnect(s,f){
+  if(!CR||!CR.cur) return;
+  const c=CR.cur;
+  pluckSF(s,f,0,.45);
+  const good=(STRINGS[s][2]+f)%12===c.pc;
+  const already=c.found.some(x=>x.s===s&&x.f===f);
+  if(good&&!already){
+    c.found.push({s,f});
+    if(c.found.length>=3){ CR.score++; crDrawConnect(); setTimeout(()=>{ CR.i++; crNext(); },800); return; }
+    crDrawConnect();
+  } else if(!good){
+    const marks=c.found.map(x=>({s:x.s,f:x.f,cls:"ok"}));
+    marks.push({s,f,cls:"ko"});
+    c.spots.slice(0,4).forEach(x=>marks.push({s:x.s,f:x.f,cls:"ghost"}));
+    openOv(crHead(`✗ ce n'est pas ${CHROM[c.pc]}`,"Les points gris : où elle se trouve vraiment.")+fbHtml(marks,{}));
+    setTimeout(()=>{ CR.i++; crNext(); },1900);
+  }
 }
 
 // ================= JAM STATION =================
