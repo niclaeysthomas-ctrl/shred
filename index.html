@@ -228,16 +228,14 @@
 <div id="ov"><div class="inner" id="ovin"></div></div>
 <div id="toast"></div>
 <nav><div class="in">
-  <button data-v="jour"><i>🎯</i>Jour</button>
-  <button data-v="tech"><i>🎸</i>Technique</button>
-  <button data-v="manche"><i>🗺️</i>Manche</button>
-  <button data-v="theorie"><i>📖</i>Théorie</button>
-  <button data-v="rep"><i>🎵</i>Répertoire</button>
+  <button data-v="chemin"><i>🧭</i>Chemin</button>
+  <button data-v="outils"><i>🧰</i>Outils</button>
   <button data-v="profil"><i>👑</i>Profil</button>
 </div></nav>
 
 <script src="data-guitar.js?v=10"></script>
 <script src="data-boussole.js?v=1"></script>
+<script src="data-chemin.js?v=1"></script>
 <script>
 // ================= ÉTAT =================
 const KEY="shred_v1";
@@ -393,10 +391,10 @@ function checkMenu(kind,ref){
 function curPiece(){ const e=Object.entries(S.pieces).find(([id,p])=>p.st==="cur"); return e?PIECES.find(p=>p.id===e[0]):null; }
 
 // ================= VUES =================
-let view="jour";
+let view="chemin";
 function nav(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v));
-function render(){ ensureMenu(); document.getElementById("main").innerHTML=({jour:vJour,tech:vTech,manche:vManche,theorie:vTheorie,rep:vRep,profil:vProfil})[view](); header(); }
+function render(){ ensureMenu(); document.getElementById("main").innerHTML=({chemin:vChemin,outils:vOutils,profil:vProfil,jour:vChemin,tech:vOutils,manche:vOutils,theorie:vOutils,rep:vOutils})[view](); header(); }
 const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
 function openOv(h){
   ovin.innerHTML=h;
@@ -1573,8 +1571,8 @@ function boussoleBrief(id){
   openOv(ovTop("🧭 "+P.title)+`
     <p class="lead" style="color:var(--acc)"><b>Pourquoi ce palier</b><br>${P.why}</p>
     <div class="fiche">${P.brief}</div>
-    <button class="big" onclick="boussoleRun('${id}')">${P.drill.type==="practice"?"✓ J'ai fait le protocole":"Lancer l'exercice"}</button>
-    <button class="big alt" onclick="openBoussole()">← Retour aux paliers</button>`);
+    <button class="btn" onclick="boussoleRun('${id}')">${P.drill.type==="practice"?"✓ J'ai fait le protocole":"Lancer l'exercice"}</button>
+    <button class="btn ghost" onclick="openBoussole()">← Retour aux paliers</button>`);
 }
 function boussoleDone(id,pct){
   const st=boussoleStat(id);
@@ -1582,8 +1580,8 @@ function boussoleDone(id,pct){
   addXP(pct>=80?10:4); save();
   openOv(ovTop("🧭 Résultat")+`<div class="result"><div class="big">${pct}%</div>
     <p>${pct>=80?"Palier tenu. Tu peux monter.":pct>=60?"Ça vient — refais-le, c'est la répétition qui installe la carte.":"Reste sur ce palier. Relis le pourquoi avant de recommencer."}</p></div>
-    <button class="big" onclick="boussoleBrief('${id}')">↻ Refaire</button>
-    <button class="big alt" onclick="openBoussole()">← Les paliers</button>`);
+    <button class="btn" onclick="boussoleBrief('${id}')">↻ Refaire</button>
+    <button class="btn ghost" onclick="openBoussole()">← Les paliers</button>`);
 }
 function boussoleRun(id){
   const P=BOUSSOLE.find(x=>x.id===id);
@@ -1777,6 +1775,69 @@ function crTapConnect(s,f){
     openOv(crHead(`✗ ce n'est pas ${CHROM[c.pc]}`,"Les points gris : où elle se trouve vraiment.")+fbHtml(marks,{}));
     setTimeout(()=>{ CR.i++; crNext(); },1900);
   }
+}
+
+// ================= LE CHEMIN : une seule échelle =================
+function cheminIdx(){ for(let i=0;i<CHEMIN.length;i++){ try{ if(!CHEMIN[i].gate()) return i; }catch(e){ return i; } } return CHEMIN.length; }
+function cheminDoneCount(){ let n=0; CHEMIN.forEach(e=>{ try{ if(e.gate()) n++; }catch(err){} }); return n; }
+function cheminMark(n){
+  if(!S.chemin) S.chemin={done:{}};
+  if(!S.chemin.done) S.chemin.done={};
+  S.chemin.done[n]=today(); addXP(10); save();
+  toast("✓ <b>Étape "+n+" validée</b>");
+  render();
+}
+function chapOf(id){ return CHAPITRES.find(c=>c.id===id)||CHAPITRES[0]; }
+
+function vChemin(){
+  const i=cheminIdx(), fait=cheminDoneCount(), tot=CHEMIN.length;
+  const r=rank(), pct=Math.round(fait/tot*100);
+  if(i>=tot){
+    return `<div class="card"><h2>🏁 Chemin terminé</h2>
+      <p class="lead">Les ${tot} étapes sont derrière toi. Le Chemin ne sert plus : entretiens via les Outils, et joue.</p></div>`;
+  }
+  const e=CHEMIN[i], ch=chapOf(e.ch);
+  // les 3 étapes suivantes, pour voir où ça va (sans pouvoir les faire)
+  const next=CHEMIN.slice(i+1,i+4);
+  return `
+  <div class="card">
+    <div class="tierhead"><b>Chapitre ${ch.id} · ${ch.t}</b><span class="tierbar">${fait}/${tot}</span></div>
+    <div class="pbar"><i style="width:${pct}%"></i></div>
+    <p class="lead" style="margin-top:6px">${ch.d}</p>
+  </div>
+
+  <div class="card hot">
+    <div class="tierhead"><b style="font-size:12px;color:var(--acc);font-style:normal;letter-spacing:1px">ÉTAPE ${e.n} — AUJOURD'HUI</b></div>
+    <h2 style="margin:2px 0 6px">${e.t}</h2>
+    <p class="lead">${e.do}</p>
+    <p class="lead" style="color:var(--acc);margin-top:8px"><b>Critère :</b> ${e.crit}</p>
+    <button class="btn" onclick="${e.go}">Faire cette étape</button>
+    ${e.manual?`<button class="btn ghost" onclick="cheminMark(${e.n})">✓ C'est fait</button>`:
+      `<p class="lead" style="text-align:center;color:var(--dim);font-size:12px;margin-top:8px">L'app validera seule dès que le critère sera atteint.</p>`}
+  </div>
+
+  <div class="card">
+    <div class="tierhead"><b>Ensuite</b><small>tu ne peux pas sauter — c'est le principe</small></div>
+    ${next.map(x=>`<div class="act" style="opacity:.5;pointer-events:none">
+      <div class="ico">${x.n}</div><div class="t"><b>${x.t}</b><small>${x.crit}</small></div></div>`).join("")||
+      `<p class="lead">Dernière étape.</p>`}
+  </div>
+
+  <div class="card">
+    <div class="tierhead"><b>Le chemin complet</b><small>${fait} validée(s)</small></div>
+    ${CHAPITRES.map(c=>{
+      const es=CHEMIN.filter(x=>x.ch===c.id);
+      const ok=es.filter(x=>{ try{return x.gate()}catch(err){return false} }).length;
+      return `<div class="act" style="pointer-events:none"><div class="ico">${ok===es.length?"✓":c.id}</div>
+        <div class="t"><b>${c.t}</b><small>${ok}/${es.length} étapes</small></div></div>`;
+    }).join("")}
+  </div>`;
+}
+
+function vOutils(){
+  return `<div class="card"><h2>🧰 Outils</h2>
+    <p class="lead">Tout reste disponible — mais rien ici n'est obligatoire. <b>Le Chemin décide, les outils exécutent.</b> Si tu ne sais pas quoi faire, retourne au Chemin.</p></div>`
+    + vTech() + vManche() + vTheorie() + vRep();
 }
 
 // ================= JAM STATION =================
