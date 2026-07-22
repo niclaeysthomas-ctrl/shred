@@ -7,6 +7,7 @@ const ASSETS = [
   "./",
   "./index.html",
   "./data-guitar.js",
+  "./data-boussole.js",
   "./manifest.webmanifest"
 ];
 
