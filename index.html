@@ -240,13 +240,14 @@
 // ================= ÉTAT =================
 const KEY="shred_v1";
 const RANKS=[["Bedroom Player",0],["Rythmicien",150],["Soliste",350],["Lead Guitarist",650],["Shredder",1050],["Guitar Hero",1600]];
-const DEF={xp:0,streak:0,lastVal:"",days:[],menu:null,bpm:{},pal:{},pieces:{},fiches:{},game:{best:0,runs:0}};
+const DEF={xp:0,streak:0,lastVal:"",days:[],menu:null,bpm:{},pal:{},pieces:{},fiches:{},game:{best:0,runs:0},thex:{}};
 let S=load();
 function load(){
   let s={}; try{ s=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){}
   const o=Object.assign({},DEF,s);
   o.days=s.days||[]; o.bpm=s.bpm||{}; o.pal=s.pal||{}; o.pieces=s.pieces||{}; o.fiches=s.fiches||{};
   o.game=Object.assign({best:0,runs:0},s.game||{});
+  o.thex=s.thex||{};
   return o;
 }
 function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
@@ -688,8 +689,13 @@ function vManche(){
       <div class="ico">${s.icon}</div><div class="t"><b>${s.name}</b><small>${s.consigne.slice(0,64)}…</small></div>
       <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
   }).join("")+
-  `<h2 class="sec">Théorie express</h2>`+
-  THEORY.filter(t=>!t.fond&&!t.culture).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
+  `<h2 class="sec">Cours complet — la théorie, proprement</h2>
+  <p class="sub" style="margin:-2px 4px 8px">Des modules complets, dans l'ordre, sans guitare. Lis, puis fais les exercices — ils reviennent en révision espacée. C'est le vrai cours, pas la version express.</p>`+
+  THEORY.filter(t=>t.cours).map((t,i)=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
+    <div class="ico">🎓</div><div class="t"><b>${i+1}. ${t.title}</b><small>${t.q.length} exercices · révisable</small></div>
+    <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("")+
+  `<h2 class="sec">Fiches express</h2>`+
+  THEORY.filter(t=>!t.fond&&!t.culture&&!t.cours).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
     <div class="ico">📖</div><div class="t"><b>${t.title}</b></div>
     <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
 }
@@ -716,7 +722,7 @@ function ficheQ(){
   const ord=[...Array(q.opts.length).keys()].sort(()=>Math.random()-.5);
   FQ.map=ord;
   openOv(ovTop(f.title)+`
-    <div class="qq">${FQ.i+1}/2 — ${q.q}</div>
+    <div class="qq">${FQ.i+1}/${f.q.length} — ${q.q}</div>
     ${ord.map((oi,p)=>`<button class="opt" onclick="ficheA(${p})">${q.opts[oi]}</button>`).join("")}
     <div id="fexp"></div>`);
 }
@@ -725,13 +731,13 @@ function ficheA(p){
   if(ok) FQ.good++;
   document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(FQ.map[k]===q.a) b.classList.add("ok"); else if(k===p) b.classList.add("ko"); });
   document.getElementById("fexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non."}</b> ${q.exp}</div>
-    <button class="btn" onclick="${FQ.i===0?"FQ.i=1;ficheQ()":"ficheEnd()"}">${FQ.i===0?"Question suivante":"Terminer"}</button>`;
+    <button class="btn" onclick="${FQ.i<f.q.length-1?"FQ.i++;ficheQ()":"ficheEnd()"}">${FQ.i<f.q.length-1?"Question suivante":"Terminer"}</button>`;
 }
 function ficheEnd(){
   const f=THEORY.find(x=>x.id===FQ.id);
-  if(f.fond&&FQ.good<2&&S.fiches[FQ.id]===undefined){
+  if(f.fond&&FQ.good<f.q.length&&S.fiches[FQ.id]===undefined){
     addXP(2); save();
-    toast("On ne passe pas les fondations avec "+FQ.good+"/2. Relis, puis refais.");
+    toast("On ne passe pas les fondations avec "+FQ.good+"/"+f.q.length+". Relis, puis refais.");
     closeOv(); render(); return;
   }
   const first=S.fiches[FQ.id]===undefined;
@@ -739,7 +745,7 @@ function ficheEnd(){
   if(first&&!f.culture) schedFiche(FQ.id,0); // la mémoire s'entretient — sauf la culture, lue par plaisir
   addXP(first?8+FQ.good*2:FQ.good); save();
   if(f.fond&&first) checkMenu("fond",FQ.id);
-  toast(FQ.good===2?"📖 <b>Fiche acquise, 2/2.</b> Rappel dans 3 jours — c'est là que ça se grave.":"📖 Fiche lue — "+FQ.good+"/2, relis-la dans quelques jours.");
+  toast(FQ.good===f.q.length?"📖 <b>Fiche acquise, "+FQ.good+"/"+f.q.length+".</b> Rappel dans 3 jours — c'est là que ça se grave.":"📖 Fiche lue — "+FQ.good+"/"+f.q.length+", relis-la dans quelques jours.");
   closeOv(); render();
 }
 
@@ -772,11 +778,12 @@ function ficheRevA(p){
   if(ok) RQ.good++;
   document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(RQ.map[k]===q.a) b.classList.add("ok"); else if(k===p) b.classList.add("ko"); });
   document.getElementById("fexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non."}</b> ${q.exp}</div>
-    <button class="btn" onclick="${RQ.i===0?"RQ.i=1;ficheRevQ()":"ficheRevEnd()"}">${RQ.i===0?"Question suivante":"Terminer le rappel"}</button>`;
+    <button class="btn" onclick="${RQ.i<f.q.length-1?"RQ.i++;ficheRevQ()":"ficheRevEnd()"}">${RQ.i<f.q.length-1?"Question suivante":"Terminer le rappel"}</button>`;
 }
 function ficheRevEnd(){
   const id=RQ.id, good=RQ.good, r=S.frev[id]; RQ=null;
-  if(good===2){
+  const need=(THEORY.find(x=>x.id===id)||{q:[0,0]}).q.length;
+  if(good===need){
     const nxt=Math.min(r.step+1,3);
     schedFiche(id,nxt); addXP(6); save();
     toast("🧠 <b>Rappel tenu.</b> Prochain dans "+FSTEPS[nxt]+" jours. +6 XP");
@@ -785,7 +792,7 @@ function ficheRevEnd(){
     S.frev[id]={step:r.step, due:addDays(2)}; addXP(2); save();
     const f=THEORY.find(x=>x.id===id);
     openOv(ovTop("🧠 Rappel — "+f.title)+`
-      <div class="result"><div class="big">${good}/2</div>
+      <div class="result"><div class="big">${good}/${need}</div>
       <p>La mémoire a lâché — c'est une information, pas une honte. Relis la fiche maintenant : la relecture APRÈS l'échec de rappel est le moment où le cerveau accroche le mieux. Nouveau rappel dans 2 jours.</p></div>
       <button class="btn" onclick="openFiche('${id}')">Relire la fiche</button>
       <button class="btn ghost" onclick="closeOv()">Plus tard</button>`);
@@ -1984,8 +1991,15 @@ function vTheorie(){
     ["🌙","Le mineur, la penta, les modes","la relative, l'éolien, et pourquoi ta penta marche","openTh4()"],
     ["🔑","Trouver la tonalité d'une chanson","LA compétence d'impro — méthode + détecteur interactif","openTh5()"],
     ["🎤","Improviser dans la tonalité","quelle gamme sur quoi, les notes cibles, et où s'entraîner","openTh6()"]];
+  const nEx=Object.keys(S.thex||{}).length;
   return `<h1 class="page">La théorie</h1>
-  <div class="sub">Le manuel brut, sans quiz, toujours ouvert. Lis dans l'ordre la première fois — chaque chapitre s'appuie sur le précédent.</div>`+
+  <div class="sub">Le manuel brut, sans quiz, toujours ouvert. Lis dans l'ordre la première fois — chaque chapitre s'appuie sur le précédent.</div>
+  <div class="hero" style="margin:10px 0 14px">
+    <div class="lab">🎯 Farm sans guitare</div>
+    <div style="font-weight:800;font-size:16px;margin:2px 0 4px">Exercices de théorie — générés à l'infini</div>
+    <div class="sub" style="margin-bottom:10px">8 catégories, questions renouvelées à chaque fois : repérer la tonalité depuis des accords, intervalles, degrés, triades, 7es, cadences, cycle des quintes, modes. C'est ici que la théorie devient un réflexe.</div>
+    <button class="btn" onclick="openThEx()">Ouvrir les exercices${nEx?" · "+nEx+"/8 entamées":""}</button>
+  </div>`+
   CH.map(c=>`<div class="act hot" onclick="${c[3]}">
     <div class="ico">${c[0]}</div><div class="t"><b>${c[1]}</b><small>${c[2]}</small></div><div class="st">›</div></div>`).join("")+
   `<div class="crit" style="margin-top:14px"><b>Théorie ≠ fiches.</b> Les fiches du Manche t'interrogent et reviennent en rappel ; ce manuel, lui, répond quand TU as la question. Les deux se complètent.</div>`;
@@ -2103,6 +2117,182 @@ function openTh6(){
     <b>Niveau 2 — les notes cibles.</b> Tu vises une note DE L'ACCORD en cours aux changements (sa fondamentale ou sa tierce). C'est ça, « jouer les changements » — la salle 📐 Intervalles t'y entraîne.<br><br>
     <b>Niveau 3 — le phrasé.</b> Phrases courtes, silences, question/réponse, et atterrir sur la tonique pour conclure (fiche th5). C'est le niveau où on te reconnaît.</div>
     <div class="crit"><b>Où pratiquer, là, maintenant :</b> la 🎛️ Jam Station (onglet Manche) — choisis une grille, la tonalité que tu veux, et applique ce chapitre. La théorie sans les mains n'est que de la lecture.</div>`);
+}
+
+// ================= EXERCICES DE THÉORIE (générés à l'infini) =================
+// Réponses CALCULÉES depuis les helpers existants (diatonic, CHROM, MAJ, GMODES…) :
+// jamais de bonne réponse fausse. Parfait pour farmer sans guitare (tendinite).
+function thRnd(n){ return Math.floor(Math.random()*n); }
+function thPick(a){ return a[thRnd(a.length)]; }
+function thShuf(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=thRnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function thSample(a,n){ return thShuf(a).slice(0,n); }
+function thDistinct(correct,pool,n){ const out=[]; for(const x of thShuf(pool)){ if(x!==correct&&out.indexOf(x)<0){ out.push(x); if(out.length>=n) break; } } return out; }
+// noms de notes selon l'armure (dièses vs bémols) — pour une orthographe correcte
+const TH_FLATKEYS=new Set([5,10,3,8,1]); // Fa, Si♭, Mi♭, La♭, Ré♭
+const TH_NAMES_F=["Do","Ré♭","Ré","Mi♭","Mi","Fa","Sol♭","Sol","La♭","La","Si♭","Si"];
+function thNote(pc,flat){ pc=((pc%12)+12)%12; return (flat?TH_NAMES_F:CHROM)[pc]; }
+function thDia(k){ const flat=TH_FLATKEYS.has(k); return diatonic(k).map(d=>({pc:d.pc,type:d.type,roman:d.roman,name:thNote(d.pc,flat)+(d.type==="min"?"m":d.type==="dim"?"°":"")})); }
+function thKeysContaining(chords){ return [0,1,2,3,4,5,6,7,8,9,10,11].filter(k=>{ const d=diatonic(k); return chords.every(c=>d.some(x=>x.pc===c.pc&&x.type===c.type)); }); }
+// audio (offsets relatifs, comme playInt)
+function thStrum(midis,when){ midis.forEach((m,i)=>pluck(m,when+i*0.02,0.32,1.6)); }
+function thPlayProg(chords){ const IV={maj:[0,4,7],min:[0,3,7],dim:[0,3,6]}; try{const c=metCtx();if(c.state==="suspended")c.resume();}catch(e){} chords.forEach((ch,i)=>{ const base=48+ch.pc,iv=IV[ch.type]||IV.maj; thStrum(iv.map(x=>base+x).concat(base+12), i*0.62); }); }
+function thPlayTriad(root,iv){ const base=48+root; thStrum(iv.map(x=>base+x).concat(base+12),0); }
+function thTwoNotes(a,b){ pluck(48+a,0,.5); pluck(48+b,.5,.5); }
+
+const TH_DET=[0,7,2,9,4,5,10,3]; // tonalités « propres » à l'affichage
+const TH_TRIAD={majeur:[0,4,7],mineur:[0,3,7],diminué:[0,3,6],augmenté:[0,4,8]};
+const TH_SEV={"maj7":[0,4,7,11],"7":[0,4,7,10],"m7":[0,3,7,10],"m7♭5":[0,3,6,10]};
+
+function gKey(){
+  const TPL=[[0,3,4],[0,3,4,5],[0,4,5,3],[5,3,0,4],[1,4,0],[0,5,3,4]];
+  let k,chords,t=0;
+  do{ k=thPick(TH_DET); const dia=thDia(k); chords=thPick(TPL).map(d=>dia[d]); t++; }
+  while(thKeysContaining(chords).length!==1 && t<14);
+  if(thKeysContaining(chords).length!==1){ const dia=thDia(k); chords=[dia[0],dia[3],dia[4]]; }
+  const correct=kName(k), wrong=thDistinct(correct,TH_DET.map(kName),3);
+  const I=chords.find(c=>c.roman==="I"), V=chords.find(c=>c.roman==="V"), IV=chords.find(c=>c.roman==="IV");
+  const key=`${I?I.name+" = I (la maison)":""}${I&&V?", ":""}${V?V.name+" = V (la dominante)":IV?IV.name+" = IV":""}`;
+  return {q:`Ces accords, à quelle tonalité majeure appartiennent-ils ?<br><b style="font-size:19px;color:var(--acc)">${chords.map(c=>c.name).join("   ·   ")}</b>`,
+    correct,wrong,exp:`${key} → <b>${correct} majeur</b>. Sa relative mineure : ${thNote((k+9)%12,TH_FLATKEYS.has(k))} mineur.`,play:()=>thPlayProg(chords)};
+}
+function gInterval(){
+  const m=thRnd(3);
+  if(m===0){ const iv=thPick(INTS); const correct=iv[1]+" demi-tons";
+    const wrong=thDistinct(correct,[iv[1]-3,iv[1]-2,iv[1]-1,iv[1]+1,iv[1]+2,iv[1]+3].filter(x=>x>0&&x<=12).map(x=>x+" demi-tons"),3);
+    return {q:`Combien de demi-tons dans une <b>${iv[0].toLowerCase()}</b> ?`,correct,wrong,exp:`${iv[0]} = ${iv[1]} demi-tons. Repère : « ${iv[2]} ».`}; }
+  if(m===1){ const a=thRnd(12),st=1+thRnd(11),b=(a+st)%12,iv=INTS.find(v=>v[1]===st);
+    return {q:`Quel intervalle sépare <b>${CHROM[a]}</b> de <b>${CHROM[b]}</b> (en montant) ?`,correct:iv[0],wrong:thDistinct(iv[0],INTS.map(v=>v[0]),3),
+      exp:`${CHROM[a]} → ${CHROM[b]} = ${st} demi-tons = ${iv[0].toLowerCase()}.`,play:()=>thTwoNotes(a,b)}; }
+  const a=thRnd(12),iv=thPick(INTS.slice(0,11)),b=(a+iv[1])%12;
+  return {q:`Quelle note est une <b>${iv[0].toLowerCase()}</b> au-dessus de <b>${CHROM[a]}</b> ?`,correct:CHROM[b],wrong:thDistinct(CHROM[b],CHROM,3),
+    exp:`${iv[0]} = ${iv[1]} cases. ${CHROM[a]} + ${iv[1]} = ${CHROM[b]}.`,play:()=>thTwoNotes(a,b)};
+}
+function gDegree(){
+  const k=thPick(TH_DET),dia=thDia(k),m=thRnd(3);
+  if(m===0){ const i=1+thRnd(6),d=dia[i];
+    return {q:`En <b>${kName(k)} majeur</b>, quel est l'accord du degré <b>${DEGN[i]}</b> ?`,correct:d.name,wrong:thDistinct(d.name,dia.map(x=>x.name),3),
+      exp:`${kName(k)} majeur : ${dia.map(x=>x.name).join(" ")}. Le ${DEGN[i]} est ${d.name}.`}; }
+  if(m===1){ const i=thRnd(7),d=dia[i];
+    return {q:`En <b>${kName(k)} majeur</b>, l'accord <b>${d.name}</b> occupe quel degré ?`,correct:DEGN[i],wrong:thDistinct(DEGN[i],DEGN,3),
+      exp:`Dans ${kName(k)} majeur, ${d.name} est le degré ${DEGN[i]}.`}; }
+  let op,ot; do{ op=thRnd(12); ot=thPick(["maj","min"]); }while(dia.some(x=>x.pc===op&&x.type===ot));
+  const out=thNote(op,TH_FLATKEYS.has(k))+(ot==="min"?"m":"");
+  return {q:`Lequel de ces accords n'appartient PAS à <b>${kName(k)} majeur</b> ?`,correct:out,wrong:thSample(dia.map(x=>x.name),3),
+    exp:`${kName(k)} majeur ne contient que : ${dia.map(x=>x.name).join(" ")}. ${out} en est absent.`};
+}
+function gTriad(){
+  const names=Object.keys(TH_TRIAD);
+  if(thRnd(2)===0){ const r=thRnd(12),q=thPick(names),iv=TH_TRIAD[q],correct=iv.map(x=>CHROM[(r+x)%12]).join(" · ");
+    const w=[[CHROM[r],CHROM[(r+(iv[1]===4?3:4))%12],CHROM[(r+iv[2])%12]].join(" · "),
+             [CHROM[r],CHROM[(r+iv[1])%12],CHROM[(r+(iv[2]===7?(q==="majeur"?8:6):7))%12]].join(" · "),
+             [CHROM[(r+2)%12],CHROM[(r+iv[1])%12],CHROM[(r+iv[2])%12]].join(" · ")];
+    return {q:`Épelle l'accord <b>${CHROM[r]} ${q}</b> :`,correct,wrong:thDistinct(correct,w,3),
+      exp:`${q} = ${iv.join("-")} demi-tons depuis la fondamentale → ${correct}.`,play:()=>thPlayTriad(r,iv)}; }
+  const r=thRnd(12),q=thPick(names),iv=TH_TRIAD[q];
+  return {q:`L'accord <b>${iv.map(x=>CHROM[(r+x)%12]).join(" · ")}</b> est de quel type ?`,correct:q,wrong:thDistinct(q,names,3),
+    exp:`Intervalles ${iv.join("-")} : tierce ${iv[1]===4?"majeure (4 cases)":"mineure (3 cases)"}, quinte ${iv[2]===7?"juste":iv[2]===6?"diminuée":"augmentée"} → ${q}.`,play:()=>thPlayTriad(r,iv)};
+}
+function gSeventh(){
+  if(thRnd(2)===0){ const k=thPick(TH_DET),vpc=(k+7)%12,flat=TH_FLATKEYS.has(k),correct=thNote(vpc,flat)+"7";
+    const wrong=thDistinct(correct,TH_DET.map(x=>thNote((x+7)%12,TH_FLATKEYS.has(x))+"7").concat([kName(k)+"maj7",thNote(k,flat)+"m7"]),3);
+    return {q:`Le <b>V7</b> (accord de dominante) de <b>${kName(k)} majeur</b>, c'est :`,correct,wrong,
+      exp:`Le V est une quinte au-dessus de la tonique : ${kName(k)} → ${thNote(vpc,flat)}. Avec sa 7e mineure : <b>${correct}</b>. C'est le SEUL accord de 7 de dominante de la tonalité — son triton ramène à la maison.`}; }
+  const r=thRnd(12),qn=thPick(Object.keys(TH_SEV)),iv=TH_SEV[qn],correct=iv.map(x=>CHROM[(r+x)%12]).join(" · ");
+  const w=[iv.map((x,ix)=>CHROM[(r+(ix===3?(iv[3]===11?10:11):x))%12]).join(" · "),
+           iv.map((x,ix)=>CHROM[(r+(ix===1?(iv[1]===4?3:4):x))%12]).join(" · "),
+           [CHROM[(r+2)%12]].concat(iv.slice(1).map(x=>CHROM[(r+x)%12])).join(" · ")];
+  return {q:`Épelle l'accord <b>${CHROM[r]}${qn}</b> :`,correct,wrong:thDistinct(correct,w,3),
+    exp:`${CHROM[r]}${qn} = ${iv.join("-")} demi-tons → ${correct}.`,play:()=>thPlayTriad(r,iv)};
+}
+function gCadence(){
+  if(thRnd(2)===0){ const C=[["V → I","parfaite"],["IV → I","plagale"],["… → V","demi-cadence"],["V → vi","rompue"]],c=thPick(C);
+    return {q:`La cadence <b>${c[0]}</b> s'appelle la cadence… ?`,correct:c[1],wrong:thDistinct(c[1],C.map(x=>x[1]),3),
+      exp:`${c[0]} = cadence ${c[1]}.`}; }
+  const Q=[["Quelle cadence conclut le plus fermement ?","parfaite","V→I : la dominante résout sur la tonique. Le point final."],
+    ["Quelle cadence crée une surprise en évitant la tonique ?","rompue","V→vi : la dominante promet le I puis bifurque vers le vi."],
+    ["Quelle cadence laisse l'oreille en suspens (une question) ?","demi-cadence","S'arrêter SUR le V : une virgule, pas un point."],
+    ["Quelle est la cadence « Amen », douce ?","plagale","IV→I, plus reposée que V→I."]],c=thPick(Q);
+  return {q:c[0],correct:c[1],wrong:thDistinct(c[1],["parfaite","plagale","rompue","demi-cadence"],3),exp:c[2]};
+}
+function gCircle(){
+  const m=thRnd(3);
+  if(m===0){ const MAP={0:"aucune altération",7:"1 dièse",2:"2 dièses",9:"3 dièses",4:"4 dièses",11:"5 dièses",5:"1 bémol",10:"2 bémols",3:"3 bémols",8:"4 bémols",1:"5 bémols"};
+    const ks=Object.keys(MAP).map(Number),k=thPick(ks),correct=MAP[k];
+    return {q:`Combien d'altérations à l'armure de <b>${kName(k)} majeur</b> ?`,correct,wrong:thDistinct(correct,Object.values(MAP),3),
+      exp:`${kName(k)} majeur → ${correct}. (Cycle des quintes : +1 dièse par quinte montante, +1 bémol par quarte.)`}; }
+  if(m===1){ const a=thRnd(12),b=(a+7)%12;
+    return {q:`Une <b>quinte juste</b> au-dessus de <b>${CHROM[a]}</b> ?`,correct:CHROM[b],wrong:thDistinct(CHROM[b],CHROM,3),
+      exp:`+7 demi-tons : ${CHROM[a]} → ${CHROM[b]}. C'est le pas du cycle des quintes.`}; }
+  const k=thPick(TH_DET),correct=thNote((k+9)%12,TH_FLATKEYS.has(k))+" mineur";
+  return {q:`La relative mineure de <b>${kName(k)} majeur</b> ?`,correct,wrong:thDistinct(correct,TH_DET.map(x=>thNote((x+9)%12,TH_FLATKEYS.has(x))+" mineur"),3),
+    exp:`La relative mineure est bâtie sur le 6e degré : ${kName(k)} + 9 demi-tons = <b>${correct}</b>. Mêmes notes, centre différent.`};
+}
+function gMode(){
+  const m=thRnd(3);
+  if(m===0){ const md=thPick(GMODES);
+    return {q:`Le <b>${md.deg}${md.deg===1?"er":"e"} mode</b> de la gamme majeure s'appelle ?`,correct:md.n,wrong:thDistinct(md.n,GMODES.map(x=>x.n),3),
+      exp:`${md.deg}e degré → ${md.n}. Formule : ${md.form}.`}; }
+  if(m===1){ const Q=[["Quel mode est un MAJEUR avec une ♭7 ?","Mixolydien","1 2 3 4 5 6 ♭7 — tout le rock et le blues."],
+    ["Quel mode est un MINEUR avec une 6e MAJEURE ?","Dorien","Un mineur qui ne se plaint pas (Santana, jazz modal)."],
+    ["Quel mode a un ♯4 (un majeur qui flotte) ?","Lydien","1 2 3 ♯4 5 6 7 — le son des musiques de film."],
+    ["Quel mode a une ♭2 (couleur espagnole) ?","Phrygien","Le demi-ton dès la 2e note : flamenco, metal."],
+    ["Quel mode est le mineur naturel ?","Éolien","1 2 ♭3 4 5 ♭6 ♭7 — la 6e mineure qui pleure."]],c=thPick(Q);
+    return {q:c[0],correct:c[1],wrong:thDistinct(c[1],GMODES.map(x=>x.n),3),exp:c[2]}; }
+  const k=thPick(TH_DET),md=thPick(GMODES.filter(x=>x.deg>=2)),sp=(k+MAJ[md.deg-1])%12;
+  return {q:`Dans <b>${kName(k)} majeur</b>, le mode <b>${md.n}</b> démarre sur quelle note ?`,correct:thNote(sp,TH_FLATKEYS.has(k)),wrong:thDistinct(thNote(sp,TH_FLATKEYS.has(k)),CHROM,3),
+    exp:`${md.n} = ${md.deg}e degré de la majeure parente. ${kName(k)} majeur, ${md.deg}e degré = ${thNote(sp,TH_FLATKEYS.has(k))}. (Mêmes notes que ${kName(k)}, tonique différente.)`};
+}
+const THEX=[
+  {id:"key",icon:"🔑",name:"Repérer la tonalité",sub:"des accords → quelle tonalité",gen:gKey},
+  {id:"int",icon:"📏",name:"Les intervalles",sub:"distances, noms, notes",gen:gInterval},
+  {id:"deg",icon:"🏠",name:"Degrés & harmonisation",sub:"quel accord à quel degré",gen:gDegree},
+  {id:"tri",icon:"🔺",name:"Triades",sub:"épeler & reconnaître maj/min/dim/aug",gen:gTriad},
+  {id:"sev",icon:"7️⃣",name:"Accords de 7e",sub:"V7, maj7, m7…",gen:gSeventh},
+  {id:"cad",icon:"🔚",name:"Cadences",sub:"parfaite, plagale, rompue…",gen:gCadence},
+  {id:"cyc",icon:"🌀",name:"Cycle des quintes",sub:"dièses/bémols, quintes, relatives",gen:gCircle},
+  {id:"mod",icon:"🌈",name:"Les modes",sub:"nommer, reconnaître, situer",gen:gMode}
+];
+let THX=null;
+function openThEx(){
+  openOv(ovTop("🎯 Exercices de théorie")+`
+    <div class="pt">Des exercices <b>générés à l'infini</b> — les questions changent à chaque fois. Réponses calculées, jamais approximatives. Le meilleur farm sans guitare : vise la <b>vitesse de reconnaissance</b>.</div>`+
+    THEX.map(c=>{ const st=S.thex[c.id]; return `<div class="act hot" onclick="startThEx('${c.id}')">
+      <div class="ico">${c.icon}</div><div class="t"><b>${c.name}</b><small>${c.sub}${st?` · record ${st.best}/10 · ${st.runs} sessions`:""}</small></div>
+      <div class="st">›</div></div>`; }).join(""));
+}
+function startThEx(id){ const c=THEX.find(x=>x.id===id); THX={c,i:0,n:10,good:0,streak:0,best:0,cur:null,answered:false}; thexQ(); }
+function thexQ(){
+  THX.cur=THX.c.gen(); THX.answered=false;
+  const it=THX.cur, opts=thShuf([it.correct,...it.wrong.slice(0,3)]);
+  THX.opts=opts; THX.aIdx=opts.indexOf(it.correct);
+  openOv(ovTop(THX.c.icon+" "+THX.c.name)+`
+    <div class="sub" style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Question ${THX.i+1}/${THX.n}</span><span>série ${THX.streak}${THX.best?" · record run "+THX.best:""}</span></div>
+    <div class="qq">${it.q}</div>
+    ${it.play?`<button class="btn ghost" style="margin-bottom:8px" onclick="THX.cur&&THX.cur.play&&THX.cur.play()">🔊 Écouter</button>`:""}
+    ${opts.map((o,p)=>`<button class="opt" onclick="thexA(${p})">${o}</button>`).join("")}
+    <div id="thexp"></div>`);
+  if(it.play) setTimeout(()=>{ if(THX.cur&&THX.cur.play) THX.cur.play(); },260);
+}
+function thexA(p){
+  if(THX.answered) return; THX.answered=true;
+  const it=THX.cur, ok=p===THX.aIdx;
+  if(ok){ THX.good++; THX.streak++; if(THX.streak>THX.best) THX.best=THX.streak; } else THX.streak=0;
+  document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(k===THX.aIdx)b.classList.add("ok"); else if(k===p)b.classList.add("ko"); });
+  document.getElementById("thexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non — "+it.correct+"."}</b> ${it.exp}</div>
+    <button class="btn" onclick="${THX.i<THX.n-1?"THX.i++;thexQ()":"thexEnd()"}">${THX.i<THX.n-1?"Suivante →":"Voir le score"}</button>`;
+}
+function thexEnd(){
+  const c=THX.c;
+  if(!S.thex[c.id]) S.thex[c.id]={best:0,runs:0};
+  const rec=S.thex[c.id]; rec.runs++;
+  const isRec=THX.good>rec.best; if(isRec) rec.best=THX.good;
+  addXP(4+THX.good); save();
+  openOv(ovTop(c.icon+" "+c.name)+`
+    <div style="font-size:46px;font-weight:800;text-align:center;color:var(--acc);margin:6px 0">${THX.good}/${THX.n}</div>
+    <div class="sub" style="text-align:center;margin-bottom:10px">${isRec?"🏆 Nouveau record !":"record : "+rec.best+"/10"} · meilleure série d'affilée : ${THX.best}</div>
+    <div class="crit">${THX.good===THX.n?"Sans-faute. Remets une couche pour la vitesse, ou change de catégorie.":THX.good>=7?"Solide. Les questions ratées reviendront différentes — refais un tour.":"Relis le module correspondant (Cours complet), puis reviens : c'est en te trompant ici que ça rentre pour de bon."}</div>
+    <button class="btn" onclick="startThEx('${c.id}')">↻ Rejouer — nouvelles questions</button>
+    <button class="btn ghost" onclick="openThEx()">← Toutes les catégories</button>`);
 }
 
 // ================= RÉPERTOIRE =================

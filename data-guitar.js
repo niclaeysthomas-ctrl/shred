@@ -536,6 +536,127 @@ content:[
 q:[
 {q:"La méthode de la case 5, avec son exception :",opts:["Case 5 partout","Case 5 partout, SAUF Sol case 4 → Si","Case 7 partout","Case 5 sauf sur le Mi aigu"],a:1,exp:"L'anomalie du Si frappe encore : l'intervalle Sol→Si est une tierce majeure (4 cases), pas une quarte (5). Une seule exception à retenir."},
 {q:"On sait que deux cordes sont accordées quand :",opts:["Elles semblent « pareilles »","Le battement entre elles ralentit puis disparaît","On a compté jusqu'à dix","La caisse vibre"],a:1,exp:"Le battement est un phénomène physique : plus les fréquences sont proches, plus il est lent. Zéro battement = unisson parfait. C'est mesurable à l'oreille nue."}]},
+
+// ============ COURS COMPLET DE THÉORIE (sans guitare, exercices répétables) ============
+{id:"c1", cours:true, title:"Les intervalles : la distance qui fait tout",
+content:[
+"Tu connais les 12 notes (fiche f1) et où elles sont (f5-f6). Un <b>intervalle</b>, c'est simplement la <b>distance</b> entre deux notes, comptée en demi-tons (cases). Toute la musique — accords, gammes, mélodies, tensions — n'est QUE des intervalles empilés. Apprends-les une fois, tu lis tout le reste.",
+"Les 12 intervalles d'une octave, du plus petit au plus grand : 0 unisson · 1 <b>seconde mineure</b> (m2) · 2 seconde Majeure (M2) · 3 <b>tierce mineure</b> (m3) · 4 tierce Majeure (M3) · 5 <b>quarte juste</b> (4) · 6 triton (b5) · 7 <b>quinte juste</b> (5) · 8 sixte mineure (m6) · 9 sixte Majeure (M6) · 10 <b>septième mineure</b> (m7) · 11 septième Majeure (M7) · 12 octave.",
+"Deux repères à graver : la <b>quinte juste = 7 cases</b> (l'intervalle le plus stable après l'octave — c'est ton power chord), et la <b>tierce = 3 ou 4 cases</b> (mineure ou Majeure), la note qui décide de la couleur. Tout le reste se compte à partir de là."],
+q:[
+{q:"Un intervalle, en musique, c'est :",opts:["Le nom d'une note","La distance entre deux notes, en demi-tons","Un type d'accord","La durée d'une note"],a:1,exp:"Distance, point. Accords et gammes ne sont que des intervalles empilés. Les compter en cases suffit à tout reconstruire."},
+{q:"La quinte juste vaut :",opts:["5 cases","7 cases","12 cases","3 cases"],a:1,exp:"7 demi-tons. L'intervalle du power chord, le plus stable après l'octave — d'où sa présence dans presque tous les accords."},
+{q:"L'intervalle de 6 cases (moitié d'octave), célèbre pour sa tension, s'appelle :",opts:["La quarte juste","Le triton","La quinte juste","La sixte"],a:1,exp:"Le triton (6 cases), le « diabolus in musica ». Instable, il VEUT se résoudre — c'est le moteur de tout accord de dominante (tu le reverras)."}]},
+
+{id:"c2", cours:true, title:"Pourquoi ça sonne : consonance & dissonance",
+content:[
+"Pourquoi une quinte sonne « pleine » et une seconde mineure « grince » ? Ce n'est pas une convention, c'est <b>physique</b>. Une note est une fréquence ; deux notes s'accordent quand leurs fréquences sont dans un <b>rapport simple</b>. Octave = 2:1. Quinte = 3:2. Quarte = 4:3. Tierce Majeure = 5:4. Plus le rapport est simple, plus les ondes s'alignent, plus c'est <b>consonant</b> (stable, reposé).",
+"À l'inverse, seconde mineure, triton, septième Majeure ont des rapports compliqués : les ondes se battent, l'oreille perçoit de la <b>dissonance</b> (tension, mouvement). La dissonance n'est pas « moche » — c'est le <b>moteur</b> de la musique : elle crée une attente que la consonance vient résoudre. Sans dissonance, tout serait plat.",
+"Origine profonde : la <b>série harmonique</b>. Une corde qui vibre produit, en plus de sa note, des harmoniques (×2, ×3, ×4…). L'octave, la quinte et la tierce Majeure sont les premières — c'est pour ça qu'elles nous semblent « naturelles ». L'accord majeur est littéralement caché dans une seule corde qui vibre."],
+q:[
+{q:"Deux notes sonnent consonantes quand leurs fréquences sont :",opts:["Identiques","Dans un rapport simple (2:1, 3:2…)","Très éloignées","Toujours dissonantes"],a:1,exp:"Rapport simple = ondes alignées = consonance. Octave 2:1, quinte 3:2, quarte 4:3. De la physique, pas du goût."},
+{q:"À quoi sert la dissonance ?",opts:["À rien, c'est une erreur","À créer une tension qui appelle une résolution — le moteur du mouvement","À jouer plus fort","À accorder la guitare"],a:1,exp:"La dissonance crée l'attente, la consonance la résout. Toute la musique tonale est ce cycle tension→détente. Sans dissonance, aucune direction."},
+{q:"L'accord majeur « caché » dans une corde qui vibre vient :",opts:["Du bois de la guitare","De la série harmonique (octave, quinte, tierce M sont les premiers harmoniques)","Du micro","D'un accordage spécial"],a:1,exp:"Une corde produit des harmoniques ×2, ×3, ×4… soit octave, quinte, tierce M : l'accord majeur. Un fait acoustique, pas une invention humaine."}]},
+
+{id:"c3", cours:true, title:"Les degrés : chaque note a un rôle",
+content:[
+"Dans une gamme majeure (f7), les 7 notes ne sont pas égales : chacune a une <b>fonction</b>, un rôle de tension ou de repos. On les numérote en degrés (I à VII). Le plus important : le degré <b>I, la tonique</b> = la maison, le repos absolu, la note vers laquelle tout veut revenir.",
+"Les rôles clés : <b>I tonique</b> (repos) · <b>V dominante</b> (tension maximale, veut aller vers I) · <b>IV sous-dominante</b> (éloignement doux) · <b>VII sensible</b> (à un demi-ton sous la tonique, elle « frotte » et attire irrésistiblement vers elle). En Do : Si (VII) veut monter à Do (I). Cette attraction du demi-ton est le secret de toute résolution.",
+"Pourquoi ça compte : quand un morceau « appelle sa fin », c'est le V ou le VII qui tire vers le I. Comprendre les degrés, c'est arrêter d'entendre des notes et commencer à entendre des <b>tensions et des repos</b> — de la grammaire, pas du vocabulaire."],
+q:[
+{q:"La tonique (degré I) est :",opts:["La note la plus aiguë","La note de repos, la « maison » vers laquelle tout revient","La note la plus grave de la guitare","Une note interdite"],a:1,exp:"Le I = repos absolu. La tension de tous les autres degrés se définit par leur envie de rejoindre la tonique."},
+{q:"La sensible (VII), à un demi-ton sous la tonique :",opts:["Est sans importance","Attire fortement vers la tonique (résolution par demi-ton)","Se joue toujours en premier","Est la même que la dominante"],a:1,exp:"Le demi-ton VII→I crée une attraction irrésistible. C'est l'aimant de la musique tonale : la sensible « veut » monter d'un demi-ton vers le repos."},
+{q:"Le degré de plus grande tension, qui « appelle » la tonique, est :",opts:["Le IV (sous-dominante)","Le V (dominante)","Le II","Le VI"],a:1,exp:"La dominante (V) porte la sensible et le triton : tension maximale, qui veut se résoudre sur le I. V→I est LA cadence."}]},
+
+{id:"c4", cours:true, title:"Construire les accords : les triades",
+content:[
+"Un accord de base = <b>3 notes empilées par tierces</b> : une fondamentale, une tierce, une quinte. C'est tout. Selon que la tierce est Majeure (4 cases) ou mineure (3 cases), et la quinte juste (7) ou altérée, tu obtiens <b>4 couleurs</b>.",
+"Les 4 triades, par leur recette d'intervalles depuis la fondamentale : <b>Majeur</b> = M3 + quinte juste (0-4-7), lumineux · <b>mineur</b> = m3 + quinte juste (0-3-7), sombre · <b>diminué</b> = m3 + quinte diminuée (0-3-6), instable/angoissant · <b>augmenté</b> = M3 + quinte augmentée (0-4-8), suspendu/étrange. La <b>tierce</b> décide majeur/mineur ; la <b>quinte</b> décide stable/altéré.",
+"Réflexe : un accord n'est pas une forme à mémoriser, c'est un <b>empilement d'intervalles</b>. « Majeur » veut dire 0-4-7 partout, sur n'importe quelle fondamentale. Tu ne connais pas 60 accords : tu connais 4 recettes, posées sur 12 fondamentales."],
+q:[
+{q:"Une triade de base, c'est :",opts:["3 notes empilées par tierces (fondamentale-tierce-quinte)","3 notes à la suite dans la gamme","N'importe quelles 3 notes","La même note sur 3 cordes"],a:0,exp:"Fondamentale + tierce + quinte, empilées par tierces. La brique de tout accord ; le reste (7, 9…) continue d'empiler des tierces."},
+{q:"Qu'est-ce qui distingue un accord majeur d'un accord mineur ?",opts:["La fondamentale","La quinte","La tierce (Majeure = 4 cases / mineure = 3 cases)","Le nombre de cordes"],a:2,exp:"Seule la tierce change : 0-4-7 (majeur) vs 0-3-7 (mineur). Un seul demi-ton fait basculer du lumineux au sombre."},
+{q:"La recette 0-3-6 (tierce mineure, quinte diminuée) donne un accord :",opts:["Majeur","Augmenté","Diminué","Suspendu"],a:2,exp:"m3 + quinte diminuée = accord diminué (0-3-6), instable et tendu. C'est l'accord du VIIe degré, bourré de triton."}]},
+
+{id:"c5", cours:true, title:"L'harmonisation : d'où viennent les accords",
+content:[
+"La fiche f8 t'a montré que Do majeur contient 7 accords (C Dm Em F G Am B°), toujours dans l'ordre <b>M m m M M m dim</b> (I ii iii IV V vi vii°). Niveau supérieur : ces 7 accords se rangent en <b>3 fonctions</b>, trois familles de tension.",
+"<b>Tonique</b> (repos) : I, vi, iii — ils sonnent « posés ». <b>Sous-dominante</b> (départ, éloignement doux) : IV, ii. <b>Dominante</b> (tension max, veut résoudre) : V, vii° — ils portent la sensible et le triton, et « appellent » le retour à la tonique.",
+"Le cycle fondamental de la musique tonale : <b>Tonique → Sous-dominante → Dominante → Tonique</b> (repos → on s'éloigne → tension → on rentre). En Do : C → F → G → C. Tu viens de comprendre 80 % des chansons. Les substitutions (I par vi, IV par ii) marchent parce qu'elles partagent la même fonction."],
+q:[
+{q:"Les 7 accords d'une tonalité majeure se regroupent en combien de fonctions ?",opts:["7","3 (tonique, sous-dominante, dominante)","2","12"],a:1,exp:"Trois familles : Tonique (repos : I vi iii), Sous-dominante (mouvement : IV ii), Dominante (tension : V vii°). Toute progression navigue entre elles."},
+{q:"Le cycle de tension fondamental est :",opts:["Dominante → Tonique → Sous-dominante","Tonique → Sous-dominante → Dominante → Tonique","Tonique → Dominante → Tonique uniquement","Il n'y a pas de cycle"],a:1,exp:"Repos → éloignement → tension → retour. En Do : C-F-G-C. La respiration de la musique tonale, trame de milliers de morceaux."},
+{q:"Pourquoi peut-on souvent remplacer le I par le vi (en Do : C par Am) ?",opts:["Par hasard","Parce qu'ils partagent la même fonction (tonique) et deux notes communes","Parce que Am est plus facile","On ne peut pas"],a:1,exp:"I et vi ont la même fonction de repos et deux notes communes (C-E-G vs A-C-E). Substitution de même fonction : la base des variations d'accords."}]},
+
+{id:"c6", cours:true, title:"Les cadences : la ponctuation",
+content:[
+"Une <b>cadence</b> est une formule de deux accords qui « ponctue » la musique — comme une virgule, un point-virgule ou un point final. Elle dit à l'oreille où on en est : suspension ou conclusion.",
+"Les quatre essentielles : <b>Parfaite V→I</b> (le point final, conclusion nette : G→C) · <b>Plagale IV→I</b> (la cadence « Amen », plus douce : F→C) · <b>Demi-cadence …→V</b> (on s'arrête SUR la tension, question ouverte) · <b>Rompue V→vi</b> (surprise : la dominante appelle le I mais bifurque vers le vi : G→Am).",
+"Écouter les cadences, c'est entendre la <b>syntaxe</b> d'un morceau : où ça respire, où ça pose une question, où ça conclut. Les compositeurs jouent avec tes attentes — la rompue te promet un repos puis te le refuse, et c'est exactement ce qui crée l'émotion."],
+q:[
+{q:"La cadence parfaite (conclusion nette) est :",opts:["IV → I","V → I","V → vi","I → V"],a:1,exp:"V→I : la dominante résout sur la tonique. Le « point final » de la musique tonale, la conclusion la plus forte."},
+{q:"La cadence rompue V → vi sert à :",opts:["Conclure fermement","Créer une surprise et prolonger le morceau (le repos promis est refusé)","Accorder la guitare","Monter d'un ton"],a:1,exp:"La dominante « promet » le I mais bifurque vers le vi : attente déçue, tension maintenue. L'outil pour étirer une chanson sans la finir."},
+{q:"S'arrêter SUR le V (…→V) produit :",opts:["Une conclusion","Une demi-cadence : une suspension, une question ouverte","Une cadence plagale","Rien de particulier"],a:1,exp:"Finir sur la dominante laisse l'oreille en suspens — une virgule, pas un point. Ça « appelle » la suite."}]},
+
+{id:"c7", cours:true, title:"Le cycle des quintes : la carte des tonalités",
+content:[
+"Range les 12 notes non pas à la suite, mais de <b>quinte en quinte</b> (7 cases à chaque pas) : C-G-D-A-E-B-F#… Tu obtiens un cercle qui se referme en 12 pas. C'est le <b>cycle des quintes</b>, la carte routière de toute l'harmonie.",
+"Ce qu'il t'offre : (1) le <b>nombre de dièses/bémols</b> de chaque tonalité. Do = 0. Chaque pas vers la droite (quinte) ajoute UN dièse : Sol = 1#, Ré = 2#, La = 3#… Chaque pas à gauche (quarte) ajoute un bémol : Fa = 1b, Sib = 2b… (2) Les tonalités <b>voisines</b> (adjacentes sur le cercle) partagent presque toutes leurs notes — moduler vers elles est fluide.",
+"Usage concret : les accords d'une tonalité sont groupés autour d'elle sur le cercle. Beaucoup de progressions (ii-V-I, l'anatole) ne font que <b>descendre le cycle</b>. C'est aussi l'outil n°1 pour transposer : décale tout d'un cran."],
+q:[
+{q:"Le cycle des quintes range les notes :",opts:["Par ordre alphabétique","De quinte en quinte (7 cases)","De la plus grave à la plus aiguë","Au hasard"],a:1,exp:"Chaque pas = une quinte juste. Le cercle se referme en 12 pas et organise toutes les tonalités par proximité."},
+{q:"En avançant d'un cran sur le cycle (Do → Sol → Ré…), chaque tonalité :",opts:["Perd un dièse","Gagne un dièse","Change de mode","Ne change pas d'armure"],a:1,exp:"Do 0, Sol 1#, Ré 2#, La 3#… un dièse de plus par quinte ; vers la gauche, un bémol de plus. Le cycle EST l'armure des clés."},
+{q:"Deux tonalités adjacentes sur le cycle (ex. Do et Sol) :",opts:["N'ont aucune note commune","Partagent presque toutes leurs notes (modulation fluide)","Sont dissonantes","Sont identiques"],a:1,exp:"Une seule note d'écart entre voisines. C'est pourquoi passer de l'une à l'autre sonne naturel — la base des changements de tonalité."}]},
+
+{id:"c8", cours:true, title:"Les accords de septième : la 4e note",
+content:[
+"Continue d'empiler des tierces sur ta triade : la 4e note est la <b>septième</b>. Elle enrichit la couleur et crée de la tension directionnelle. Les quatre types courants : <b>Maj7</b> (triade M + M7, doux, jazzy : Cmaj7) · <b>7 de dominante</b> (triade M + m7, tendu, bluesy : G7) · <b>m7</b> (triade m + m7, velouté : Am7) · <b>m7b5 / demi-diminué</b> (triade dim + m7 : Bm7b5).",
+"Harmonise Do majeur en septièmes : tu obtiens toujours <b>Imaj7, ii m7, iii m7, IVmaj7, V7, vi m7, vii m7b5</b>. Remarque : <b>un seul accord</b> de la tonalité est un « 7 de dominante » — le <b>V7</b> (en Do : G7). C'est le plus tendu, et ce n'est pas un hasard.",
+"Pourquoi le V7 est LE moteur : il contient un <b>triton</b> (entre sa tierce = la sensible, et sa septième). Ce triton instable se <b>résout</b> en pinçant vers l'intérieur sur la tonique. En Do, le triton de G7 (Si-Fa) se resserre sur Do-Mi. Toute la musique tonale, du classique au blues, tourne autour de cette résolution."],
+q:[
+{q:"Un accord de septième, c'est une triade + :",opts:["Une octave","Une 4e note empilée par tierce (la septième)","Une note grave","Un power chord"],a:1,exp:"On continue d'empiler des tierces : fondamentale-tierce-quinte-septième. La 7e ajoute couleur et tension directionnelle."},
+{q:"Dans une tonalité majeure, combien d'accords sont des « 7 de dominante » (type V7) ?",opts:["Tous","Un seul : le Ve degré","Trois","Aucun"],a:1,exp:"Un seul : le V7 (en Do, G7). C'est ce qui le rend unique et identifiable — il pointe vers la tonique de la tonalité."},
+{q:"Ce qui rend le V7 si « moteur », c'est :",opts:["Son volume","Le triton qu'il contient, qui se résout vers la tonique","Sa facilité","Sa fondamentale grave"],a:1,exp:"Le triton (sensible + septième) est instable et se resserre sur la tonique. En Do, Si-Fa (dans G7) → Do-Mi. La résolution centrale de la musique tonale."}]},
+
+{id:"c9", cours:true, title:"Le mode mineur : trois gammes, une raison",
+content:[
+"Le mineur n'est pas UNE gamme mais <b>trois</b>, et comprendre pourquoi lève une énorme confusion. Base : le <b>mineur naturel</b> (= mode éolien, le vi de la majeure). Formule : 1-2-b3-4-5-b6-b7. En La mineur : les touches blanches, comme Do majeur mais en partant de La.",
+"Problème : le mineur naturel n'a <b>pas de sensible</b> (son 7e degré, b7, est à un TON sous la tonique, pas un demi-ton). Sans sensible, pas d'attraction forte vers la tonique, donc pas de vraie cadence V→i. Solution : on <b>remonte le 7e degré d'un demi-ton</b> → le <b>mineur harmonique</b> (1-2-b3-4-5-b6-<b>7</b>). Ça recrée la sensible et un vrai V7. Effet secondaire : un grand saut (seconde augmentée) entre b6 et 7, qui sonne « oriental ».",
+"Pour lisser ce saut en montant une mélodie, on remonte AUSSI le 6e degré → le <b>mineur mélodique</b> (1-2-b3-4-5-<b>6-7</b> en montant). Retiens la logique, pas par cœur : harmonique = « je veux une cadence », mélodique = « je veux une ligne fluide ». Les trois mineurs sont des réponses à des problèmes, pas des caprices."],
+q:[
+{q:"Le mineur naturel correspond à quel mode ?",opts:["Le dorien","L'éolien (le vi de la gamme majeure)","Le lydien","Le mixolydien"],a:1,exp:"Mineur naturel = éolien = la majeure partant de son 6e degré. La mineur = touches blanches de La à La."},
+{q:"Pourquoi invente-t-on le mineur harmonique ?",opts:["Pour sonner oriental","Pour recréer une sensible (7e degré remonté) et donc un vrai V7 → i","Pour jouer plus vite","Sans raison"],a:1,exp:"Le mineur naturel n'a pas de sensible → pas de vraie cadence. On remonte le 7e degré d'un demi-ton pour retrouver l'attraction vers la tonique."},
+{q:"Le mineur mélodique remonte le 6e ET le 7e degré (en montant) afin de :",opts:["Compliquer","Lisser le grand saut (seconde augmentée) créé par le mineur harmonique","Changer de tonalité","Descendre plus vite"],a:1,exp:"Le mineur harmonique crée un saut b6→7 disgracieux en mélodie. Remonter aussi le 6 le comble : une ligne fluide. Logique, pas arbitraire."}]},
+
+{id:"c10", cours:true, title:"Les modes, proprement",
+content:[
+"Un mode, c'est la gamme majeure <b>jouée en partant d'un autre degré</b>. Mêmes 7 notes, autre centre de gravité, autre couleur. Les 7 rotations de Do majeur : <b>Ionien</b> (I, = majeur) · <b>Dorien</b> (II) · <b>Phrygien</b> (III) · <b>Lydien</b> (IV) · <b>Mixolydien</b> (V) · <b>Éolien</b> (VI, = mineur naturel) · <b>Locrien</b> (VII).",
+"Ne les apprends JAMAIS comme 7 gammes neuves. Chaque mode = un son majeur ou mineur + <b>UNE note caractéristique</b> qui le colore : <b>Dorien</b> = mineur avec une 6te Majeure (jazzy, moins triste) · <b>Phrygien</b> = mineur avec une b2 (espagnol, sombre) · <b>Lydien</b> = majeur avec un #4 (rêveur, flottant) · <b>Mixolydien</b> = majeur avec une b7 (blues, rock).",
+"Piège classique : « Ré dorien » ne veut pas dire « déplace-toi ». C'est les notes de Do majeur avec <b>Ré comme tonique</b>. Deux façons de penser un mode : par sa <b>gamme parente</b> (d'où viennent les notes) et par sa <b>note caractéristique</b> (ce qui le distingue de son majeur/mineur de base). Maîtrise les deux, tu improvises avec des couleurs, pas des positions."],
+q:[
+{q:"Un mode, c'est :",opts:["Une gamme totalement nouvelle","La gamme majeure jouée en partant d'un autre degré (mêmes notes, autre tonique)","Un accord","Un accordage"],a:1,exp:"7 modes = 7 rotations d'une même gamme. Ré dorien = notes de Do majeur, centrées sur Ré. La note-centre change tout."},
+{q:"La note caractéristique du mode lydien (vs le majeur) est :",opts:["La b7","Le #4 (quarte augmentée)","La b2","La b3"],a:1,exp:"Lydien = majeur avec un #4 : cette quarte augmentée donne son côté rêveur/flottant. Une seule note distingue un mode de son parent."},
+{q:"La meilleure façon d'entendre un mode, c'est de repérer :",opts:["Toute la gamme d'un coup","LA note caractéristique qui le colore vs le majeur/mineur de base","La vitesse","La position sur le manche"],a:1,exp:"Mixolydien = majeur + b7 ; dorien = mineur + 6M. L'oreille accroche la note qui change, pas les 7 notes. La méthode que l'app t'enseigne déjà."}]},
+
+{id:"c11", cours:true, title:"Tensions & extensions : 9, 11, 13",
+content:[
+"Continue d'empiler des tierces au-delà de la septième : tu obtiens la <b>9e</b>, la <b>11e</b>, la <b>13e</b> (ce sont la 2, la 4 et la 6, montées d'une octave). Ces <b>tensions</b> ajoutent richesse et couleur — le vocabulaire du jazz, de la soul, de la bossa, mais aussi de bien des ballades.",
+"Toutes les tensions ne se valent pas sur un accord donné. Certaines sonnent riches (<b>disponibles</b>), d'autres écrasent l'accord (<b>notes à éviter</b>) — typiquement une tension à un demi-ton au-dessus d'une note de l'accord, qui crée un frottement laid. Ex. sur un Cmaj7, la 11 juste (Fa) frotte contre la tierce Mi : on préfère la #11. La théorie « chord-scale » relie chaque accord à la gamme/mode qui liste ses tensions disponibles.",
+"L'idée à retenir : un accord n'est pas figé à 3 ou 4 notes, c'est un <b>empilement extensible</b>. Ajouter une 9 ou une 13 ne « change pas » l'accord, ça l'enrichit dans sa fonction. C'est ce qui sépare une grille pop de trois accords d'un arrangement soul qui « respire »."],
+q:[
+{q:"La 9e, la 11e et la 13e d'un accord sont :",opts:["Des fautes","La suite de l'empilement par tierces (la 2, la 4, la 6 à l'octave)","Des accords à part","Des cordes à vide"],a:1,exp:"On empile encore des tierces au-delà de la 7e. 9=2, 11=4, 13=6, montées d'une octave. Des couleurs ajoutées, pas des notes étrangères."},
+{q:"Une « note à éviter » sur un accord est en général :",opts:["La fondamentale","Une tension à un demi-ton au-dessus d'une note de l'accord (frottement)","La quinte","La tierce"],a:1,exp:"Ex. la 11 juste (Fa) sur Cmaj7 frotte contre la tierce Mi (un demi-ton) → laid. On préfère la #11. Chaque accord a ses tensions disponibles."},
+{q:"Ajouter une 9 ou une 13 à un accord :",opts:["Change sa fonction","L'enrichit sans changer sa fonction","Le rend faux","Le transpose"],a:1,exp:"Les extensions colorent l'accord dans sa fonction (un V7 reste dominante en V13). La différence entre une grille brute et un arrangement qui respire."}]},
+
+{id:"c12", cours:true, title:"Sortir de la tonalité : emprunts & dominantes secondaires",
+content:[
+"Deux outils font passer tes progressions de « correctes » à « riches », en allant chercher des accords <b>hors</b> de la tonalité. Premier : les <b>emprunts modaux</b> (modal interchange) — piocher un accord dans la tonalité mineure parallèle. En Do majeur, emprunter à Do mineur donne le <b>bVII</b> (Bb), le <b>iv mineur</b> (Fm), le <b>bVI</b> (Ab)… Le iv mineur après le IV majeur (F → Fm → C) est l'un des sons les plus émouvants de la pop.",
+"Second : les <b>dominantes secondaires</b>. Chaque accord d'une tonalité peut avoir sa propre dominante « temporaire », un V7 qui le vise. Le <b>V7/V</b> (« cinq de cinq », en Do : D7 qui vise G) tonicise le V un instant avant d'y aller : au lieu de C→G, tu fais C→D7→G, bien plus dramatique.",
+"L'idée générale : la tonalité est une <b>maison</b>, mais tu as le droit d'ouvrir des fenêtres sur les maisons voisines, tant que tu reviens. Emprunts (couleur d'un autre mode) et dominantes secondaires (tension importée) transforment une grille scolaire en musique adulte. C'est le seuil de l'harmonie « pro »."],
+q:[
+{q:"Un emprunt modal, c'est prendre un accord :",opts:["Au hasard","Dans la tonalité parallèle (ex. le iv mineur en majeur)","Une octave plus haut","D'une autre chanson"],a:1,exp:"On emprunte à la parallèle : en Do majeur, aller chercher Fm, Bb, Ab dans Do mineur. Le iv mineur (F→Fm→C) est un classique émouvant."},
+{q:"Une dominante secondaire (ex. V7/V, soit D7 en Do) sert à :",opts:["Conclure le morceau","Créer une tension temporaire qui vise un autre accord que la tonique","Accorder la guitare","Changer de tempo"],a:1,exp:"Un V7 « emprunté » qui tonicise brièvement un autre degré. C→D7→G : le D7 vise G et rend l'arrivée plus dramatique. Un détour de tension."},
+{q:"L'esprit de ces deux outils est :",opts:["Casser la tonalité définitivement","Ouvrir des fenêtres hors de la tonalité tout en y revenant — plus de couleur et de tension","Jouer plus fort","Éviter les accords"],a:1,exp:"La tonalité reste la maison ; emprunts et dominantes secondaires ouvrent des fenêtres sur les voisines. Le passage de la grille scolaire à l'harmonie adulte."}]}
 ];
 
 // ============ RÉPERTOIRE IMPÉRATIF (les morceaux-examens) ============
