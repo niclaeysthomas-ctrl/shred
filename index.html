@@ -1814,7 +1814,7 @@ function vChemin(){
   </div>
 
   <div class="card hot">
-    <div class="tierhead"><b style="font-size:12px;color:var(--acc);font-style:normal;letter-spacing:1px">ÉTAPE ${e.n} — AUJOURD'HUI</b></div>
+    <div class="tierhead"><b style="font-size:12px;color:var(--acc);font-style:normal;letter-spacing:1px">ÉTAPE ${i+1} / ${tot} — AUJOURD'HUI</b></div>
     <h2 style="margin:2px 0 6px">${e.t}</h2>
     <p class="lead">${e.do}</p>
     <p class="lead" style="color:var(--acc);margin-top:8px"><b>Critère :</b> ${e.crit}</p>
@@ -1825,8 +1825,8 @@ function vChemin(){
 
   <div class="card">
     <div class="tierhead"><b>Ensuite</b><small>tu ne peux pas sauter — c'est le principe</small></div>
-    ${next.map(x=>`<div class="act" style="opacity:.5;pointer-events:none">
-      <div class="ico">${x.n}</div><div class="t"><b>${x.t}</b><small>${x.crit}</small></div></div>`).join("")||
+    ${next.map((x,k)=>`<div class="act" style="opacity:.5;pointer-events:none">
+      <div class="ico">${i+2+k}</div><div class="t"><b>${x.t}</b><small>${x.crit}</small></div></div>`).join("")||
       `<p class="lead">Dernière étape.</p>`}
   </div>
 

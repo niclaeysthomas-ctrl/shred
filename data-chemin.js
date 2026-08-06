@@ -20,6 +20,7 @@ const _fiche=id=>S.fiches&&S.fiches[id]!==undefined;
 const _pal=id=>(S.pal&&S.pal[id])||0;
 const _bpm=id=>{ const a=(S.bpm&&S.bpm[id])||[]; return a.length?Math.max(...a.map(x=>x.v)):0; };
 const _bous=id=>((S.bous&&S.bous[id])||{best:0}).best||0;
+const _thex=id=>((S.thex&&S.thex[id])||{best:0}).best||0;   // exercices de théorie génératifs
 const _man=n=>!!(S.chemin&&S.chemin.done&&S.chemin.done[n]);
 
 const CHEMIN=[
@@ -43,6 +44,7 @@ const CHEMIN=[
 
 /* ---------- CH.3 : la carte ---------- */
 {n:15,ch:3,t:"Les intervalles dans la main",do:"Boussole, palier 1. Un intervalle est une FORME, pas un calcul.",crit:"Palier 1 de la Boussole ≥ 80 %",go:"boussoleBrief('c1')",gate:()=>_bous('c1')>=80},
+{n:43,ch:3,t:"Les intervalles, à froid",do:"Exercices de théorie → Intervalles. Nomme la distance, trouve la note, sans manche — juste la tête. Enchaîne jusqu'à 8/10. Génère à l'infini : parfait sans guitare.",crit:"Record Intervalles ≥ 8/10",go:"startThEx('int')",gate:()=>_thex('int')>=8},
 {n:16,ch:3,t:"D'où vient la gamme majeure",do:"La formule 2-2-1-2-2-2-1. Lis la fiche, elle explique tout le reste.",crit:"Fiche validée",go:"openFiche('f7')",gate:()=>_fiche('f7')},
 {n:17,ch:3,t:"Les toniques dans la position",do:"Boussole, palier 2. Sans tonique, tu joues des notes justes qui ne racontent rien.",crit:"Palier 2 ≥ 80 %",go:"boussoleBrief('c2')",gate:()=>_bous('c2')>=80},
 {n:18,ch:3,t:"Tierces et quintes",do:"Boussole, palier 3. Ce sont tes cibles — le palier qui change tout.",crit:"Palier 3 ≥ 80 %",go:"boussoleBrief('c3')",gate:()=>_bous('c3')>=80},
@@ -59,10 +61,13 @@ const CHEMIN=[
 
 /* ---------- CH.5 : les modes ---------- */
 {n:27,ch:5,t:"Harmoniser la gamme",do:"D'où viennent les accords d'une tonalité. C'est ce qui rend les modes évidents.",crit:"Fiche validée",go:"openFiche('f8')",gate:()=>_fiche('f8')},
+{n:44,ch:5,t:"Repérer la tonalité",do:"Tu viens d'harmoniser : maintenant l'app te donne des accords, tu trouves la tonalité. LA compétence d'impro n°1. Exercices → Repérer la tonalité, jusqu'à 8/10.",crit:"Record Tonalité ≥ 8/10",go:"startThEx('key')",gate:()=>_thex('key')>=8},
+{n:45,ch:5,t:"Degrés & harmonisation, à froid",do:"Quel accord à quel degré, sans hésiter — c'est ce qui rend l'harmonie automatique. Exercices → Degrés & harmonisation, jusqu'à 8/10.",crit:"Record Degrés ≥ 8/10",go:"startThEx('deg')",gate:()=>_thex('deg')>=8},
 {n:28,ch:5,t:"La note qui raconte",do:"Boussole, palier 5. Un mode sans sa note caractéristique ne s'entend pas.",crit:"Palier 5 ≥ 80 %",go:"boussoleBrief('c5')",gate:()=>_bous('c5')>=80},
 {n:29,ch:5,t:"Accord → mode",do:"Boussole, palier 6. Le point le plus utile : tu déduis le mode de l'accord.",crit:"Palier 6 ≥ 80 %",go:"boussoleBrief('c6')",gate:()=>_bous('c6')>=80},
 {n:30,ch:5,t:"Penser en degrés",do:"Arrêter de nommer des notes, nommer des fonctions. La fiche qui fait basculer.",crit:"Fiche validée",go:"openFiche('f10')",gate:()=>_fiche('f10')},
 {n:31,ch:5,t:"Relier les positions",do:"Boussole, palier 7. « Je vais vers la sixte », pas « position 3 ».",crit:"Palier 7 ≥ 80 %",go:"boussoleBrief('c7')",gate:()=>_bous('c7')>=80},
+{n:46,ch:5,t:"Les modes, à froid",do:"Nomme le mode, reconnais sa couleur (♭7, ♯4, 6te majeure…), situe-le dans la tonalité. Exercices → Les modes, jusqu'à 8/10. C'est là que les modes cessent d'être sept gammes à réciter.",crit:"Record Modes ≥ 8/10",go:"startThEx('mod')",gate:()=>_thex('mod')>=8},
 {n:32,ch:5,t:"Le vamp dorien",do:"Jam Station, grille dorienne. Deux minutes sur la 6ᵉ majeure SEULE, puis libre.",crit:"Séance faite (sur l'honneur)",go:"openJamList()",gate:()=>_man(32),manual:true},
 
 /* ---------- CH.6 : le répertoire ---------- */
