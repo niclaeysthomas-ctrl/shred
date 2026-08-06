@@ -406,6 +406,13 @@ function openOv(h){
     b.textContent=SEA.left===0?"⏱ bloc fini ✓":"⏱ "+seaFmt();
     ovin.appendChild(b);
   }
+  // séance sans guitare en cours : rappel discret de l'étape
+  if(typeof SEAT!=="undefined"&&SEAT&&SEAT.active){
+    const b=document.createElement("div"); b.id="seatBadge";
+    b.style.cssText="position:fixed;top:14px;right:14px;z-index:80;background:var(--bg3);border:1px solid #4a3823;color:var(--acc);font-family:var(--mono);font-weight:800;font-size:12.5px;padding:7px 10px;border-radius:10px;pointer-events:none";
+    b.textContent="🧠 étape "+(SEAT.i+1)+"/"+SEAT.blocks.length;
+    ovin.appendChild(b);
+  }
   ov.classList.add("on"); ov.scrollTop=0;
 }
 function closeOv(){
@@ -415,6 +422,7 @@ function closeOv(){
   if(typeof JAM!=="undefined"&&JAM.on) jamStop();
   if(WU&&WU.iv){clearInterval(WU.iv);WU=null;}
   // séance guidée en cours : on ne rend pas la main, on revient à l'écran séance
+  if(typeof SEAT!=="undefined"&&SEAT&&SEAT.active){ render(); seatScreen(); return; }
   if(typeof SEA!=="undefined"&&SEA&&SEA.active){ render(); seaScreen(); return; }
   render();
 }
@@ -1396,6 +1404,63 @@ function seaQuit(){
   closeOv();
 }
 
+// ============ SÉANCE SANS GUITARE — théorie pure, guidée, pas à pas ============
+// Pas de chrono : la théorie ne se joue pas contre la montre, elle s'ancre.
+let SEAT=null;
+function startSeanceTheorie(){
+  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+  // la fiche « pourquoi » tourne : gamme majeure, penser en degrés, forme des intervalles, harmonisation
+  const fiche=["f7","f10","th1","f8"][doy%4];
+  const due=fichesDue();
+  const closer=due.length
+    ?{icon:"🧠",name:"Rappel de théorie",desc:"Un rappel espacé arrive à échéance. Sans relire : c'est l'effort de mémoire qui grave.",open:`openFicheRev('${due[0]}')`}
+    :{icon:"🌈",name:"Les modes, à froid",desc:"Nomme le mode, reconnais sa couleur, situe-le dans la tonalité. Le sommet de l'édifice.",open:"startThEx('mod')"};
+  const blocks=[
+    {icon:"📖",name:"Comprendre — la théorie derrière les notes",desc:"Lis la fiche du jour et réponds à ses 2 questions. Le « pourquoi » avant le « combien » : sans lui, le reste n'est que du par-cœur.",open:`openFiche('${fiche}')`},
+    {icon:"☀️",name:"Placer les degrés de la gamme",desc:"Tonique, seconde, tierce, quinte… Situe chaque degré dans les 12 tonalités majeures, sans manche, juste la tête. C'est le cœur de la séance — enchaîne jusqu'à 8/10.",open:"startThEx('sca')"},
+    {icon:"📏",name:"Les intervalles à froid",desc:"Nomme la distance, trouve la note. La brique élémentaire dont sont faits gammes, accords et arpèges.",open:"startThEx('int')"},
+    {icon:"🏠",name:"Degrés & harmonisation",desc:"Quel accord vit à quel degré — l'harmonie qui devient un réflexe, et la clé pour repérer une tonalité.",open:"startThEx('deg')"},
+    closer
+  ];
+  SEAT={active:true,blocks,i:0};
+  seatScreen();
+}
+function seatScreen(){
+  if(!SEAT) return;
+  const b=SEAT.blocks[SEAT.i], last=SEAT.i>=SEAT.blocks.length-1;
+  ovin.innerHTML=`<div class="top"><button class="x" onclick="seatQuit()">✕</button><b>🧠 Séance sans guitare · étape ${SEAT.i+1}/${SEAT.blocks.length}</b></div>
+    <div class="game" style="text-align:center"><div class="qnote" style="font-size:21px">${b.icon} ${b.name}</div></div>
+    <div class="pt">${b.desc}</div>
+    <button class="btn" onclick='${b.open.replace(/'/g,"&#39;")}'>Ouvrir l'étape</button>
+    <button class="btn ghost" onclick="seatNext()">${last?"Terminer la séance ✓":"Étape suivante →"}</button>
+    <h2 class="sec">La séance</h2>
+    ${SEAT.blocks.map((x,k)=>`<div class="act ${k<SEAT.i?"done":""}" style="${k===SEAT.i?"border-color:#4a3823":""};pointer-events:none">
+      <div class="ico">${k<SEAT.i?"✓":x.icon}</div><div class="t"><b>${x.name}</b></div></div>`).join("")}`;
+  ov.classList.add("on"); ov.scrollTop=0;
+}
+function seatNext(){ if(!SEAT) return; SEAT.i++; if(SEAT.i>=SEAT.blocks.length) return seatEnd(); seatScreen(); }
+function seatEnd(){
+  SEAT=null; addXP(10); save();
+  ovin.innerHTML=ovTop("🧠 Séance théorie bouclée")+`
+    <div class="result"><div class="big">🧠</div><div class="xp">+10 XP</div>
+    <p>Cinq étapes de théorie pure, sans toucher une corde. La tonique, les degrés, les intervalles, l'harmonisation : c'est exactement ce qui transforme « jouer des notes justes » en « viser ». Quand tu reprends la guitare, tu n'as plus qu'à poser la main.</p></div>
+    <button class="btn" onclick="closeOv()">Terminer</button>`;
+  ov.classList.add("on"); ov.scrollTop=0;
+}
+function seatQuit(){ SEAT=null; closeOv(); }
+
+// ============ CHOIX À L'OUVERTURE : avec / sans guitare ============
+function openModeGate(){
+  ovin.innerHTML=`<div class="top"><button class="x" onclick="closeOv()">✕</button><b>🎸 Ta séance du jour</b></div>
+    <div class="sub" style="margin-bottom:12px">As-tu ta guitare à portée de main ? Choisis ta séance — tu pourras changer à tout moment.</div>
+    <div class="act hot" onclick="closeOv();nav('jour')">
+      <div class="ico">🎸</div><div class="t"><b>Avec guitare</b><small>le Chemin : technique, manche, morceau — l'entraînement complet</small></div><div class="st">›</div></div>
+    <div class="act hot" onclick="closeOv();startSeanceTheorie()">
+      <div class="ico">🧠</div><div class="t"><b>Sans guitare — séance théorie</b><small>placer la tonique, les degrés, intervalles, harmonisation — sans toucher une corde</small></div><div class="st">›</div></div>
+    <div class="crit" style="margin-top:12px">Pensée pour les jours sans instrument — transport, tendinite, pause : la théorie qui rend l'impro possible se travaille dans la tête, pas seulement sur le manche.</div>`;
+  ov.classList.add("on"); ov.scrollTop=0;
+}
+
 // ================= MICRO : détection de hauteur (autocorrélation ACF+) =================
 function autoCorrelate(buf,sr){
   let SIZE=buf.length,rms=0;
@@ -1807,6 +1872,9 @@ function vChemin(){
   // les 3 étapes suivantes, pour voir où ça va (sans pouvoir les faire)
   const next=CHEMIN.slice(i+1,i+4);
   return `
+  <div class="act hot" onclick="openModeGate()" style="margin-bottom:12px">
+    <div class="ico">🔀</div><div class="t"><b>Choisir ma séance</b><small>avec guitare (le Chemin) ou sans guitare (théorie pure)</small></div><div class="st">›</div>
+  </div>
   <div class="card">
     <div class="tierhead"><b>Chapitre ${ch.id} · ${ch.t}</b><span class="tierbar">${fait}/${tot}</span></div>
     <div class="pbar"><i style="width:${pct}%"></i></div>
@@ -1997,8 +2065,9 @@ function vTheorie(){
   <div class="hero" style="margin:10px 0 14px">
     <div class="lab">🎯 Farm sans guitare</div>
     <div style="font-weight:800;font-size:16px;margin:2px 0 4px">Exercices de théorie — générés à l'infini</div>
-    <div class="sub" style="margin-bottom:10px">8 catégories, questions renouvelées à chaque fois : repérer la tonalité depuis des accords, intervalles, degrés, triades, 7es, cadences, cycle des quintes, modes. C'est ici que la théorie devient un réflexe.</div>
-    <button class="btn" onclick="openThEx()">Ouvrir les exercices${nEx?" · "+nEx+"/8 entamées":""}</button>
+    <div class="sub" style="margin-bottom:10px">9 catégories, questions renouvelées à chaque fois : placer les degrés de la gamme, repérer la tonalité depuis des accords, intervalles, harmonisation, triades, 7es, cadences, cycle des quintes, modes. C'est ici que la théorie devient un réflexe.</div>
+    <button class="btn" onclick="openThEx()">Ouvrir les exercices${nEx?" · "+nEx+"/9 entamées":""}</button>
+    <button class="btn ghost" onclick="startSeanceTheorie()" style="margin-top:8px">🧠 Lancer la séance sans guitare (guidée)</button>
   </div>`+
   CH.map(c=>`<div class="act hot" onclick="${c[3]}">
     <div class="ico">${c[0]}</div><div class="t"><b>${c[1]}</b><small>${c[2]}</small></div><div class="st">›</div></div>`).join("")+
@@ -2242,7 +2311,42 @@ function gMode(){
   return {q:`Dans <b>${kName(k)} majeur</b>, le mode <b>${md.n}</b> démarre sur quelle note ?`,correct:thNote(sp,TH_FLATKEYS.has(k)),wrong:thDistinct(thNote(sp,TH_FLATKEYS.has(k)),CHROM,3),
     exp:`${md.n} = ${md.deg}e degré de la majeure parente. ${kName(k)} majeur, ${md.deg}e degré = ${thNote(sp,TH_FLATKEYS.has(k))}. (Mêmes notes que ${kName(k)}, tonique différente.)`};
 }
+// ---- Les degrés de la gamme majeure : placer la tonique, la seconde, la tierce… sans manche ----
+const SCADEG=[
+  ["la tonique",0,"la maison — repos absolu, tout se résout ici"],
+  ["la seconde",2,"un ton au-dessus de la tonique — instable, elle veut bouger"],
+  ["la tierce",4,"elle décide majeur ou mineur — la note la plus émotive de la gamme"],
+  ["la quarte",5,"suspendue — elle appelle une résolution (le son des accords sus4)"],
+  ["la quinte",7,"stable et puissante — le socle du power chord et de la dominante"],
+  ["la sixte",9,"chaleureuse — c'est aussi la fondamentale de la relative mineure"],
+  ["la septième",11,"la sensible — à un demi-ton de la tonique, elle y attire irrésistiblement"]
+];
+function scaleNames(k){ const flat=TH_FLATKEYS.has(k); return MAJ.map(x=>thNote((k+x)%12,flat)); }
+function scaCap(s){ return s[0].toUpperCase()+s.slice(1); }
+function gScaleDeg(){
+  const k=thPick(TH_DET), flat=TH_FLATKEYS.has(k), kn=kName(k), m=thRnd(3);
+  if(m===0){ // nom du degré → note : « placer » le degré dans la gamme
+    const d=thPick(SCADEG.slice(1)), pc=(k+d[1])%12, correct=thNote(pc,flat);
+    const wrong=thDistinct(correct, scaleNames(k).concat(CHROM), 3);
+    return {q:`En <b>${kn} majeur</b>, quelle note est <b>${d[0]}</b> ?`, correct, wrong,
+      exp:`Gamme de ${kn} majeur : ${scaleNames(k).join(" – ")}. ${scaCap(d[0])} = <b>${correct}</b> — ${d[2]}.`,
+      play:()=>thTwoNotes(k,pc)};
+  }
+  if(m===1){ // note → nom du degré
+    const d=thPick(SCADEG), pc=(k+d[1])%12, note=thNote(pc,flat), roman=DEGN[MAJ.indexOf(d[1])];
+    return {q:`En <b>${kn} majeur</b>, <b>${note}</b> est quel degré ?`, correct:d[0], wrong:thDistinct(d[0],SCADEG.map(x=>x[0]),3),
+      exp:`Dans ${kn} majeur (${scaleNames(k).join(" ")}), ${note} est ${d[0]} — le degré ${roman}. ${d[2]}.`,
+      play:()=>thTwoNotes(k,pc)};
+  }
+  // rôle → degré : la théorie derrière les notes, valable dans les 12 tonalités
+  const d=thPick(SCADEG);
+  return {q:`Dans <b>n'importe quelle</b> gamme majeure, quel degré joue ce rôle :<br><span style="color:var(--acc)">« ${d[2]} »</span> ?`,
+    correct:d[0], wrong:thDistinct(d[0],SCADEG.map(x=>x[0]),3),
+    exp:`${scaCap(d[0])}. Ce rôle est identique dans les 12 tonalités — c'est exactement pour ça qu'on pense en degrés plutôt qu'en noms de notes.`};
+}
+
 const THEX=[
+  {id:"sca",icon:"☀️",name:"Les degrés de la gamme",sub:"placer tonique, seconde, tierce…",gen:gScaleDeg},
   {id:"key",icon:"🔑",name:"Repérer la tonalité",sub:"des accords → quelle tonalité",gen:gKey},
   {id:"int",icon:"📏",name:"Les intervalles",sub:"distances, noms, notes",gen:gInterval},
   {id:"deg",icon:"🏠",name:"Degrés & harmonisation",sub:"quel accord à quel degré",gen:gDegree},
@@ -2468,6 +2572,7 @@ if(location.protocol.startsWith("http")&&"serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 nav("jour");
+openModeGate();
 </script>
 </body>
 </html>
