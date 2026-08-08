@@ -8,2571 +8,400 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Shred">
 <link rel="manifest" href="manifest.webmanifest">
-<title>SHRED — d'intermédiaire à expert</title>
+<title>Shred</title>
 <style>
   :root{
-    --bg:#0d0b09; --bg2:#161210; --bg3:#211a14; --line:#332921;
-    --txt:#f2ede6; --dim:#a2938a;
-    --acc:#f59b2d; --accd:#c67a1c; --red:#e0563f;
-    --ok:#35c77f; --bad:#ff5c6c; --blue:#5b9cff;
-    --r:13px;
-    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --bg:#0d0b09; --bg2:#171310; --bg3:#221c17; --line:#33291f;
+    --txt:#f0e9df; --dim:#a08f7c; --acc:#e8a13c; --acc2:#c07a1e;
+    --ok:#6bcf7a; --bad:#ff6b5c; --blue:#6aa9ff; --str:#e7d8b6; --r:14px;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
-  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overscroll-behavior:none}
-  #app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+  body{background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+  #app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
   main{flex:1;padding:16px 16px 92px}
-  header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
-  .logo{font-weight:900;font-size:20px;letter-spacing:1px;font-style:italic}
+  header{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-weight:900;font-size:19px;letter-spacing:1px}
   .logo span{color:var(--acc)}
-  .hbadges{display:flex;gap:7px}
-  .badge{font-family:var(--mono);font-weight:700;font-size:11.5px;background:var(--bg2);border:1px solid var(--line);padding:6px 10px;border-radius:9px}
-  .badge.gold{color:var(--acc);border-color:#4a3823}
+  .badge{font-weight:700;font-size:13px;background:var(--bg2);border:1px solid var(--line);padding:6px 12px;border-radius:20px}
 
-  h1.page{font-size:23px;font-weight:900;font-style:italic;margin-bottom:4px}
-  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;color:var(--dim);margin:18px 0 8px;display:flex;align-items:center;gap:10px}
-  h2.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
-  .sub{color:var(--dim);font-size:13px;margin-bottom:14px;line-height:1.5}
-  .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:15px;margin-bottom:12px}
-
-  .hero{background:linear-gradient(135deg,#1d130c,#241a0e);border:1px solid #4a3823;border-top:3px solid var(--acc);border-radius:var(--r);padding:16px;margin-bottom:12px}
-  .hero .lab{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);font-weight:800}
-  .hero .big{font-family:var(--mono);font-size:23px;font-weight:800;margin:4px 0 8px}
-  .xpbar{height:9px;border-radius:3px;background:#0009;overflow:hidden;margin:2px 0 4px}
-  .xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accd),var(--acc));transition:width .4s}
-  .xptxt{font-family:var(--mono);font-size:11px;color:var(--dim)}
-
-  .coach{background:var(--bg2);border-left:3px solid var(--acc);border-radius:0 var(--r) var(--r) 0;padding:13px 14px;margin-bottom:12px;font-size:14px;line-height:1.55}
-  .coach b{color:var(--acc)}
-
-  .act{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:13px;margin-bottom:8px;cursor:pointer}
-  .act:active{background:var(--bg3)}
-  .act .ico{width:38px;height:38px;border-radius:11px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-  .act .t{flex:1;min-width:0}
-  .act .t b{display:block;font-size:14px}
-  .act .t small{color:var(--dim);font-size:12px;line-height:1.35;display:block;margin-top:1px}
-  .act .st{font-size:13px;flex-shrink:0;color:var(--dim);font-family:var(--mono);font-weight:700}
-  .act.done{opacity:.55}
-  .act.done .st{color:var(--ok)}
-  .act.hot{border-color:#4a3823;background:linear-gradient(135deg,#191008,#1d150b)}
-
-  .tag{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:var(--bg3);color:var(--acc);border:1px solid #4a3823;padding:3px 8px;border-radius:6px;margin-right:6px;margin-bottom:4px}
-  .tag.b{color:var(--blue);border-color:#27406e}
-  .tag.g{color:var(--ok);border-color:#1e4a36}
-
-  pre.tab{font-family:var(--mono);font-size:11.5px;line-height:1.55;background:#080604;border:1px solid var(--line);border-radius:10px;padding:12px 10px;overflow-x:auto;color:#e8dfd2;margin:10px 0}
-
-  .btn{display:block;border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:800;cursor:pointer;background:var(--acc);color:#221200;width:100%;text-align:center;margin-top:12px}
-  .btn:active{transform:scale(.97)}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
+  h1.page{font-size:22px;font-weight:800;margin-bottom:6px}
+  .lead{color:var(--dim);font-size:14px;line-height:1.5;margin-bottom:14px}
+  .btn{display:inline-block;border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:800;
+    cursor:pointer;background:var(--acc);color:#1a1200;width:100%;text-align:center;margin-top:12px}
+  .btn:active{transform:scale(.98)}
   .btn.ghost{background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
-  .btn[disabled]{opacity:.4;pointer-events:none}
-  .danger{color:var(--bad);background:none;border:1px solid #55232c;border-radius:12px;width:100%;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px}
+  .btn.small{width:auto;padding:9px 15px;font-size:13px;margin-top:0}
+  .btn:disabled{opacity:.4;pointer-events:none}
+  .row2{display:flex;gap:10px} .row2 .btn{margin-top:0}
 
-  #ov{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;overflow-y:auto}
-  #ov.on{display:block}
-  #ov .inner{max-width:520px;margin:0 auto;padding:14px 16px 60px}
-  #ov .top{display:flex;align-items:center;gap:10px;margin-bottom:12px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-  #ov .top .x{width:36px;height:36px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font-size:16px;cursor:pointer;flex-shrink:0}
-  #ov .top b{font-size:16.5px;flex:1;font-weight:800}
-  .story p{font-size:14.5px;line-height:1.65;color:#e6ddd2;margin-bottom:12px}
-  .meta{color:var(--dim);font-size:12.5px;margin-bottom:10px}
-  .pt{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;font-size:13.5px;line-height:1.55;color:#e0d8cc;margin-bottom:8px}
-  .pt b{color:var(--acc)}
-  .crit{background:#12201a;border:1px solid #1e4a36;border-radius:12px;padding:12px 13px;font-size:13.5px;line-height:1.5;margin-top:4px}
-  .crit b{color:var(--ok)}
+  /* ---------- fretboard ---------- */
+  .fbwrap{overflow-x:auto;padding:4px 0 2px;margin:6px 0;scrollbar-width:none}
+  .fbwrap::-webkit-scrollbar{display:none}
+  .fb{display:flex;flex-direction:column;background:linear-gradient(180deg,#2a2018,#1c150f);
+    border:1px solid var(--line);border-radius:8px;min-width:520px}
+  .frow{display:grid;grid-template-columns:38px repeat(12,minmax(34px,1fr));height:36px}
+  .fcell{position:relative;border-right:1px solid #4a3826;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .fcell.nut{border-right:3px solid #b9a074}
+  .fcell .sl{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--str);opacity:.45;transform:translateY(-1px)}
+  .frow:nth-child(1) .sl,.frow:nth-child(2) .sl{height:1.5px}
+  .frow:nth-child(6) .sl{height:3px}
+  .fdot{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:12px;z-index:2;background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
+  .fdot.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
+  .fdot.root{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .fdot.ask{background:transparent;color:var(--acc);border:2px dashed var(--acc);font-size:16px}
+  .fdot.ok{background:var(--ok);color:#04220c;border-color:var(--ok)}
+  .fdot.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .fcell.flash .sl{background:var(--acc);opacity:.9}
+  .fnums{display:grid;grid-template-columns:38px repeat(12,minmax(34px,1fr));min-width:520px;margin-top:3px}
+  .fnums div{text-align:center;font-size:11px;color:var(--dim);font-weight:700;position:relative}
+  .fnums div.mk::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:#5a4832}
+  .fnums div.mk2::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:none;box-shadow:-5px 0 0 #5a4832,5px 0 0 #5a4832}
 
-  /* paliers BPM */
-  .prow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}
-  .prow .p{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:9px 4px;text-align:center}
-  .prow .p small{display:block;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--dim);font-weight:800}
-  .prow .p b{font-family:var(--mono);font-size:15px}
-  .prow .p.hit{background:#12201a;border-color:#1e4a36}
-  .prow .p.hit b{color:var(--ok)}
-  .prow .p.next{border-color:#4a3823}
-  .prow .p.next b{color:var(--acc)}
-  .bpmlog{display:flex;gap:8px;margin-top:10px}
-  .bpmlog input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font-size:16px;font-family:var(--mono);text-align:center}
-  .bpmlog input:focus{outline:none;border-color:var(--acc)}
-  .bpmlog button{width:auto;margin:0;padding:12px 18px}
+  .toolrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .tag{padding:8px 13px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);font-size:13px;font-weight:700;cursor:pointer}
+  .tag.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
 
-  /* métronome */
-  .met{background:#080604;border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;text-align:center}
-  .met .bpmv{font-family:var(--mono);font-size:40px;font-weight:800;line-height:1}
-  .met .bpml{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:2px}
-  .met .row{display:flex;gap:7px;justify-content:center;margin-top:12px}
-  .met button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px 0;font-size:14px;font-weight:800;cursor:pointer;flex:1;max-width:64px}
-  .met button.go{background:var(--acc);color:#221200;border-color:var(--acc);max-width:none;flex:1.6}
-  .met button.go.on{background:var(--red);border-color:var(--red);color:#fff}
-  .met button.sel{border-color:var(--acc);color:var(--acc)}
-  .met .row+.row{margin-top:8px}
-  .met .dots{display:flex;gap:8px;justify-content:center;margin-top:12px;height:10px}
-  .met .dots i{width:10px;height:10px;border-radius:50%;background:var(--bg3);border:1px solid var(--line)}
-  .met .dots i.on{background:var(--acc);border-color:var(--acc)}
+  /* ---------- review / cards ---------- */
+  .qhead{text-align:center;margin:6px 0}
+  .qhead .q{font-size:19px;font-weight:800}
+  .qhead .sub{color:var(--dim);font-size:13px;margin-top:3px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .opt{background:var(--bg2);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:15px;font-size:18px;font-weight:800;cursor:pointer}
+  .opt.right{background:#16351f;border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#3a1a18;border-color:var(--bad);color:var(--bad)}
+  .fb-progress{display:flex;gap:14px;justify-content:center;margin:10px 0;font-size:13px;color:var(--dim);font-weight:700}
+  .fb-progress b{color:var(--acc)}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px}
+  .stat{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:22px;color:var(--acc)} .stat small{color:var(--dim);font-size:11px}
 
-  .selfrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
-  .selfrow button{border:none;border-radius:10px;padding:11px 4px;font-size:12.5px;font-weight:800;cursor:pointer;background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
-  .selfrow button.on{background:var(--acc);color:#221200;border-color:var(--acc)}
+  /* ---------- theory ---------- */
+  .theory{line-height:1.6;font-size:15px}
+  .theory h3{color:var(--acc);font-size:16px;margin:18px 0 6px}
+  .theory p{margin-bottom:10px;color:#d8cebf}
+  .theory ul{margin:0 0 10px 18px;color:#d8cebf} .theory li{margin-bottom:5px}
+  .theory .tip{background:#241a10;border-left:3px solid var(--acc);padding:10px 12px;border-radius:0 10px 10px 0;margin:12px 0;font-size:14px}
+  .theory .formula{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-weight:800;margin:12px 0;line-height:1.6}
+  .lesson{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:8px;cursor:pointer}
+  .lesson .ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg3);flex-shrink:0}
+  .lesson .t b{display:block;font-size:15px} .lesson .t small{color:var(--dim);font-size:12px}
 
-  .opt{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13.5px;line-height:1.4;color:var(--txt);margin-bottom:7px;cursor:pointer}
-  .opt.ok{border-color:var(--ok);background:#12201a}
-  .opt.ko{border-color:var(--bad);background:#2a1512}
-  .exp{background:var(--bg3);border-radius:12px;padding:11px;font-size:13px;line-height:1.5;color:#dcd2c6;margin:4px 0 10px;border-left:3px solid var(--acc)}
-  .qq{font-size:15px;font-weight:700;line-height:1.45;margin:12px 0 10px}
+  .soon{opacity:.55}
+  .soon .pill{font-size:10px;font-weight:800;color:var(--acc);border:1px solid var(--acc);border-radius:10px;padding:2px 7px;margin-left:6px}
+  .step{display:flex;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px}
+  .step .n{width:30px;height:30px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+  .step.now .n{background:var(--acc);color:#1a1200}
+  .step b{font-size:15px} .step small{color:var(--dim);font-size:13px;line-height:1.5;display:block;margin-top:2px}
 
-  textarea,input[type=text]{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font-size:14px;font-family:inherit}
-  textarea{min-height:70px;resize:vertical}
-  textarea:focus,input:focus{outline:none;border-color:var(--acc)}
-
-  .result{text-align:center;padding:24px 10px}
-  .result .big{font-family:var(--mono);font-size:40px;font-weight:800}
-  .result p{color:var(--dim);font-size:14px;margin-top:8px;line-height:1.5}
-  .result .xp{color:var(--acc);font-weight:800;font-family:var(--mono);margin-top:6px}
-
-  nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,11,9,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:40}
-  nav .in{max-width:520px;margin:0 auto;display:flex}
-  nav button{flex:1;background:none;border:none;color:var(--dim);font-size:10.5px;font-weight:700;padding:9px 0 max(9px,env(safe-area-inset-bottom));cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
-  nav button i{font-style:normal;font-size:19px}
+  nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,11,9,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:40}
+  nav .in{max-width:560px;margin:0 auto;display:flex}
+  nav button{flex:1;background:none;border:none;color:var(--dim);padding:10px 0 max(10px,env(safe-area-inset-bottom));font-size:11px;font-weight:700;cursor:pointer}
+  nav button .i{display:block;font-size:20px;margin-bottom:2px}
   nav button.on{color:var(--acc)}
 
-  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-  .stat{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:13px;text-align:center}
-  .stat b{font-family:var(--mono);font-size:20px;display:block}
-  .stat small{font-family:var(--mono);color:var(--dim);font-size:10px;letter-spacing:.6px}
-  .hm{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,12px);gap:3px;justify-content:start;margin-top:10px;overflow-x:auto;padding-bottom:4px}
-  .hm i{width:12px;height:12px;border-radius:3px;background:var(--bg3)}
-  .hm i.on{background:var(--acc)}
-  .hm i.today{outline:1px solid var(--dim)}
-  .ranks li{list-style:none;display:flex;justify-content:space-between;padding:9px 4px;border-bottom:1px solid var(--line);font-size:14px}
-  .ranks li:last-child{border:none}
-  .ranks li.cur{color:var(--acc);font-weight:800}
-  .ranks li.past{color:var(--dim)}
-  .ranks li small{color:var(--dim);font-family:var(--mono)}
-
-  .chk{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:7px;cursor:pointer;font-size:13.5px;line-height:1.45}
-  .chk input{margin-top:2px;accent-color:var(--acc);width:17px;height:17px;flex-shrink:0}
-  .chk.on{opacity:.6}
-
-  .tierhead{display:flex;align-items:baseline;gap:8px;margin:16px 0 8px}
-  .tierhead b{font-size:15px;font-style:italic}
-  .tierhead small{color:var(--dim);font-size:12px}
-  .tierbar{font-family:var(--mono);font-size:11px;color:var(--acc);margin-left:auto}
-
-  .game{background:#080604;border:1px solid var(--line);border-radius:16px;padding:22px 14px;text-align:center;margin-bottom:12px}
-  /* accordeur */
-  .tuner{margin:14px 0;text-align:center}
-  .tuner .vnote{font-size:52px;font-weight:900;line-height:1;font-style:italic}
-  .tuner .vsub{color:var(--dim);font-family:var(--mono);font-size:12px;margin-top:4px}
-  .gauge{position:relative;height:54px;margin:14px 0;border-radius:12px;background:var(--bg3);border:1px solid var(--line);overflow:hidden}
-  .gauge .zone{position:absolute;left:42%;width:16%;top:0;bottom:0;background:rgba(53,199,127,.14)}
-  .gauge .center{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--ok);opacity:.5}
-  .gauge .ndl{position:absolute;top:6px;bottom:6px;width:6px;border-radius:3px;background:var(--acc);left:50%;transform:translateX(-3px);transition:left .07s linear}
-  .gauge.intune .ndl{background:var(--ok)}
-  .strow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
-  .strow button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px 2px;font-family:var(--mono);font-weight:800;font-size:13px;cursor:pointer}
-  .strow button.hit{border-color:var(--ok);color:var(--ok)}
-  /* jam station */
-  .jamnow{text-align:center;margin:14px 0}
-  .jamnow .cur{font-size:46px;font-weight:900;font-style:italic}
-  .jamnow .nxt{color:var(--dim);font-size:13px;font-family:var(--mono);margin-top:2px}
-  .jambeats{display:flex;gap:8px;justify-content:center;margin-top:10px;height:10px}
-  .jambeats i{width:10px;height:10px;border-radius:50%;background:var(--bg3);border:1px solid var(--line)}
-  .jambeats i.on{background:var(--acc);border-color:var(--acc)}
-  .keyrow{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}
-  .keyrow button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 0;font-size:12px;font-weight:800;cursor:pointer}
-  .keyrow button.on{border-color:var(--acc);color:var(--acc)}
-  /* manche visuel */
-  .fb{margin:12px 0;background:#0a0705;border:1px solid var(--line);border-radius:12px;padding:10px 6px 6px;overflow-x:auto}
-  .fb table{border-collapse:collapse;width:100%;min-width:430px}
-  .fb td{position:relative;height:30px;min-width:28px;border-right:2px solid #3a2f24;text-align:center;vertical-align:middle;cursor:pointer}
-  .fb td.nut{border-right:4px solid #6b5a44}
-  .fb td::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#8a7a63;opacity:.55}
-  .fb tr:nth-child(2) td::after{height:1px}
-  .fb tr:nth-child(7) td::after{height:2px}
-  .fb .dot{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:10.5px;font-weight:800;font-family:var(--mono)}
-  .fb .dot.root{background:var(--acc);color:#221200}
-  .fb .dot.ok{background:var(--ok);color:#02180b}
-  .fb .dot.ko{background:var(--bad);color:#fff}
-  .fb .dot.ghost{background:#2c3f5e;color:#cfe0ff}
-  .fb .dot.h0{background:#26201a;color:#6a5c4e}
-  .fb .dot.h1{background:#3a1a20;color:#ff9aa5}
-  .fb .dot.h2{background:#3a2c12;color:#ffce7a}
-  .fb .dot.h3{background:#12201a;color:#7ee2ab}
-  .fb .fnum{color:var(--dim);font-family:var(--mono);font-size:9.5px;height:16px;cursor:default}
-  .fb .sname{color:var(--dim);font-family:var(--mono);font-size:9.5px;padding-right:4px;cursor:default;border-right:none;text-align:right;min-width:22px}
-  .fb tr td.sname::after{display:none}
-  .game .qnote{font-size:19px;font-weight:800;margin:8px 0 2px}
-  .game .qnote b{color:var(--acc)}
-  .game .timer{font-family:var(--mono);font-size:13px;color:var(--dim)}
-  .gopts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:14px}
-  .gopts button{background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:13px 4px;font-size:15px;font-weight:800;cursor:pointer}
-  .gopts button.ok{background:#12201a;border-color:var(--ok)}
-  .gopts button.ko{background:#2a1512;border-color:var(--bad)}
-
-  #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:#241a0e;border:1px solid #4a3823;color:var(--txt);padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;z-index:60;opacity:0;pointer-events:none;transition:all .25s;max-width:90%;text-align:center}
-  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  #toast b{color:var(--acc)}
+  .overlay{position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;display:none}
+  .overlay.open{display:block}
+  .overlay .inner{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:8px;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:5}
+  .topbar .back{width:38px;height:38px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font-size:18px;cursor:pointer}
+  .topbar b{font-size:16px}
+  #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--acc);color:var(--txt);padding:12px 20px;border-radius:14px;font-weight:700;z-index:100;transition:transform .35s;font-size:14px}
+  #toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <div class="logo">SH<span>RED</span> 🎸</div>
-    <div class="hbadges">
-      <div class="badge">🔥 <span id="hstreak">0</span></div>
-      <div class="badge gold" id="hrank">Bedroom</div>
-    </div>
-  </header>
+  <header><div class="logo">SH<span>RED</span></div><div class="badge" id="badge">🎸</div></header>
   <main id="main"></main>
+  <nav><div class="in">
+    <button data-tab="manche" class="on"><span class="i">🎸</span>Manche</button>
+    <button data-tab="cartes"><span class="i">🔁</span>Cartes</button>
+    <button data-tab="theorie"><span class="i">📖</span>Théorie</button>
+    <button data-tab="suite"><span class="i">✨</span>Suite</button>
+  </div></nav>
 </div>
-<div id="ov"><div class="inner" id="ovin"></div></div>
+<div class="overlay" id="overlay"><div class="inner" id="overlayInner"></div></div>
 <div id="toast"></div>
-<nav><div class="in">
-  <button data-v="chemin"><i>🧭</i>Chemin</button>
-  <button data-v="outils"><i>🧰</i>Outils</button>
-  <button data-v="profil"><i>👑</i>Profil</button>
-</div></nav>
-
-<script src="data-guitar.js?v=10"></script>
-<script src="data-boussole.js?v=1"></script>
-<script src="data-chemin.js?v=1"></script>
 <script>
-// ================= ÉTAT =================
-const KEY="shred_v1";
-const RANKS=[["Bedroom Player",0],["Rythmicien",150],["Soliste",350],["Lead Guitarist",650],["Shredder",1050],["Guitar Hero",1600]];
-const DEF={xp:0,streak:0,lastVal:"",days:[],menu:null,bpm:{},pal:{},pieces:{},fiches:{},game:{best:0,runs:0},thex:{}};
+/* ================================================================
+   SHRED — reconstruction. Étape 1 : connaître le manche par cœur.
+   ================================================================ */
+const NOTES=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const NOTES_FR=['Do','Do♯','Ré','Ré♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const NAT=[0,2,4,5,7,9,11];                 /* pitch-class des notes naturelles */
+const OPEN=[40,45,50,55,59,64];             /* Mi La Ré Sol Si Mi (grave→aigu), MIDI */
+const STR_NAME=['Mi grave','La','Ré','Sol','Si','Mi aigu'];
+const strNo=s=>6-s;                          /* numéro guitariste : corde 1 = Mi aigu */
+const midiAt=(s,f)=>OPEN[s]+f;
+const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
+const FRETS=12;
+
+/* ---------------- état ---------------- */
+const DEFAULT={cards:{}, newDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
+  seen:0, right:0, showNames:false, natOnly:true};
 let S=load();
-function load(){
-  let s={}; try{ s=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){}
-  const o=Object.assign({},DEF,s);
-  o.days=s.days||[]; o.bpm=s.bpm||{}; o.pal=s.pal||{}; o.pieces=s.pieces||{}; o.fiches=s.fiches||{};
-  o.game=Object.assign({best:0,runs:0},s.game||{});
-  o.thex=s.thex||{};
-  return o;
-}
-function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
-function today(){ return new Date().toISOString().slice(0,10); }
-function yesterday(){ return new Date(Date.now()-864e5).toISOString().slice(0,10); }
-function addDays(n){ return new Date(Date.now()+n*864e5).toISOString().slice(0,10); }
-function esc(x){ return String(x??"").replace(/</g,"&lt;"); }
-function rank(){ let r=RANKS[0]; for(const x of RANKS){ if(S.xp>=x[1]) r=x; } return r; }
-function nextRank(){ for(const x of RANKS){ if(S.xp<x[1]) return x; } return null; }
-function dispStreak(){ return (S.lastVal===today()||S.lastVal===yesterday())?S.streak:0; }
-function addXP(n){
-  if(n<=0){save();header();return;}
-  const b=rank()[0]; S.xp+=n; save(); header();
-  if(rank()[0]!==b) setTimeout(()=>toast("👑 <b>"+rank()[0].toUpperCase()+"</b> — nouveau grade. Ça s'entend déjà."),700);
-}
-function header(){ document.getElementById("hstreak").textContent=dispStreak(); document.getElementById("hrank").textContent=rank()[0].split(" ")[0]; }
-let toastT=null;
-function toast(h){ const t=document.getElementById("toast"); t.innerHTML=h; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),3200); }
+function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
+function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
+const today=()=>new Date().toISOString().slice(0,10);
+function markDay(){ const t=today(); if(S.lastDay!==t){ const y=new Date(Date.now()-864e5).toISOString().slice(0,10); S.streak=(S.lastDay===y)?S.streak+1:1; S.lastDay=t; save(); } }
 
-// helpers données
-function exo(id){ return TEXOS.find(x=>x.id===id); }
-function tmod(id){ return TMODS.find(m=>m.id===id); }
-function pb(id){ const a=S.bpm[id]||[]; return a.length?Math.max(...a.map(x=>x.v)):null; }
-function bpmSpark(id){
-  const a=(S.bpm[id]||[]).slice(0,15).reverse().map(x=>x.v);
-  if(a.length<3) return "";
-  const mn=Math.min(...a),mx=Math.max(...a),rg=(mx-mn)||1;
-  const pts=a.map((v,i)=>((i/(a.length-1))*100).toFixed(1)+","+(26-((v-mn)/rg)*20).toFixed(1)).join(" ");
-  return `<svg viewBox="0 0 100 30" style="width:100%;height:30px;margin-top:9px" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(--acc)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <div class="xptxt" style="font-size:9.5px;letter-spacing:.4px">${a.length} DERNIERS LOGS — PLUS HAUT = PLUS VITE</div>`;
-}
-function palierOf(x){ // niveau atteint 0-4
-  if(x.bpm){ const p=pb(x.id); if(p===null) return 0; let n=0; x.bpm.forEach(b=>{if(p>=b)n++;}); return n; }
-  return S.pal[x.id]||0;
+/* ---------------- audio : corde pincée (Karplus-Strong) ---------------- */
+let AC=null;
+function ac(){ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; }
+function pluck(midi,dur=1.3,vel=.5){
+  const ctx=ac(), sr=ctx.sampleRate, f=440*Math.pow(2,(midi-69)/12);
+  const N=Math.max(2,Math.round(sr/f)), len=Math.floor(sr*dur);
+  const buf=ctx.createBuffer(1,len,sr), d=buf.getChannelData(0), y=new Float32Array(len);
+  for(let i=0;i<N;i++) y[i]=Math.random()*2-1;
+  const damp=.9955;
+  for(let i=N;i<len;i++) y[i]=damp*.5*(y[i-N]+y[i-N+1]);
+  for(let i=0;i<len;i++){ const env=Math.min(1,i/220)*(1-i/len); d[i]=y[i]*vel*env; }
+  const src=ctx.createBufferSource(); src.buffer=buf;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.min(sr/2,f*7+1800);
+  const g=ctx.createGain(); g.gain.value=1;
+  src.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start();
 }
 
-// ================= MÉTRONOME (WebAudio) =================
-// sub : clics par temps (1=noires, 2=croches, 3=triolets, 4=doubles) — indispensable pour les sextolets lents.
-// trainer : mode paliers — +tStep BPM toutes les tEvery mesures, automatiquement.
-const MET={bpm:100,on:false,ctx:null,next:0,tick:0,measures:0,iv:null,sub:1,trainer:false,tStep:4,tEvery:8};
-function metCtx(){ if(!MET.ctx) MET.ctx=new (window.AudioContext||window.webkitAudioContext)(); return MET.ctx; }
-function metClick(t,lvl){ // 2=début de mesure, 1=temps, 0=subdivision
-  const c=metCtx(),o=c.createOscillator(),g=c.createGain();
-  o.frequency.value=lvl===2?1400:lvl===1?950:700;
-  g.gain.setValueAtTime(lvl===2?.5:lvl===1?.3:.13,t); g.gain.exponentialRampToValueAtTime(.001,t+.05);
-  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.06);
+/* ---------------- SRS (façon Anki / SM-2 simplifié) ---------------- */
+function deck(){ const ids=[]; for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ const pc=midiAt(s,f)%12; if(S.natOnly&&!NAT.includes(pc))continue; ids.push('fb:'+s+':'+f); } return ids; }
+function parseCard(id){ const p=id.split(':'); const s=+p[1], f=+p[2]; return {s,f,note:noteAt(s,f)}; }
+const NEW_PER_DAY=8;
+function newBudget(){ const t=today(); if(S.newDay.date!==t){ S.newDay={date:t,n:0}; save(); } return Math.max(0,NEW_PER_DAY-S.newDay.n); }
+function dueList(){ const now=Date.now(); return deck().filter(id=>S.cards[id]&&S.cards[id].due<=now); }
+function newList(){ return deck().filter(id=>!S.cards[id]); }
+function counts(){ return {due:dueList().length, neu:Math.min(newBudget(),newList().length), learned:Object.keys(S.cards).filter(id=>S.cards[id].reps>=2).length, total:deck().length}; }
+function grade(id,q){ /* q: 'again' | 'good' | 'easy' */
+  let c=S.cards[id]; const isNew=!c;
+  if(isNew){ c={ef:2.4,iv:0,reps:0,due:0,lapses:0}; S.newDay.n++; }
+  if(q==='again'){ c.reps=0; c.iv=0; c.lapses++; c.ef=Math.max(1.3,c.ef-.2); c.due=Date.now()+60000; }
+  else{
+    c.reps++;
+    if(c.reps===1) c.iv=1; else if(c.reps===2) c.iv=3; else c.iv=Math.max(1,Math.round(c.iv*c.ef));
+    if(q==='easy'){ c.iv=Math.round(c.iv*1.35); c.ef+=.15; }
+    c.ef=Math.max(1.3,Math.min(2.8,c.ef));
+    c.due=Date.now()+c.iv*864e5;
+  }
+  S.cards[id]=c; save();
 }
-function metStart(){
-  const c=metCtx(); if(c.state==="suspended") c.resume();
-  MET.on=true; MET.tick=0; MET.measures=0; MET.next=c.currentTime+.08;
-  MET.iv=setInterval(()=>{
-    while(MET.next<metCtx().currentTime+.12){
-      const perM=4*MET.sub, inM=MET.tick%perM;
-      const isOne=inM===0, isBeat=inM%MET.sub===0;
-      metClick(MET.next,isOne?2:isBeat?1:0);
-      if(isOne&&MET.tick>0){
-        MET.measures++;
-        if(MET.trainer&&MET.measures%MET.tEvery===0){
-          MET.bpm=Math.min(240,MET.bpm+MET.tStep);
-          const v=document.getElementById("metv"); if(v) v.textContent=MET.bpm;
-        }
-      }
-      if(isBeat){
-        const bi=Math.floor(inM/MET.sub);
-        setTimeout(()=>{ document.querySelectorAll(".met .dots i").forEach((d,k)=>d.classList.toggle("on",k===bi)); },Math.max(0,(MET.next-metCtx().currentTime)*1000));
-      }
-      MET.next+=60/MET.bpm/MET.sub; MET.tick++;
+
+/* ---------------- helpers DOM ---------------- */
+function el(t,c,h){ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2100); }
+
+/* ---------------- fretboard ---------------- */
+function buildFretboard(onTap){
+  const wrap=el('div','fbwrap');
+  const fb=el('div','fb'); wrap.appendChild(fb);
+  const cells={};
+  for(let s=5;s>=0;s--){                       /* aigu en haut, grave en bas */
+    const row=el('div','frow');
+    for(let f=0;f<=FRETS;f++){
+      const c=el('div','fcell'+(f===0?' nut':''));
+      c.appendChild(el('div','sl'));
+      c.dataset.s=s; c.dataset.f=f;
+      c.onclick=()=>onTap&&onTap(s,f,c);
+      row.appendChild(c); cells[s+':'+f]=c;
     }
-  },25);
-  metUI();
-}
-function metStop(){ MET.on=false; if(MET.iv){clearInterval(MET.iv);MET.iv=null;} document.querySelectorAll(".met .dots i").forEach(d=>d.classList.remove("on")); metUI(); }
-function metTog(){ MET.on?metStop():metStart(); }
-function metSet(d){ MET.bpm=Math.max(40,Math.min(240,MET.bpm+d)); metUI(); }
-function metSub(s){ MET.sub=s; metRefresh(); }
-function metTrain(){ MET.trainer=!MET.trainer; metRefresh(); }
-function metRefresh(){ const b=document.getElementById("metbox"); if(b){ b.outerHTML=metHtml(); metUI(); } }
-function metUI(){
-  const v=document.getElementById("metv"); if(v) v.textContent=MET.bpm;
-  const b=document.getElementById("metgo"); if(b){ b.textContent=MET.on?"■ Stop":"▶ Lancer"; b.classList.toggle("on",MET.on); }
-}
-function metHtml(){
-  return `<div class="met" id="metbox">
-    <div class="bpmv" id="metv">${MET.bpm}</div><div class="bpml">BPM · MÉTRONOME</div>
-    <div class="dots"><i></i><i></i><i></i><i></i></div>
-    <div class="row">
-      <button onclick="metSet(-5)">−5</button><button onclick="metSet(-1)">−1</button>
-      <button class="go" id="metgo" onclick="metTog()">▶ Lancer</button>
-      <button onclick="metSet(1)">+1</button><button onclick="metSet(5)">+5</button>
-    </div>
-    <div class="row">
-      ${[1,2,3,4].map(s=>`<button class="${MET.sub===s?"sel":""}" onclick="metSub(${s})" title="${s} clic${s>1?"s":""}/temps">${["♩","♪♪","³","♬♬"][s-1]}</button>`).join("")}
-      <button class="${MET.trainer?"sel":""}" style="max-width:none;flex:1.5" onclick="metTrain()">${MET.trainer?"⏫ Paliers ON":"Paliers +"+MET.tStep+"/"+MET.tEvery+"m"}</button>
-    </div>
-  </div>`;
+    fb.appendChild(row);
+  }
+  const nums=el('div','fnums');
+  const marks={3:1,5:1,7:1,9:1,12:2};
+  for(let f=0;f<=FRETS;f++){ nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f)); }
+  wrap.appendChild(nums);
+  wrap.cell=(s,f)=>cells[s+':'+f];
+  wrap.clearDots=()=>{ Object.values(cells).forEach(c=>{ const d=c.querySelector('.fdot'); if(d)d.remove(); }); };
+  wrap.dot=(s,f,label,cls)=>{ const c=cells[s+':'+f]; if(!c)return; let d=c.querySelector('.fdot'); if(!d){ d=el('div','fdot'); c.appendChild(d);} d.className='fdot '+(cls||''); d.textContent=label==null?'':label; return d; };
+  return wrap;
 }
 
-// ================= MENU DU JOUR =================
-function ensureMenu(){
-  const t=today();
-  // fiches acquises avant l'arrivée de la révision espacée : on les met au programme,
-  // étalées sur 3 jours pour ne pas créer un mur de rappels
-  if(S.frev===undefined){
-    S.frev={};
-    for(const id in S.fiches){ if(THEORY.find(x=>x.id===id)) S.frev[id]={step:0,due:addDays(1+Math.floor(Math.random()*3))}; }
-    save();
-  }
-  const nextFond=THEORY.filter(x=>x.fond).find(x=>S.fiches[x.id]===undefined);
-  if(S.menu&&S.menu.date===t){
-    // Un menu créé AVANT l'ajout des fondations n'a pas de champ `fond` : sans ça,
-    // l'exercice imposé disparaît et les six fiches restent verrouillées toute la journée.
-    // On complète en place — surtout pas de régénération, qui effacerait la progression du jour.
-    if(S.menu.fond===undefined){ S.menu.fond=nextFond?nextFond.id:null; save(); }
-    return;
-  }
-  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
-  // le créneau "manche" tourne sur 8 jours : gammes, notes, intervalles,
-  // oreille, octaves, rythme — tous les réflexes, sans choix à faire
-  const rot=["scale","game","intervals","scale","ear","pompe","scale","oct"][doy%8];
-  S.menu={date:t,mod:TMODS[doy%TMODS.length].id,
-    manche:rot==="scale"?SCALES[doy%SCALES.length].id:rot,
-    fond:nextFond?nextFond.id:null,
-    dTech:false,dManche:false,dRep:false,validated:false};
-  save();
-}
-function checkMenu(kind,ref){
-  const m=S.menu; if(!m||m.date!==today()) return;
-  if(kind==="tech"&&ref===m.mod) m.dTech=true;
-  if(kind==="manche"&&(ref===m.manche||m.manche==="game"&&ref==="game")) m.dManche=true;
-  if(kind==="rep") m.dRep=true;
-  if(kind==="fond"&&ref===m.fond) m.dFond=true;
-  if(m.dTech&&m.dManche&&m.dRep&&(!m.fond||m.dFond)&&!m.validated){
-    m.validated=true;
-    S.streak=(S.lastVal===yesterday())?S.streak+1:1;
-    S.lastVal=today();
-    if(!S.days.includes(today())) S.days.push(today());
-    addXP(15);
-    setTimeout(()=>toast("🔥 <b>Journée validée.</b> Streak : "+S.streak+" (+15 XP)"),400);
-  }
-  save(); header();
-}
-function curPiece(){ const e=Object.entries(S.pieces).find(([id,p])=>p.st==="cur"); return e?PIECES.find(p=>p.id===e[0]):null; }
+/* ================================================================
+   VUE : LE MANCHE (explorer)
+   ================================================================ */
+function renderManche(){
+  const m=document.getElementById('main'); m.innerHTML='';
+  m.appendChild(el('h1','page','Le manche'));
+  m.appendChild(el('p','lead','Étape 1 : le connaître par cœur. Touche une case pour l’entendre et voir sa note. Puis fais les cartes — c’est la répétition espacée qui ancre.'));
 
-// ================= VUES =================
-let view="chemin";
-function nav(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.v));
-function render(){ ensureMenu(); document.getElementById("main").innerHTML=({chemin:vChemin,outils:vOutils,profil:vProfil,jour:vChemin,tech:vOutils,manche:vOutils,theorie:vOutils,rep:vOutils})[view](); header(); }
-const ov=document.getElementById("ov"),ovin=document.getElementById("ovin");
-function openOv(h){
-  ovin.innerHTML=h;
-  // séance guidée en cours : le temps restant du bloc suit Thomas dans chaque exercice
-  if(typeof SEA!=="undefined"&&SEA&&SEA.active){
-    const b=document.createElement("div"); b.id="seaBadge";
-    b.style.cssText="position:fixed;top:14px;right:14px;z-index:80;background:var(--bg3);border:1px solid #4a3823;color:var(--acc);font-family:var(--mono);font-weight:800;font-size:12.5px;padding:7px 10px;border-radius:10px;pointer-events:none";
-    b.textContent=SEA.left===0?"⏱ bloc fini ✓":"⏱ "+seaFmt();
-    ovin.appendChild(b);
-  }
-  // séance sans guitare en cours : rappel discret de l'étape
-  if(typeof SEAT!=="undefined"&&SEAT&&SEAT.active){
-    const b=document.createElement("div"); b.id="seatBadge";
-    b.style.cssText="position:fixed;top:14px;right:14px;z-index:80;background:var(--bg3);border:1px solid #4a3823;color:var(--acc);font-family:var(--mono);font-weight:800;font-size:12.5px;padding:7px 10px;border-radius:10px;pointer-events:none";
-    b.textContent="🧠 étape "+(SEAT.i+1)+"/"+SEAT.blocks.length;
-    ovin.appendChild(b);
-  }
-  ov.classList.add("on"); ov.scrollTop=0;
-}
-function closeOv(){
-  ov.classList.remove("on"); metStop(); stopGame(); IV=null; ER=null; TU=null; EC=null; OC=null; PJ=null; FBTAP=null;
-  if(typeof LV!=="undefined") LV=null;
-  if(typeof MICG!=="undefined") MICG.release();
-  if(typeof JAM!=="undefined"&&JAM.on) jamStop();
-  if(WU&&WU.iv){clearInterval(WU.iv);WU=null;}
-  // séance guidée en cours : on ne rend pas la main, on revient à l'écran séance
-  if(typeof SEAT!=="undefined"&&SEAT&&SEAT.active){ render(); seatScreen(); return; }
-  if(typeof SEA!=="undefined"&&SEA&&SEA.active){ render(); seaScreen(); return; }
-  render();
-}
-function ovTop(t){ return `<div class="top"><button class="x" onclick="closeOv()">✕</button><b>${t}</b></div>`; }
+  const c=el('div','card');
+  const showTag=el('div','tag'+(S.showNames?' on':''),'👁 Voir les notes');
+  const natTag=el('div','tag'+(S.natOnly?' on':''),'Naturelles seules');
+  const tools=el('div','toolrow'); tools.appendChild(showTag); tools.appendChild(natTag); c.appendChild(tools);
+  const fb=buildFretboard((s,f,cell)=>{ pluck(midiAt(s,f)); cell.classList.add('flash'); setTimeout(()=>cell.classList.remove('flash'),200);
+    if(!S.showNames){ const d=fb.dot(s,f, noteAt(s,f), midiAt(s,f)%12===0?'root':(NAT.includes(midiAt(s,f)%12)?'on':'')); setTimeout(()=>{ if(!S.showNames&&d&&d.parentNode)d.remove(); },1100); } });
+  c.appendChild(fb); m.appendChild(c);
+  function paint(){ fb.clearDots(); if(S.showNames){ for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ const pc=midiAt(s,f)%12; if(S.natOnly&&!NAT.includes(pc))continue; fb.dot(s,f,noteAt(s,f), pc===0?'root':(NAT.includes(pc)?'on':'')); } } }
+  showTag.onclick=()=>{ S.showNames=!S.showNames; save(); showTag.classList.toggle('on',S.showNames); paint(); };
+  natTag.onclick=()=>{ S.natOnly=!S.natOnly; save(); natTag.classList.toggle('on',S.natOnly); paint(); };
+  paint();
 
-function vJour(){
-  const m=S.menu,r=rank(),nr=nextRank();
-  const md=tmod(m.mod);
-  const MDRILLS={game:["🎮","Le manche en 60 s (jeu)","une partie chrono : nomme les notes","openGame()"],
-    intervals:["📐","Les intervalles sur le manche","10 questions : pose l'intervalle demandé","openIntervals()"],
-    ear:["👂","L'oreille","intervalles ou accords, au son","openEar()"],
-    pompe:["🥁","La Pompe (rythme)","aller-retour jugés contre le clic","openPompe()"],
-    oct:["🔁","Les octaves","retrouve la note une octave plus haut","openOct()"]};
-  const mdrill=MDRILLS[m.manche];
-  const sc=mdrill?null:SCALES.find(s=>s.id===m.manche);
-  const cp=curPiece();
-  const pct=nr?Math.min(100,Math.round((S.xp-r[1])/(nr[1]-r[1])*100)):100;
-  const coach=m.validated?"Journée validée. La guitare ne compte pas les jours où tu joues — elle compte ceux où tu ne joues pas. <b>À demain.</b>":
-    dispStreak()===0?"Streak à <b>zéro</b>. Vingt minutes par jour battent trois heures le dimanche — c'est physiologique (mémoire musculaire), pas motivationnel.":
-    "Trois rendez-vous : la technique, le manche, le morceau. <b>Métronome obligatoire</b> — sans lui tu répètes tes défauts plus vite.";
-  return `
-  <h1 class="page">Le menu du jour</h1>
-  <div class="sub">${new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})} — 30-45 min, métronome allumé.</div>
-  <div class="hero">
-    <div class="lab">${r[0]}</div>
-    <div class="big">${S.xp} XP</div>
-    <div class="xpbar"><i style="width:${pct}%"></i></div>
-    <div class="xptxt">${nr?nr[1]-S.xp+" XP avant "+nr[0]:"Grade maximal — reste affûté."}</div>
-  </div>
-  <div class="coach">${coach}</div>
-  ${m.validated?"":`<div class="act hot" onclick="startSeance()">
-    <div class="ico">⏱️</div><div class="t"><b>Séance guidée — 35 min enchaînés</b><small>échauffement → technique → manche → morceau, chronométrés. Tu ne décides plus, tu joues.</small></div>
-    <div class="st">▶</div>
-  </div>`}
-  ${m.fond?(()=>{const f=THEORY.find(x=>x.id===m.fond);return `
-  <h2 class="sec">⛔ L'exercice imposé du jour</h2>
-  <div class="sub" style="margin:-4px 0 10px">Pas de choix aujourd'hui. Le système du manche passe avant tout le reste — une fiche par jour, dans l'ordre.</div>
-  <div class="act ${m.dFond?"done":"hot"}" onclick="openFiche('${m.fond}')">
-    <div class="ico">${m.dFond?"✓":"🧭"}</div><div class="t"><b>${f.title}</b><small>${m.dFond?"acquise aujourd'hui — la suivante demain, une par jour, ça infuse pendant la nuit":"fiche "+(THEORY.filter(x=>x.fond).findIndex(x=>x.id===m.fond)+1)+"/"+THEORY.filter(x=>x.fond).length+" du système — lis, puis réponds aux 2 questions"}</small></div>
-    <div class="st">${m.dFond?"✓":"›"}</div>
-  </div>
-  <h2 class="sec">Le reste (après)</h2>`;})():""}
-  ${(()=>{const due=fichesDue().slice(0,2); if(!due.length) return "";
-    return due.map(id=>{const f=THEORY.find(x=>x.id===id);
-      return `<div class="act" onclick="openFicheRev('${id}')">
-        <div class="ico">🧠</div><div class="t"><b>Rappel éclair — ${f.title}</b><small>2 questions, sans relire. 90 secondes qui valent une relecture entière.</small></div>
-        <div class="st">›</div></div>`;}).join("");})()}
-  <div class="act ${m.dTech?"done":""}" onclick="openMod('${m.mod}')">
-    <div class="ico">${md.icon}</div><div class="t"><b>Technique — ${md.name}</b><small>15 min sur un exo du module, et <b>logue ton BPM</b> (ou ton palier) pour valider</small></div>
-    <div class="st">${m.dTech?"✓":"›"}</div>
-  </div>
-  <div class="act ${m.dManche?"done":""}" onclick="${sc?`openScale('${sc.id}')`:mdrill[3]}">
-    <div class="ico">${sc?sc.icon:mdrill[0]}</div><div class="t"><b>Manche — ${sc?sc.name:mdrill[1]}</b><small>${sc?"10 min + évalue ton palier":mdrill[2]}</small></div>
-    <div class="st">${m.dManche?"✓":"›"}</div>
-  </div>
-  <div class="act ${m.dRep?"done":""}" onclick="${cp?`openPiece('${cp.id}')`:"nav('rep')"}">
-    <div class="ico">🎵</div><div class="t"><b>Répertoire — ${cp?cp.title:"choisis ton morceau en cours"}</b><small>${cp?"10 min de travail ciblé sur le morceau-examen":"aucun morceau en cours : va en choisir un"}</small></div>
-    <div class="st">${m.dRep?"✓":"›"}</div>
-  </div>
-  <h2 class="sec">Outils</h2>
-  <div class="act hot" onclick="openTuner()">
-    <div class="ico">🎯</div><div class="t"><b>Accordeur</b><small>au micro, ±1 cent — accorde AVANT de jouer, sinon tout le reste ment</small></div><div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openWarmup()">
-    <div class="ico">🔥</div><div class="t"><b>Échauffement guidé — 5 min</b><small>avant tout travail rapide. Les tendons ne pardonnent pas.</small></div><div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openMet()">
-    <div class="ico">🕰️</div><div class="t"><b>Métronome</b><small>subdivisions + mode paliers automatique — ton juge de paix</small></div><div class="st">›</div>
-  </div>`;
+  const c2=el('div','card');
+  c2.appendChild(el('b',null,'🎯 Entraînement rapide'));
+  c2.appendChild(el('p','lead','L’app te montre une case, tu nommes la note. 10 cases au hasard, sans pression.'));
+  const b=el('button','btn','Nommer les cases (10)'); b.onclick=()=>openReview('quick'); c2.appendChild(b);
+  m.appendChild(c2);
+
+  const co=counts();
+  const c3=el('div','card');
+  c3.innerHTML='<b>Ta maîtrise du manche</b>';
+  c3.appendChild(el('div','statgrid',
+    `<div class="stat"><b>${co.learned}</b><small>cases sues</small></div>
+     <div class="stat"><b>${co.due}</b><small>à revoir</small></div>
+     <div class="stat"><b>${co.total}</b><small>au total</small></div>`));
+  m.appendChild(c3);
 }
 
-// ============ ÉCHAUFFEMENT ============
-let WU=null;
-function openWarmup(){
-  const total=WARMUP.reduce((s,w)=>s+w.s,0);
-  openOv(ovTop("🔥 Échauffement")+`
-    <div class="sub">${Math.round(total/60)} minutes, guidé au chrono. On ne saute pas l'échauffement avant de pousser les BPM — c'est la règle des mains qui durent.</div>`+
-    WARMUP.map((w,i)=>`<div class="act" id="wu${i}"><div class="ico">${w.s}s</div><div class="t"><b>${w.name}</b><small>${w.txt}</small></div></div>`).join("")+
-    `<button class="btn" onclick="runWarmup()">▶ Lancer le guide (chrono auto)</button>
-     <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+/* ================================================================
+   VUE : CARTES (révision espacée)
+   ================================================================ */
+function renderCartes(){
+  const m=document.getElementById('main'); m.innerHTML='';
+  m.appendChild(el('h1','page','Les cartes'));
+  m.appendChild(el('p','lead','Répétition espacée, comme Anki. Une case bien sue revient de plus en plus tard ; une case ratée revient vite. C’est LE moteur pour graver le manche.'));
+  const co=counts();
+  const c=el('div','card');
+  c.innerHTML='<b>Aujourd’hui</b>';
+  c.appendChild(el('div','statgrid',
+    `<div class="stat"><b>${co.due}</b><small>à réviser</small></div>
+     <div class="stat"><b>${co.neu}</b><small>nouvelles</small></div>
+     <div class="stat"><b>${co.learned}/${co.total}</b><small>ancrées</small></div>`));
+  const total=co.due+co.neu;
+  const b=el('button','btn', total? `▶ Réviser (${total} cartes)` : '✓ Rien à réviser — reviens plus tard');
+  if(!total) b.disabled=true; b.onclick=()=>openReview('srs');
+  c.appendChild(b); m.appendChild(c);
+
+  const c2=el('div','card');
+  c2.innerHTML=`<b>Comment ça marche</b>
+   <p class="lead" style="margin:6px 0 0">Chaque case du manche est une carte. Tu la vois → tu nommes la note. Juste = elle revient plus tard (1 j, 3 j, 8 j…). Faux = elle revient dans la minute. ${NEW_PER_DAY} nouvelles cartes par jour, pour ne jamais te noyer.</p>`;
+  m.appendChild(c2);
 }
-function runWarmup(){
-  WU={i:0,left:WARMUP[0].s};
-  tickWarmup();
-  WU.iv=setInterval(()=>{
-    WU.left--;
-    if(WU.left<=0){
-      const el=document.getElementById("wu"+WU.i); if(el) el.classList.add("done");
-      buzzWU(); WU.i++;
-      if(WU.i>=WARMUP.length){ endWarmup(); return; }
-      WU.left=WARMUP[WU.i].s;
+
+/* ---------------- moteur de révision ---------------- */
+function openReview(mode){
+  ac(); markDay();
+  let queue;
+  if(mode==='quick'){
+    const d=deck().slice(); for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=d[i];d[i]=d[j];d[j]=t;}
+    queue=d.slice(0,10);
+  } else {
+    queue=dueList(); queue=queue.concat(newList().slice(0,newBudget()));
+    for(let i=queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=queue[i];queue[i]=queue[j];queue[j]=t;}
+  }
+  if(!queue.length){ toast('Rien à réviser'); return; }
+  let i=0, good=0;
+  openOverlay('Révision', inner=>{
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const qh=el('div','qhead'); inner.appendChild(qh);
+    const fb=buildFretboard(null); inner.appendChild(fb);
+    const opts=el('div','opts'); inner.appendChild(opts);
+    const foot=el('div'); inner.appendChild(foot);
+    function step(){
+      if(i>=queue.length) return finish();
+      const id=queue[i], card=parseCard(id);
+      prog.innerHTML=`Carte <b>${i+1}</b>/${queue.length} · ✓ ${good}`;
+      qh.innerHTML=`<div class="q">Quelle note ?</div><div class="sub">Corde ${strNo(card.s)} (${STR_NAME[card.s]}) · case ${card.f}</div>`;
+      fb.clearDots(); fb.dot(card.s,card.f,'?','ask'); foot.innerHTML='';
+      const set=new Set([card.note]); while(set.size<4){ set.add(NOTES[NAT[Math.floor(Math.random()*NAT.length)]]); }
+      const arr=[...set].sort(()=>Math.random()-.5);
+      opts.innerHTML='';
+      arr.forEach(n=>{ const bo=el('button','opt',n); bo.onclick=()=>answer(n,bo,id,card); opts.appendChild(bo); });
     }
-    tickWarmup();
-  },1000);
-}
-function buzzWU(){ try{ if(navigator.vibrate) navigator.vibrate(80); }catch(e){} try{ const c=metCtx(); if(c.state==="suspended")c.resume(); metClick(c.currentTime,2);}catch(e){} }
-function tickWarmup(){
-  const w=WARMUP[WU.i];
-  WARMUP.forEach((_,k)=>{ const el=document.getElementById("wu"+k); if(el){ el.style.borderColor=k===WU.i?"var(--acc)":""; el.style.opacity=k<WU.i?".45":"1"; }});
-  const el=document.getElementById("wu"+WU.i);
-  if(el){ const st=el.querySelector(".st")||document.createElement("div"); st.className="st"; st.style.color="var(--acc)"; st.textContent=WU.left+"s"; if(!el.querySelector(".st")) el.appendChild(st); }
-}
-function endWarmup(){
-  if(WU&&WU.iv) clearInterval(WU.iv); WU=null;
-  addXP(3); save();
-  openOv(ovTop("🔥 Prêt")+`<div class="result"><div class="big">🔥</div><p>Mains chaudes, tendons réveillés. Maintenant tu peux pousser les BPM sans risque.</p><div class="xp">+3 XP</div></div>
-    <button class="btn" onclick="closeOv();nav('tech')">Aller travailler la technique</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
-}
-
-function vTech(){
-  return `<h1 class="page">La forge</h1>
-  <div class="sub">${TEXOS.length} exercices, 4 paliers de tempo chacun. Le BPM que tu logues est celui où c'est <b>propre</b> — pas celui où ça passe une fois sur trois.</div>
-  <div class="act hot" onclick="openMet()"><div class="ico">🕰️</div><div class="t"><b>Métronome</b></div><div class="st">›</div></div>`+
-  TMODS.map(md=>{
-    const xs=TEXOS.filter(x=>x.mod===md.id);
-    const done=xs.reduce((s,x)=>s+palierOf(x),0), max=xs.length*4;
-    return `<div class="act" onclick="openMod('${md.id}')">
-      <div class="ico">${md.icon}</div><div class="t"><b>${md.name}</b><small>${md.desc}</small></div>
-      <div class="st">${done}/${max}</div></div>`;
-  }).join("");
-}
-function openMod(mid){
-  const md=tmod(mid);
-  openOv(ovTop(md.icon+" "+md.name)+`<div class="sub">${md.desc}</div>`+
-    TEXOS.filter(x=>x.mod===mid).map(x=>{
-      const lvl=palierOf(x), p=pb(x.id);
-      return `<div class="act" onclick="openExo('${x.id}')">
-        <div class="ico">${["·","I","II","III","IV"][x.tier]||x.tier}</div>
-        <div class="t"><b>${x.name}</b><small>Palier ${lvl}/4 ${p?"· record "+p+" BPM":x.bpm?"· jamais logué":"· contrôle/justesse"}</small></div>
-        <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
-    }).join(""));
-}
-// Analyse de plateau : les logs BPM parlent, l'app doit les écouter.
-function plateauCoach(id){
-  const logs=S.bpm[id]||[];
-  if(logs.length>=3){
-    const [a,b,c]=logs.slice(0,3).map(h=>h.v);
-    if(Math.max(a,b,c)-Math.min(a,b,c)<=2)
-      return `<div class="coach">📉 <b>Plateau détecté</b> — trois séances autour de ${a} BPM. Un plateau ne se force pas par le haut, il se casse <b>par le bas</b> : aujourd'hui, joue à ${a-10} BPM en exagérant la propreté (chaque note égale, zéro tension dans la main). Demain, remonte à ${a+4}. C'est contre-intuitif et ça marche depuis cent ans.</div>`;
-  }
-  if(logs.length){
-    const days=Math.round((Date.now()-new Date(logs[0].d))/864e5);
-    if(days>=10) return `<div class="coach">🕸️ <b>${days} jours sans toucher cet exo.</b> La mémoire musculaire s'évapore vite : ton record de ${logs[0].v} BPM n'est probablement plus vrai. Reprends 10 BPM en dessous, sans ego — il reviendra en deux séances.</div>`;
-  }
-  return "";
-}
-function openExo(id){
-  const x=exo(id), lvl=palierOf(x), p=pb(id);
-  MET.bpm=x.bpm?(p?Math.min(240,p+2):x.bpm[0]):MET.bpm;
-  const hist=(S.bpm[id]||[]).slice(0,5).map(h=>h.v+" ("+h.d.slice(5).split("-").reverse().join("/")+")").join(" · ");
-  openOv(ovTop(x.name)+`
-    <div class="meta"><span class="tag">${tmod(x.mod).name}</span><span class="tag b">Niveau ${x.tier}</span>${lvl?`<span class="tag g">Palier ${lvl}/4</span>`:""}</div>
-    ${plateauCoach(id)}
-    <pre class="tab">${esc(x.tab)}</pre>
-    <div class="pt">${x.consigne}</div>
-    <div class="crit"><b>Palier atteint :</b> ${x.crit}</div>
-    ${x.bpm?`
-    <div class="prow">${x.bpm.map((b,i)=>`<div class="p ${p>=b?"hit":(i===lvl?"next":"")}"><small>${PALIERS[i]}</small><b>${b}</b></div>`).join("")}</div>
-    ${metHtml()}
-    <div class="bpmlog">
-      <input type="number" id="bpmIn" placeholder="BPM propre" min="30" max="260" value="${p||x.bpm[0]}">
-      <button class="btn" onclick="logBpm('${id}')">Loguer</button>
-    </div>
-    <div class="xptxt" style="margin-top:8px">${p?"Record : <b style='color:var(--acc)'>"+p+" BPM</b>"+(hist?" · derniers : "+hist:""):"Premier log = ta référence. Sois honnête, personne ne regarde — et justement."}</div>
-    ${bpmSpark(id)}`
-    :`
-    ${metHtml()}
-    <p class="sub" style="margin:12px 0 4px">Exercice de contrôle — évalue ton palier honnêtement :</p>
-    <div class="selfrow">${PALIERS.map((pl,i)=>`<button class="${S.pal[id]===i+1?"on":""}" onclick="logPal('${id}',${i+1})">${pl}</button>`).join("")}</div>`}
-  `);
-}
-function logBpm(id){
-  const v=parseInt(document.getElementById("bpmIn").value);
-  if(!v||v<30||v>260) return toast("Entre un BPM réaliste.");
-  const x=exo(id), old=pb(id);
-  S.bpm[id]=S.bpm[id]||[]; S.bpm[id].unshift({d:today(),v}); S.bpm[id]=S.bpm[id].slice(0,60);
-  let xp=3, msg="🎸 <b>"+v+" BPM logué.</b>";
-  if(old===null||v>old){ xp+=10; msg="🏆 <b>Record : "+v+" BPM</b> (+13 XP)"; }
-  const newLvl=palierOf(x);
-  if(x.bpm&&old!==null){ let oldLvl=0; x.bpm.forEach(b=>{if(old>=b)oldLvl++;}); if(newLvl>oldLvl) msg="⭐ <b>Palier "+PALIERS[newLvl-1].toUpperCase()+" atteint</b> sur "+x.name+" !"; }
-  addXP(xp); checkMenu("tech",x.mod); save(); toast(msg); openExo(id);
-}
-function logPal(id,lvl){
-  const old=S.pal[id]||0;
-  S.pal[id]=lvl;
-  addXP(lvl>old?8*(lvl-old):2);
-  checkMenu("tech",exo(id)?exo(id).mod:"__");
-  if(SCALES.find(s=>s.id===id)) checkMenu("manche",id);
-  save(); toast(lvl>old?"⭐ <b>Palier "+PALIERS[lvl-1]+"</b> — la marche suivante t'attend.":"Palier enregistré.");
-  if(exo(id)) openExo(id); else openScale(id);
-}
-
-// ================= MANCHE =================
-function vManche(){
-  const fichesOk=Object.keys(S.fiches).length;
-  const fonds=THEORY.filter(t=>t.fond), fondOk=fonds.filter(t=>S.fiches[t.id]!==undefined).length;
-  const fondDone=fondOk===fonds.length;
-  let fondLock=false;
-  const fondHtml=`<h2 class="sec">🧭 Le système du manche — ${fondOk}/${fonds.length}${fondDone?" ✓":" · commence ici"}</h2>
-  <div class="sub" style="margin:-4px 0 10px">${fondDone
-    ? "Fondations acquises. Le manche n'est plus une carte au trésor : c'est un système que tu calcules."
-    : `<b>Avant les gammes, le système.</b> Quelle case = quelle note, et pourquoi — puis ce que les notes construisent. ${fonds.length} fiches, dans l'ordre. Sans ça, tout le reste n'est que des formes apprises par cœur.`}</div>`+
-  fonds.map((t,i)=>{
-    const done=S.fiches[t.id]!==undefined;
-    const isToday=S.menu.fond===t.id&&!S.menu.dFond;
-    // une seule fiche par jour : la suivante n'ouvre que demain
-    const locked=!done&&!isToday;
-    const why=fondLock&&!done ? "Fais d\\'abord la fiche précédente — l\\'ordre compte ici."
-      : "Une fiche par jour, pas deux. Celle d\\'aujourd\\'hui est faite : laisse-la infuser, joue, reviens demain.";
-    if(!done) fondLock=true;
-    return `<div class="act ${done?"done":""}" style="${locked?"opacity:.45":""}" onclick="${locked?`toast('${why}')`:`openFiche('${t.id}')`}">
-      <div class="ico">${done?"✓":locked?"🔒":(i+1)}</div>
-      <div class="t"><b>${t.title}</b>${isToday?"<small>ta fiche imposée du jour</small>":""}</div>
-      <div class="st">${done?"✓":locked?"":"›"}</div></div>`;
-  }).join("");
-  return `<h1 class="page">Le manche</h1>
-  <div class="sub">Pentas, éolien, liaisons, triades — l'objectif : que le manche devienne UN territoire connu, pas cinq cages.</div>
-  ${fondHtml}
-  ${fondDone?"":`<div class="crit" style="margin:14px 0">Le reste de l'onglet reste accessible — mais tant que le système n'est pas acquis, tu joues des dessins sans savoir ce qu'ils disent. Fais les fiches d'abord.</div>`}
-  <h2 class="sec">Les trois réflexes</h2>
-  <div class="act hot" onclick="openGame()">
-    <div class="ico">🎮</div><div class="t"><b>Le manche en 60 secondes</b><small>${S.game.runs?"records "+gBest("fwd")+" (lecture) / "+gBest("rev")+" (impro) · "+S.game.runs+" parties":"deux sens : lire le manche ET trouver une note — maintenant SUR le manche, avec le son."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openIntervals()">
-    <div class="ico">📐</div><div class="t"><b>Les intervalles sur le manche</b><small>${S.game.intBest?"record "+S.game.intBest+"/10 · les formes, pas les calculs":"vois la fondamentale, pose la quinte, la tierce, l'octave. Les formes, en vrai."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openEar()">
-    <div class="ico">👂</div><div class="t"><b>L'oreille</b><small>${S.game.earBest||S.game.earChBest?"intervalles "+(S.game.earBest||0)+"/10 · accords "+(S.game.earChBest||0)+"/10":"intervalles ET accords au son de la corde. Le pont entre ta tête et tes doigts."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openOct()">
-    <div class="ico">🔁</div><div class="t"><b>Les octaves</b><small>${S.game.octBest?"record "+S.game.octBest+"/10 · le manche plié en deux":"la forme f6 en muscle : retrouve la note une octave plus haut, partout."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openPompe()">
-    <div class="ico">🥁</div><div class="t"><b>La Pompe — rythmique</b><small>${S.game.pompeLvl?"niveau "+S.game.pompeLvl+"/"+POMPE_LVLS.length+" · la main ne s'arrête jamais":"aller ⬇ retour ⬆ jugés contre le clic. La moitié de l'instrument commence ici."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openTuneEar()">
-    <div class="ico">🔧</div><div class="t"><b>L'oreille de l'accordeur</b><small>${S.game.tuneBest?"record "+S.game.tuneBest+"/10 · écart ±"+((S.game.tuneBest>=9)?10:(S.game.tuneBest>=7)?15:25)+" cents":"trop grave, juste, trop aigu ? Apprends à accorder sans machine — la case 5 t'attend."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act hot" onclick="openLive()">
-    <div class="ico">🎤</div><div class="t"><b>À la vraie guitare</b><small>${S.game.liveBest?"record "+S.game.liveBest+"/10 · le micro juge, pas toi":"l'app demande une note, TU la joues sur ta guitare, le micro juge. Le vrai test."}</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act" onclick="openCarte()">
-    <div class="ico">🗺️</div><div class="t"><b>Ta carte du manche</b><small>tes zones aveugles, note par note — le jeu les vise automatiquement</small></div>
-    <div class="st">›</div>
-  </div>
-  <h2 class="sec">Jouer avec</h2>
-  <div class="act hot" onclick="openJamList()">
-    <div class="ico">🎛️</div><div class="t"><b>Jam Station</b><small>${JAMS.length} grilles jouées par l'app, 12 tonalités, hors-ligne — les gammes deviennent des phrases</small></div>
-    <div class="st">›</div>
-  </div>
-  <div class="act" onclick="openChordDict()">
-    <div class="ico">📖</div><div class="t"><b>Dictionnaire d'accords</b><small>chaque note étiquetée en degré — tu vois POURQUOI ça sonne majeur, mineur, tendu</small></div>
-    <div class="st">›</div>
-  </div>
-  <h2 class="sec">Le parcours</h2>
-  <div class="act hot" onclick="openBoussole()">
-    <div class="ico">🧭</div><div class="t"><b>La Boussole</b><small>intervalles → 5 positions → modes → improviser en visant. 8 paliers, débutant à expert, exercices sur le manche</small></div>
-    <div class="st">›</div>
-  </div>
-  <h2 class="sec">Cartographie & gammes</h2>`+
-  SCALES.map(s=>{
-    const lvl=S.pal[s.id]||0;
-    return `<div class="act" onclick="openScale('${s.id}')">
-      <div class="ico">${s.icon}</div><div class="t"><b>${s.name}</b><small>${s.consigne.slice(0,64)}…</small></div>
-      <div class="st">${"★".repeat(lvl)||"—"}</div></div>`;
-  }).join("")+
-  `<h2 class="sec">Cours complet — la théorie, proprement</h2>
-  <p class="sub" style="margin:-2px 4px 8px">Des modules complets, dans l'ordre, sans guitare. Lis, puis fais les exercices — ils reviennent en révision espacée. C'est le vrai cours, pas la version express.</p>`+
-  THEORY.filter(t=>t.cours).map((t,i)=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
-    <div class="ico">🎓</div><div class="t"><b>${i+1}. ${t.title}</b><small>${t.q.length} exercices · révisable</small></div>
-    <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("")+
-  `<h2 class="sec">Fiches express</h2>`+
-  THEORY.filter(t=>!t.fond&&!t.culture&&!t.cours).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
-    <div class="ico">📖</div><div class="t"><b>${t.title}</b></div>
-    <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
-}
-function openScale(id){
-  const s=SCALES.find(x=>x.id===id), lvl=S.pal[id]||0;
-  openOv(ovTop(s.icon+" "+s.name)+`
-    <pre class="tab">${esc(s.diagram)}</pre>
-    <div class="pt">${s.consigne}</div>
-    <div class="crit"><b>Mission :</b> ${s.mission}</div>
-    ${metHtml()}
-    <p class="sub" style="margin:12px 0 4px">Où en es-tu, honnêtement ?</p>
-    <div class="selfrow">${PALIERS.map((pl,i)=>`<button class="${lvl===i+1?"on":""}" onclick="logPal('${id}',${i+1})">${pl}</button>`).join("")}</div>`);
-}
-// fiches théorie
-let FQ=null;
-function openFiche(id){
-  const f=THEORY.find(x=>x.id===id);
-  FQ={id,i:0,good:0};
-  openOv(ovTop(f.title)+`<div class="story">${f.content.map(p=>`<p>${p}</p>`).join("")}</div>
-    <button class="btn" onclick="ficheQ()">Les 2 questions — on vérifie</button>`);
-}
-function ficheQ(){
-  const f=THEORY.find(x=>x.id===FQ.id), q=f.q[FQ.i];
-  const ord=[...Array(q.opts.length).keys()].sort(()=>Math.random()-.5);
-  FQ.map=ord;
-  openOv(ovTop(f.title)+`
-    <div class="qq">${FQ.i+1}/${f.q.length} — ${q.q}</div>
-    ${ord.map((oi,p)=>`<button class="opt" onclick="ficheA(${p})">${q.opts[oi]}</button>`).join("")}
-    <div id="fexp"></div>`);
-}
-function ficheA(p){
-  const f=THEORY.find(x=>x.id===FQ.id), q=f.q[FQ.i], ok=FQ.map[p]===q.a;
-  if(ok) FQ.good++;
-  document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(FQ.map[k]===q.a) b.classList.add("ok"); else if(k===p) b.classList.add("ko"); });
-  document.getElementById("fexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non."}</b> ${q.exp}</div>
-    <button class="btn" onclick="${FQ.i<f.q.length-1?"FQ.i++;ficheQ()":"ficheEnd()"}">${FQ.i<f.q.length-1?"Question suivante":"Terminer"}</button>`;
-}
-function ficheEnd(){
-  const f=THEORY.find(x=>x.id===FQ.id);
-  if(f.fond&&FQ.good<f.q.length&&S.fiches[FQ.id]===undefined){
-    addXP(2); save();
-    toast("On ne passe pas les fondations avec "+FQ.good+"/"+f.q.length+". Relis, puis refais.");
-    closeOv(); render(); return;
-  }
-  const first=S.fiches[FQ.id]===undefined;
-  S.fiches[FQ.id]=FQ.good;
-  if(first&&!f.culture) schedFiche(FQ.id,0); // la mémoire s'entretient — sauf la culture, lue par plaisir
-  addXP(first?8+FQ.good*2:FQ.good); save();
-  if(f.fond&&first) checkMenu("fond",FQ.id);
-  toast(FQ.good===f.q.length?"📖 <b>Fiche acquise, "+FQ.good+"/"+f.q.length+".</b> Rappel dans 3 jours — c'est là que ça se grave.":"📖 Fiche lue — "+FQ.good+"/"+f.q.length+", relis-la dans quelques jours.");
-  closeOv(); render();
-}
-
-// ---- Révision espacée des fiches : lire ne suffit pas, il faut se rappeler ----
-// Échelle 3 → 7 → 21 → 60 jours. Rater un rappel renvoie 2 jours plus tard, même barreau.
-const FSTEPS=[3,7,21,60];
-function schedFiche(id,step){ if(!S.frev) S.frev={}; S.frev[id]={step:Math.min(step,3), due:addDays(FSTEPS[Math.min(step,3)])}; }
-function fichesDue(){
-  if(!S.frev) return [];
-  const t=today();
-  return Object.entries(S.frev).filter(([id,r])=>r.due<=t&&THEORY.find(x=>x.id===id)).map(([id])=>id);
-}
-let RQ=null;
-function openFicheRev(id){
-  const f=THEORY.find(x=>x.id===id);
-  RQ={id,i:0,good:0};
-  ficheRevQ();
-}
-function ficheRevQ(){
-  const f=THEORY.find(x=>x.id===RQ.id), q=f.q[RQ.i];
-  RQ.map=q.opts.map((_,k)=>k).sort(()=>Math.random()-.5);
-  openOv(ovTop("🧠 Rappel — "+f.title)+`
-    <div class="sub" style="margin-bottom:10px">Sans relire. C'est l'effort de rappel qui grave — pas la relecture.</div>
-    <div class="qq" style="font-size:16px;font-weight:700;margin-bottom:10px">${q.q}</div>
-    ${RQ.map.map((oi,k)=>`<button class="btn ghost opt" style="margin-top:7px;text-align:left" onclick="ficheRevA(${k})">${f.q[RQ.i].opts[oi]}</button>`).join("")}
-    <div id="fexp"></div>`);
-}
-function ficheRevA(p){
-  const f=THEORY.find(x=>x.id===RQ.id), q=f.q[RQ.i], ok=RQ.map[p]===q.a;
-  if(ok) RQ.good++;
-  document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(RQ.map[k]===q.a) b.classList.add("ok"); else if(k===p) b.classList.add("ko"); });
-  document.getElementById("fexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non."}</b> ${q.exp}</div>
-    <button class="btn" onclick="${RQ.i<f.q.length-1?"RQ.i++;ficheRevQ()":"ficheRevEnd()"}">${RQ.i<f.q.length-1?"Question suivante":"Terminer le rappel"}</button>`;
-}
-function ficheRevEnd(){
-  const id=RQ.id, good=RQ.good, r=S.frev[id]; RQ=null;
-  const need=(THEORY.find(x=>x.id===id)||{q:[0,0]}).q.length;
-  if(good===need){
-    const nxt=Math.min(r.step+1,3);
-    schedFiche(id,nxt); addXP(6); save();
-    toast("🧠 <b>Rappel tenu.</b> Prochain dans "+FSTEPS[nxt]+" jours. +6 XP");
-    closeOv();
-  } else {
-    S.frev[id]={step:r.step, due:addDays(2)}; addXP(2); save();
-    const f=THEORY.find(x=>x.id===id);
-    openOv(ovTop("🧠 Rappel — "+f.title)+`
-      <div class="result"><div class="big">${good}/${need}</div>
-      <p>La mémoire a lâché — c'est une information, pas une honte. Relis la fiche maintenant : la relecture APRÈS l'échec de rappel est le moment où le cerveau accroche le mieux. Nouveau rappel dans 2 jours.</p></div>
-      <button class="btn" onclick="openFiche('${id}')">Relire la fiche</button>
-      <button class="btn ghost" onclick="closeOv()">Plus tard</button>`);
-  }
-}
-
-// jeu du manche
-const CHROM=["Do","Do#","Ré","Ré#","Mi","Fa","Fa#","Sol","Sol#","La","La#","Si"];
-// [nom, index chromatique de la corde à vide, midi à vide]
-const STRINGS=[["Mi aigu",4,64],["Si",11,59],["Sol",7,55],["Ré",2,50],["La",9,45],["Mi grave",4,40]];
-
-// ---- son de corde : synthèse Karplus-Strong (une vraie corde pincée, pas un bip) ----
-function pluck(midi,when=0,vel=.5,dur=1.4){
-  try{
-    const c=metCtx(); if(c.state==="suspended") c.resume();
-    const sr=c.sampleRate, f=440*Math.pow(2,(midi-69)/12);
-    const N=Math.max(2,Math.round(sr/f));
-    const buf=c.createBuffer(1,Math.floor(sr*dur),sr), d=buf.getChannelData(0);
-    const ring=new Float32Array(N);
-    for(let i=0;i<N;i++) ring[i]=Math.random()*2-1;
-    let idx=0;
-    for(let i=0;i<d.length;i++){ const nx=(idx+1)%N; ring[idx]=.498*(ring[idx]+ring[nx]); d[i]=ring[idx]; idx=nx; }
-    const src=c.createBufferSource(); src.buffer=buf;
-    const g=c.createGain(); g.gain.setValueAtTime(vel,c.currentTime+when);
-    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+when+dur);
-    src.connect(g); g.connect(c.destination); src.start(c.currentTime+when);
-  }catch(e){}
-}
-function pluckSF(s,f,when=0,vel=.5){ pluck(STRINGS[s][2]+f,when,vel); }
-
-// ---- manche visuel interactif ----
-// marks: [{s,f,cls:'root|ok|ko|ghost|h0..h3',label}] · tap: nom d'une fonction globale(s,f)
-let FBTAP=null;
-function fbHtml(marks,opts){
-  opts=opts||{};
-  const frets=opts.frets??12;
-  const mk={}; (marks||[]).forEach(m=>mk[m.s+"_"+m.f]={cls:m.cls,label:m.label??""});
-  FBTAP=opts.tap||null;
-  let h=`<div class="fb"><table>`;
-  h+=`<tr><td class="sname"></td>${Array.from({length:frets+1},(_,f)=>`<td class="fnum">${[3,5,7,9,12].includes(f)?f:""}</td>`).join("")}</tr>`;
-  for(let s=0;s<6;s++){
-    h+=`<tr><td class="sname">${STRINGS[s][0].replace(" grave","g").replace(" aigu","a")}</td>`;
-    for(let f=0;f<=frets;f++){
-      const m=mk[s+"_"+f];
-      h+=`<td class="${f===0?"nut":""}" onclick="fbTap(${s},${f})">${m?`<span class="dot ${m.cls}">${m.label}</span>`:""}</td>`;
+    function answer(n,bo,id,card){
+      opts.querySelectorAll('.opt').forEach(x=>x.style.pointerEvents='none');
+      pluck(midiAt(card.s,card.f));
+      const ok=n===card.note;
+      if(ok){ bo.classList.add('right'); good++; fb.dot(card.s,card.f,card.note,'ok'); }
+      else{ bo.classList.add('wrong'); opts.querySelectorAll('.opt').forEach(x=>{ if(x.textContent===card.note)x.classList.add('right'); }); fb.dot(card.s,card.f,card.note,'no'); }
+      if(mode==='srs') grade(id, ok?'good':'again');
+      else { S.seen++; if(ok)S.right++; save(); }
+      const nx=el('button','btn', i+1<queue.length?'Suivant →':'Terminer');
+      nx.onclick=()=>{ i++; step(); }; foot.appendChild(nx);
     }
-    h+=`</tr>`;
-  }
-  return h+`</table></div>`;
-}
-function fbTap(s,f){ if(FBTAP) FBTAP(s,f); }
-
-// ---- stats par note : qui sont tes zones aveugles ? ----
-function noteStat(pc){ if(!S.noteStats) S.noteStats={}; return S.noteStats[pc]||(S.noteStats[pc]={ok:0,tot:0}); }
-function recNote(pc,ok){ const n=noteStat(pc); n.tot++; if(ok) n.ok++; save(); }
-// tirage adaptatif : les notes ratées sortent plus souvent
-function pickNote(){
-  const w=CHROM.map((_,pc)=>{ const n=(S.noteStats||{})[pc]; if(!n||n.tot<3) return 3; return 1+6*(1-n.ok/n.tot); });
-  let r=Math.random()*w.reduce((a,b)=>a+b,0);
-  for(let pc=0;pc<12;pc++){ r-=w[pc]; if(r<=0) return pc; }
-  return 11;
-}
-let G=null;
-function gBest(m){ return (S.game.best&&typeof S.game.best==="object")?(S.game.best[m]||0):(m==="fwd"?(S.game.best||0):0); }
-function setGBest(m,v){ if(!S.game.best||typeof S.game.best!=="object") S.game.best={fwd:(S.game.best||0),rev:0}; S.game.best[m]=v; }
-function openGame(){
-  openOv(ovTop("🎮 Le manche en 60 s")+`
-    <div class="game">
-      <div class="timer">Deux sens, deux réflexes. Le premier lit le manche ; le second — trouver une note — est celui de l'impro.</div>
-    </div>
-    <div class="act hot" onclick="startGame('fwd')">
-      <div class="ico">👁️</div><div class="t"><b>Case → Note</b><small>on te donne corde + case, tu nommes la note · record ${gBest("fwd")}</small></div><div class="st">›</div>
-    </div>
-    <div class="act hot" onclick="startGame('rev')">
-      <div class="ico">🎯</div><div class="t"><b>Note → Case</b><small>on te donne une note + une corde, tu trouves la case · record ${gBest("rev")}</small></div><div class="st">›</div>
-    </div>
-    <div class="xptxt" style="margin-top:8px">${S.game.runs||0} partie${(S.game.runs||0)>1?"s":""} jouées.</div>`);
-}
-function startGame(mode){
-  G={mode,score:0,total:0,left:60,cur:null};
-  G.iv=setInterval(()=>{ G.left--; const t=document.getElementById("gtimer"); if(t) t.textContent=G.left+" s"; if(G.left<=0) endGame(); },1000);
-  nextQ();
-}
-function stopGame(){ if(G&&G.iv){clearInterval(G.iv);} G=null; }
-function nextQ(){
-  if(!G) return;
-  const si=Math.floor(Math.random()*6), open=STRINGS[si][1];
-  if(G.mode==="fwd"){
-    // adaptatif : la case posée vise plus souvent tes notes faibles
-    const pc=pickNote(), fret=((pc-open)%12+12)%12;
-    const note=CHROM[pc];
-    const opts=new Set([note]); while(opts.size<4) opts.add(CHROM[Math.floor(Math.random()*12)]);
-    G.cur={note,pc,opts:[...opts].sort(()=>Math.random()-.5)};
-    openOv(gameShell(`Corde de <b>${STRINGS[si][0]}</b> · case <b>${fret}</b>`,G.cur.opts));
-  } else {
-    // note → case, SUR le manche : tape la case (0 et 12 valent tous les deux)
-    const pc=pickNote(), correctFret=((pc-open)%12+12)%12;
-    G.cur={pc,si,fret:correctFret};
-    openOv(gameShell(`Place <b>${CHROM[pc]}</b> sur la corde de <b>${STRINGS[si][0]}</b>`,null)+
-      fbHtml([],{tap:(s,f)=>answerFB(s,f)}));
-  }
-}
-function gameShell(prompt,opts){
-  return ovTop("🎮 Le manche en 60 s")+`
-    <div class="game">
-      <div class="timer" id="gtimer">${G.left} s</div>
-      <div class="qnote">${prompt}</div>
-      <div class="timer">score ${G.score}/${G.total}</div>
-      ${opts?`<div class="gopts">${opts.map((o,i)=>`<button onclick="answerG(${i})">${o}</button>`).join("")}</div>`:""}
-    </div>`;
-}
-function answerFB(s,f){
-  if(!G||!G.cur) return;
-  const ok=(s===G.cur.si)&&((f%12)===(G.cur.fret%12));
-  G.total++; recNote(G.cur.pc,ok);
-  pluckSF(s,f,0,.45);
-  if(ok){
-    G.score++;
-    openOv(gameShell(`Place <b>${CHROM[G.cur.pc]}</b> sur la corde de <b>${STRINGS[G.cur.si][0]}</b>`,null)+
-      fbHtml([{s,f,cls:"ok",label:CHROM[G.cur.pc].slice(0,2)}],{}));
-    setTimeout(nextQ,420);
-  } else {
-    const marks=[{s,f,cls:"ko"}]; // ta réponse, puis la bonne (et son octave si case 0)
-    marks.push({s:G.cur.si,f:G.cur.fret,cls:"ok",label:CHROM[G.cur.pc].slice(0,2)});
-    if(G.cur.fret===0) marks.push({s:G.cur.si,f:12,cls:"ok",label:CHROM[G.cur.pc].slice(0,2)});
-    openOv(gameShell(`Place <b>${CHROM[G.cur.pc]}</b> sur la corde de <b>${STRINGS[G.cur.si][0]}</b>`,null)+fbHtml(marks,{}));
-    setTimeout(()=>{ pluckSF(G.cur.si,G.cur.fret,0,.5); setTimeout(nextQ,700); },260);
-  }
-}
-function answerG(i){
-  if(!G) return;
-  const ok=G.cur.opts[i]===G.cur.note;
-  G.total++; recNote(G.cur.pc,ok);
-  pluck(48+G.cur.pc,0,.4);
-  if(ok){ G.score++; nextQ(); }
-  else{
-    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
-      const good=G.cur.opts[k]===G.cur.note;
-      if(good) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
-    setTimeout(nextQ,650);
-  }
-}
-function endGame(){
-  clearInterval(G.iv);
-  const sc=G.score, tot=G.total, mode=G.mode; G=null;
-  S.game.runs=(S.game.runs||0)+1;
-  const rec=sc>gBest(mode); if(rec) setGBest(mode,sc);
-  addXP(rec?12:4); checkMenu("manche","game"); save();
-  openOv(ovTop("🎮 Résultat")+`
-    <div class="result"><div class="big">${sc}</div>
-    <p>${mode==="fwd"?"notes nommées":"cases trouvées"} en 60 s · ${tot-sc} erreur${tot-sc>1?"s":""}${rec?" · <b style='color:var(--acc)'>RECORD</b>":""}</p>
-    <p>${sc>=30?"Le manche est chez toi.":sc>=20?"Solide — les cordes Si et Sol te ralentissent encore ?":sc>=12?"Ça vient. Rejoue chaque jour, c'est du vocabulaire pur.":"Normal au début : mémorise d'abord les cases 0, 3, 5, 7 sur chaque corde."}</p></div>
-    <button class="btn" onclick="startGame('${mode}')">Rejouer (${mode==="fwd"?"case→note":"note→case"})</button>
-    <button class="btn ghost" onclick="openGame()">Changer de sens</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
-}
-
-// ================= SALLE INTERVALLES =================
-// Le but : les intervalles comme FORMES. Tu vois la fondamentale, tu poses l'intervalle.
-const INTVS=[["tierce mineure",3],["tierce majeure",4],["quarte",5],["quinte",7],["sixte majeure",9],["septième mineure",10],["octave",12]];
-let IV=null;
-function openIntervals(){
-  const best=(S.game.intBest||0);
-  openOv(ovTop("📐 Les intervalles sur le manche")+`
-    <div class="pt">On te montre une <b>fondamentale</b>. Tu poses l'intervalle demandé — n'importe quelle position juste compte. C'est l'application directe des fiches : les intervalles sont des <b>formes</b>, et l'anomalie du Si les décale d'une case.</div>
-    <div class="crit"><b>10 questions, sans chrono.</b> Ici on cherche la compréhension, pas le réflexe — le réflexe, c'est le jeu des 60 s.${best?` Record : <b>${best}/10</b>.`:""}</div>
-    <button class="btn" onclick="startIntervals()">Commencer</button>`);
-}
-function startIntervals(){ IV={n:0,score:0}; nextIV(); }
-function nextIV(){
-  if(!IV) return;
-  if(IV.n>=10) return endIV();
-  // fondamentale sur cordes graves (2-5), cases 1-7 ; cible : toute position exacte (même octave)
-  for(let tries=0;tries<50;tries++){
-    const rs=2+Math.floor(Math.random()*4), rf=1+Math.floor(Math.random()*7);
-    const iv=INTVS[Math.floor(Math.random()*INTVS.length)];
-    const rootMidi=STRINGS[rs][2]+rf, target=rootMidi+iv[1];
-    const valid=[];
-    for(let s=0;s<6;s++){ const f=target-STRINGS[s][2]; if(f>=0&&f<=12) valid.push({s,f}); }
-    if(!valid.length) continue;
-    IV.cur={rs,rf,iv,rootMidi,valid};
-    pluckSF(rs,rf,0,.5);
-    openOv(ovTop("📐 Intervalles · "+(IV.n+1)+"/10")+`
-      <div class="game"><div class="qnote">Depuis 🟠, pose la <b>${iv[0]}</b> <span style="color:var(--dim)">(+${iv[1]} demi-tons, vers l'aigu)</span></div>
-      <div class="timer">score ${IV.score}/${IV.n}</div></div>`+
-      fbHtml([{s:rs,f:rf,cls:"root",label:CHROM[(STRINGS[rs][1]+rf)%12].slice(0,2)}],{tap:(s,f)=>answerIV(s,f)}));
-    return;
-  }
-  endIV();
-}
-function answerIV(s,f){
-  if(!IV||!IV.cur) return;
-  const c=IV.cur, ok=c.valid.some(v=>v.s===s&&v.f===f);
-  IV.n++;
-  pluckSF(c.rs,c.rf,0,.45); pluckSF(s,f,.35,.45);
-  const marks=[{s:c.rs,f:c.rf,cls:"root",label:CHROM[(STRINGS[c.rs][1]+c.rf)%12].slice(0,2)}];
-  if(ok){ IV.score++; marks.push({s,f,cls:"ok"}); c.valid.filter(v=>!(v.s===s&&v.f===f)).forEach(v=>marks.push({s:v.s,f:v.f,cls:"ghost"})); }
-  else { marks.push({s,f,cls:"ko"}); c.valid.forEach(v=>marks.push({s:v.s,f:v.f,cls:"ok"})); }
-  openOv(ovTop("📐 Intervalles · "+IV.n+"/10")+`
-    <div class="game"><div class="qnote">${ok?"✓ "+c.iv[0]:"✗ — voilà les positions justes de la "+c.iv[0]}</div>
-    <div class="timer">${ok?"les points bleus : les AUTRES endroits où elle vivait — c'est la même forme qui se répète":"écoute-la, regarde la forme, elle ne changera jamais"}</div></div>`+
-    fbHtml(marks,{})+`<button class="btn" onclick="nextIV()">${IV.n>=10?"Résultat":"Question suivante"}</button>`);
-}
-function endIV(){
-  const sc=IV.score; IV=null;
-  const rec=sc>(S.game.intBest||0); if(rec) S.game.intBest=sc;
-  addXP(rec?12:5); checkMenu("manche","intervals"); save();
-  openOv(ovTop("📐 Résultat")+`
-    <div class="result"><div class="big">${sc}/10</div>
-    <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Les formes sont à toi. L'impro n'est plus une loterie.":sc>=6?"Ça prend. Les erreurs viennent presque toujours de la corde Si — vérifie.":"Reprends la fiche th1 et la f6 : un intervalle est un dessin, pas un calcul."}</p></div>
-    <button class="btn" onclick="startIntervals()">Rejouer</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
-}
-
-// ================= SALLE OREILLE =================
-// Reconnaître un intervalle au son — le pont entre le manche et la musique.
-let ER=null;
-function earSet(){
-  const b=S.game.earBest||0;
-  if(b>=9) return INTVS; // palette complète
-  if(b>=7) return INTVS.filter(x=>[3,4,5,7,9,12].includes(x[1]));
-  return INTVS.filter(x=>[3,4,7,12].includes(x[1]));
-}
-function openEar(){
-  const b=S.game.earBest||0, set=earSet(), bc=S.game.earChBest||0;
-  openOv(ovTop("👂 L'oreille")+`
-    <div class="pt">LA compétence qui relie le manche à ce que tu entends dans ta tête — sans elle tu recopies, avec elle tu joues. Deux salles :</div>
-    <div class="act hot" onclick="startEar()">
-      <div class="ico">📏</div><div class="t"><b>Intervalles</b><small>${set.map(x=>x[0]).join(", ")} · record ${b}/10${b>=9?" — palette complète":""}</small></div><div class="st">›</div>
-    </div>
-    <div class="act hot" onclick="startEarCh()">
-      <div class="ico">🎸</div><div class="t"><b>Accords</b><small>${earChSet().map(x=>x[0]).join(", ")} · record ${bc}/10 — majeur ou mineur, la tierce décide</small></div><div class="st">›</div>
-    </div>
-    <div class="pt" style="font-size:12.5px">Repères : la quinte = « Star Wars » · l'octave = « Somewhere over the rainbow » · la tierce mineure = « Smoke on the Water » · majeur = ça sourit, mineur = ça se voile — et l'accord 7 « demande » à bouger.</div>`);
-}
-// ---- oreille : les accords (majeur / mineur / 7) grattés ----
-let EC=null;
-function earChSet(){
-  const b=S.game.earChBest||0;
-  const all=[["majeur",[0,4,7,12]],["mineur",[0,3,7,12]],["septième (7)",[0,4,7,10]],["maj7 (doux)",[0,4,7,11]]];
-  return b>=9?all : b>=6?all.slice(0,3) : all.slice(0,2);
-}
-function startEarCh(){ EC={n:0,score:0,set:earChSet()}; nextEC(); }
-function playEC(){ if(!EC||!EC.cur) return; EC.cur.iv[1].forEach((x,i)=>pluck(EC.cur.root+x,i*0.03,.42,1.6)); }
-function nextEC(){
-  if(!EC) return;
-  if(EC.n>=10) return endEC();
-  const iv=EC.set[Math.floor(Math.random()*EC.set.length)];
-  EC.cur={root:45+Math.floor(Math.random()*12),iv};
-  const opts=new Set([iv[0]]); while(opts.size<Math.min(4,EC.set.length)) opts.add(EC.set[Math.floor(Math.random()*EC.set.length)][0]);
-  EC.cur.opts=[...opts].sort(()=>Math.random()-.5);
-  openOv(ovTop("👂 Accords · "+(EC.n+1)+"/10")+`
-    <div class="game"><div class="qnote">Quelle couleur d'accord ?</div>
-    <div class="timer">score ${EC.score}/${EC.n}</div>
-    <div class="gopts" style="grid-template-columns:repeat(2,1fr)">${EC.cur.opts.map((o,i)=>`<button onclick="answerEC(${i})">${o}</button>`).join("")}</div></div>
-    <button class="btn ghost" onclick="playEC()">🔁 Réécouter</button>`);
-  setTimeout(playEC,250);
-}
-function answerEC(i){
-  if(!EC||!EC.cur) return;
-  const ok=EC.cur.opts[i]===EC.cur.iv[0];
-  EC.n++;
-  if(ok){ EC.score++; nextEC(); }
-  else{
-    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
-      if(EC.cur.opts[k]===EC.cur.iv[0]) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
-    playEC();
-    setTimeout(nextEC,1200);
-  }
-}
-function endEC(){
-  const sc=EC.score; EC=null;
-  const rec=sc>(S.game.earChBest||0); if(rec) S.game.earChBest=sc;
-  addXP(rec?12:5); checkMenu("manche","ear"); save();
-  openOv(ovTop("👂 Résultat")+`
-    <div class="result"><div class="big">${sc}/10</div>
-    <p>${rec?"<b style='color:var(--acc)'>RECORD</b>":""}${rec&&sc>=6?" · la palette s'élargit":""}</p>
-    <p>${sc>=9?"Tu entends la tierce — la note qui décide de tout (fiche f10, en actes).":sc>=6?"Solide. Le 7 se repère à sa TENSION : il veut aller quelque part, les autres sont posés.":"Concentre-toi sur une seule chose : ça sourit (majeur) ou ça se voile (mineur) ? Le reste viendra."}</p></div>
-    <button class="btn" onclick="startEarCh()">Rejouer</button>
-    <button class="btn ghost" onclick="openEar()">Changer de salle</button>`);
-}
-function startEar(){ ER={n:0,score:0,set:earSet()}; nextER(); }
-function playER(){ if(!ER||!ER.cur) return; pluck(ER.cur.root,0,.5); pluck(ER.cur.root+ER.cur.iv[1],.55,.5); }
-function nextER(){
-  if(!ER) return;
-  if(ER.n>=10) return endER();
-  const iv=ER.set[Math.floor(Math.random()*ER.set.length)];
-  const root=45+Math.floor(Math.random()*15);
-  ER.cur={root,iv};
-  const opts=new Set([iv[0]]); while(opts.size<Math.min(4,ER.set.length)) opts.add(ER.set[Math.floor(Math.random()*ER.set.length)][0]);
-  ER.cur.opts=[...opts].sort(()=>Math.random()-.5);
-  openOv(ovTop("👂 Oreille · "+(ER.n+1)+"/10")+`
-    <div class="game"><div class="qnote">Quel est cet intervalle ?</div>
-    <div class="timer">score ${ER.score}/${ER.n}</div>
-    <div class="gopts" style="grid-template-columns:repeat(2,1fr)">${ER.cur.opts.map((o,i)=>`<button onclick="answerER(${i})">${o}</button>`).join("")}</div></div>
-    <button class="btn ghost" onclick="playER()">🔁 Réécouter</button>`);
-  setTimeout(playER,250);
-}
-function answerER(i){
-  if(!ER||!ER.cur) return;
-  const ok=ER.cur.opts[i]===ER.cur.iv[0];
-  ER.n++;
-  if(ok){ ER.score++; nextER(); }
-  else{
-    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
-      if(ER.cur.opts[k]===ER.cur.iv[0]) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
-    playER();
-    setTimeout(nextER,1100);
-  }
-}
-function endER(){
-  const sc=ER.score; ER=null;
-  const rec=sc>(S.game.earBest||0); if(rec) S.game.earBest=sc;
-  addXP(rec?12:5); checkMenu("manche","ear"); save();
-  openOv(ovTop("👂 Résultat")+`
-    <div class="result"><div class="big">${sc}/10</div>
-    <p>${rec?"<b style='color:var(--acc)'>RECORD</b>":""}${rec&&sc>=7?" · la palette s'élargit — de nouveaux intervalles entrent en jeu":""}</p>
-    <p>${sc>=9?"Ton oreille précède tes doigts, c'est exactement l'ordre voulu.":sc>=6?"Solide. Chante l'intervalle AVANT de répondre : la voix ne triche pas.":"Normal au début. Accroche chaque intervalle à sa chanson-repère, ça rentre en une semaine."}</p></div>
-    <button class="btn" onclick="startEar()">Rejouer</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
-}
-
-// ================= L'OREILLE DE L'ACCORDEUR =================
-// Entendre si une corde est trop grave, juste, ou trop aiguë — le geste
-// physique de l'accordage (fiche th7 : la méthode de la case 5).
-let TU=null;
-function tuDetune(){ const b=S.game.tuneBest||0; return b>=9?10:b>=7?15:25; } // cents — se resserre avec le record
-function openTuneEar(){
-  const b=S.game.tuneBest||0;
-  openOv(ovTop("🔧 L'oreille de l'accordeur")+`
-    <div class="pt">Deux fois la même corde : une <b>référence juste</b>, puis la corde « à vérifier ». Elle est trop grave, juste, ou trop aiguë ? C'est exactement le jugement que tu fais en accordant à l'oreille — la méthode de la case 5 (fiche 📖 dans Théorie express).</div>
-    <div class="crit"><b>Écart actuel : ±${tuDetune()} cents.</b> Il se resserre avec ton record (${b}/10) : 25 → 15 → 10 cents. À ±10 tu entends mieux que la moitié des guitaristes en activité.${b?"":" Astuce : ne compare pas les hauteurs, écoute si « ça flotte »."}</div>
-    <button class="btn" onclick="startTuneEar()">Commencer (10 questions)</button>`);
-}
-function startTuneEar(){ TU={n:0,score:0,det:tuDetune()}; nextTU(); }
-function playTU(){ if(!TU||!TU.cur) return; pluck(TU.cur.m,0,.5,1.6); pluck(TU.cur.m+TU.cur.c/100,1.1,.5,1.6); }
-function nextTU(){
-  if(!TU) return;
-  if(TU.n>=10) return endTU();
-  const m=STRINGS[Math.floor(Math.random()*6)][2];
-  const dir=[-1,0,1][Math.floor(Math.random()*3)];
-  TU.cur={m,c:dir*TU.det,dir};
-  openOv(ovTop("🔧 Accordeur · "+(TU.n+1)+"/10")+`
-    <div class="game"><div class="qnote">Référence… puis la corde à vérifier. Verdict ?</div>
-    <div class="timer">score ${TU.score}/${TU.n} · écart ±${TU.det} cents</div>
-    <div class="gopts" style="grid-template-columns:repeat(3,1fr)">
-      <button onclick="answerTU(-1)">⬇️ Trop grave<br><small>tends-la</small></button>
-      <button onclick="answerTU(0)">✓ Juste</button>
-      <button onclick="answerTU(1)">⬆️ Trop aiguë<br><small>détends-la</small></button>
-    </div></div>
-    <button class="btn ghost" onclick="playTU()">🔁 Réécouter</button>`);
-  setTimeout(playTU,250);
-}
-function answerTU(dir){
-  if(!TU||!TU.cur) return;
-  const ok=dir===TU.cur.dir;
-  TU.n++;
-  if(ok){ TU.score++; nextTU(); }
-  else{
-    document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
-      if([-1,0,1][k]===TU.cur.dir) b.classList.add("ok"); else if([-1,0,1][k]===dir) b.classList.add("ko"); });
-    playTU();
-    setTimeout(nextTU,1600);
-  }
-}
-function endTU(){
-  const sc=TU.score, det=TU.det; TU=null;
-  const rec=sc>(S.game.tuneBest||0); if(rec) S.game.tuneBest=sc;
-  addXP(rec?12:5); save();
-  openOv(ovTop("🔧 Résultat")+`
-    <div class="result"><div class="big">${sc}/10</div>
-    <p>à ±${det} cents${rec?" · <b style='color:var(--acc)'>RECORD</b>":""}${rec&&sc>=7?" — l'écart se resserre à la prochaine partie":""}</p>
-    <p>${sc>=9?"Ton oreille est un accordeur. Prochaine étape : accorde ta vraie guitare à la case 5, puis VÉRIFIE avec l'accordeur micro — l'écart te dira la vérité.":sc>=6?"Solide. Le piège classique : confondre « différent » et « plus grave ». Chante la référence avant de juger.":"Normal : ±"+det+" cents, c'est fin. Écoute le FLOTTEMENT entre les deux notes plutôt que leur hauteur — c'est lui qui trahit le désaccord."}</p></div>
-    <button class="btn" onclick="startTuneEar()">Rejouer</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
-}
-
-// ================= LA POMPE — rythmique jugée =================
-// La moitié de l'instrument, enfin travaillée : aller ⬇ / retour ⬆ tapés
-// sur deux pads, jugés en temps ET en sens contre le métronome.
-const POMPE_LVLS=[
-  {name:"Les noires",       pat:["D",null,"D",null,"D",null,"D",null], tip:"Un aller par temps, avec le clic. Le poignet reste souple — c'est lui qui joue, pas le bras."},
-  {name:"Le débit croches", pat:["D","U","D","U","D","U","D","U"],     tip:"La main ne s'arrête JAMAIS : aller sur le temps, retour sur le « et ». C'est le moteur de toute rythmique."},
-  {name:"La demi-pompe",    pat:["D",null,"D","U","D",null,"D","U"],   tip:"La main continue son débit croches, mais certains passages ne touchent PAS les cordes. Le geste est le même — tu ouvres et fermes le contact."},
-  {name:"LA pompe folk",    pat:["D",null,"D","U",null,"U","D","U"],   tip:"D · DU ·U DU — le pattern le plus joué de l'histoire. Le piège : le temps 3 est VIDE, mais ta main descend quand même, à blanc."},
-  {name:"Le contretemps ska",pat:[null,"U",null,"U",null,"U",null,"U"],tip:"Que des retours, sur les « et ». Ta main descend sur chaque temps À BLANC — sans ça, impossible de tenir le contretemps."}
-];
-function pjJudge(expected,taps,WIN){
-  taps=[...taps]; let good=0, wrongDir=0;
-  expected.forEach(e=>{
-    let bi=-1,bd=WIN;
-    taps.forEach((tp,i)=>{ const d=Math.abs(tp.t-e.t); if(d<=bd){ bd=d; bi=i; } });
-    if(bi>=0){ if(taps[bi].dir===e.dir) good++; else wrongDir++; taps.splice(bi,1); }
+    function finish(){
+      if(mode==='srs'){ const back=queue.filter(id=>S.cards[id]&&S.cards[id].due<=Date.now()); if(back.length){ queue=back; i=0; return step(); } }
+      const pct=Math.round(good/queue.length*100);
+      qh.innerHTML=`<div class="q">${good}/${queue.length} — ${pct}%</div><div class="sub">${pct>=80?'Solide. Le manche se grave.':pct>=50?'Ça vient. Reviens demain, les cartes reviendront pile au bon moment.':'Normal au début. Regarde les notes dans « Manche », puis reviens.'}</div>`;
+      fb.clearDots(); opts.innerHTML='';
+      const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.innerHTML=''; foot.appendChild(cl);
+      if(good>0){ S.xp+=good*2; save(); }
+    }
+    step();
   });
-  return {good,wrongDir,extras:taps.length,total:expected.length,
-          pass: good>=Math.ceil(expected.length*.8)&&taps.length<=2};
-}
-let PJ=null;
-function openPompe(){
-  const lv=S.game.pompeLvl||0;
-  openOv(ovTop("🥁 La Pompe")+`
-    <div class="pt">La rythmique, c'est la moitié de l'instrument — et le premier truc qu'un autre musicien entend chez toi. Ici : deux pads, <b>⬇ aller</b> et <b>⬆ retour</b>, jugés en temps (±0,2 s) ET en sens contre le clic.</div>
-    <div class="crit"><b>Niveau atteint : ${lv}/${POMPE_LVLS.length}.</b> La règle d'or de tous les niveaux : <b>la main ne s'arrête jamais</b> — elle descend sur les temps, remonte sur les « et », et touche ou ne touche pas les cordes. Sur ta vraie guitare : cordes étouffées de la main gauche, et le même pattern.</div>
-    ${POMPE_LVLS.map((L,i)=>`<div class="act ${i<lv?"done":""}" style="${i>lv?"opacity:.45":""}" onclick="${i<=lv?`startPompe(${i})`:`toast('Passe d\\'abord le niveau ${i}.')`}">
-      <div class="ico">${i<lv?"✓":i===lv?"🥁":"🔒"}</div>
-      <div class="t"><b>${L.name}</b><small>${L.pat.map(x=>x||"·").join(" ")}</small></div>
-      <div class="st">${i<lv?"✓":i===lv?"›":""}</div></div>`).join("")}`);
-}
-function startPompe(lvl){
-  const L=POMPE_LVLS[lvl], bpm=80, beat=60/bpm, BARS=4, WIN=.2;
-  const c=metCtx(); if(c.state==="suspended") c.resume();
-  const t0=c.currentTime+.25+4*beat;
-  for(let b=0;b<4;b++) metClick(c.currentTime+.25+b*beat,b===0?2:1);
-  for(let bar=0;bar<BARS;bar++) for(let b=0;b<4;b++) metClick(t0+(bar*4+b)*beat,b===0?2:1);
-  const expected=[];
-  for(let bar=0;bar<BARS;bar++) L.pat.forEach((d,k)=>{ if(d) expected.push({t:t0+(bar*4+k*.5)*beat,dir:d}); });
-  PJ={lvl,t0,expected,taps:[],end:t0+BARS*4*beat+WIN+.05,beat};
-  openOv(ovTop("🥁 "+L.name)+`
-    <div class="sub">${L.tip}</div>
-    <div id="pjGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:12px 0">
-      ${L.pat.map((d,k)=>`<div style="text-align:center;padding:9px 2px;border-radius:9px;font-weight:800;font-size:14px;
-        background:${d?"var(--acc)":"var(--bg3)"};color:${d?"#221200":"var(--dim)"};border:1px solid ${d?"var(--acc)":"var(--line)"}">
-        ${d==="D"?"⬇":d==="U"?"⬆":"·"}<br><small style="font-size:9px;font-weight:700">${k%2===0?(k/2+1):"&"}</small></div>`).join("")}
-    </div>
-    <div class="timer" id="pjFb" style="text-align:center;font-family:var(--mono);color:var(--dim)">Décompte… la main bouge déjà, à blanc.</div>
-    <div class="exrow" style="margin-top:12px">
-      <button class="btn" style="padding:30px 0;font-size:22px" onclick="pjTap('D')">⬇<br><small style="font-size:10px">ALLER</small></button>
-      <button class="btn ghost" style="padding:30px 0;font-size:22px;border-color:var(--acc)" onclick="pjTap('U')">⬆<br><small style="font-size:10px">RETOUR</small></button>
-    </div>`);
-  setTimeout(()=>{ const f=document.getElementById("pjFb"); if(f&&PJ) f.textContent="Joue !"; },(t0-c.currentTime)*1000);
-  setTimeout(()=>{ if(PJ) endPompe(); },(PJ.end-c.currentTime)*1000+120);
-}
-function pjTap(dir){
-  if(!PJ) return;
-  // gratté étouffé : bruit court, l'aller un poil plus fort
-  pluck(40,0,dir==="D"?.35:.24,.09); pluck(47,0,dir==="D"?.25:.16,.09);
-  PJ.taps.push({t:metCtx().currentTime,dir});
-}
-function endPompe(){
-  const v=pjJudge(PJ.expected,PJ.taps,.2), lvl=PJ.lvl; PJ=null;
-  const L=POMPE_LVLS[lvl];
-  if(v.pass){
-    if(lvl>=(S.game.pompeLvl||0)) S.game.pompeLvl=lvl+1;
-    addXP(10); checkMenu("manche","pompe"); save();
-    openOv(ovTop("🥁 Résultat")+`
-      <div class="result"><div class="big">${v.good}/${v.total}</div>
-      <p><b style="color:var(--ok)">Niveau ${lvl+1} tenu.</b>${v.wrongDir?" ("+v.wrongDir+" bon timing mais mauvais sens — le poignet triche encore.)":""}</p>
-      <p>${lvl+1>=POMPE_LVLS.length?"La Pompe est à toi. Transfère sur ta guitare, cordes étouffées, puis sur un vrai accord — même pattern, même clic.":"Maintenant sur ta vraie guitare, cordes étouffées, même pattern. Puis reviens pour le niveau suivant."}</p></div>
-      ${lvl+1<POMPE_LVLS.length?`<button class="btn" onclick="startPompe(${lvl+1})">Niveau suivant — ${POMPE_LVLS[lvl+1].name}</button>`:""}
-      <button class="btn ghost" onclick="openPompe()">Tous les niveaux</button>`);
-  } else {
-    openOv(ovTop("🥁 Résultat")+`
-      <div class="result"><div class="big">${v.good}/${v.total}</div>
-      <p>${v.wrongDir?v.wrongDir+" frappe(s) au bon moment mais dans le MAUVAIS SENS — relis le pattern : aller sur les temps, retour sur les « et ».":v.extras>2?"Trop de frappes en trop : tu remplis les silences. Un silence est une note.":"Compte à voix haute « 1 et 2 et… » — la bouche tient le poignet."}</p></div>
-      <button class="btn" onclick="startPompe(${lvl})">Réessayer</button>
-      <button class="btn ghost" onclick="openPompe()">Tous les niveaux</button>`);
-  }
 }
 
-// ================= LES OCTAVES — la forme f6 en actes =================
-let OC=null;
-function openOct(){
-  const best=S.game.octBest||0;
-  openOv(ovTop("🔁 Les octaves")+`
-    <div class="pt">Ta fiche f6 en muscle : on te montre une note, tu la retrouves <b>UNE OCTAVE PLUS HAUT</b>, n'importe où. La forme : +2 cordes, +2 cases — +3 en traversant le Si. C'est LE geste qui déverrouille tout le manche.</div>
-    <div class="crit"><b>10 questions, sans chrono.</b>${best?` Record : <b>${best}/10</b>.`:" Astuce : calcule d'abord avec la forme, vérifie ensuite avec les cordes-mères."}</div>
-    <button class="btn" onclick="startOct()">Commencer</button>`);
-}
-function startOct(){ OC={n:0,score:0}; nextOC(); }
-function nextOC(){
-  if(!OC) return;
-  if(OC.n>=10) return endOC();
-  for(let tries=0;tries<50;tries++){
-    const rs=2+Math.floor(Math.random()*4), rf=Math.floor(Math.random()*8);
-    const rootMidi=STRINGS[rs][2]+rf, target=rootMidi+12;
-    const valid=[];
-    for(let s=0;s<6;s++){ const f=target-STRINGS[s][2]; if(f>=0&&f<=12&&!(s===rs&&f===rf)) valid.push({s,f}); }
-    if(!valid.length) continue;
-    OC.cur={rs,rf,valid,pc:(STRINGS[rs][1]+rf)%12};
-    pluckSF(rs,rf,0,.5);
-    openOv(ovTop("🔁 Octaves · "+(OC.n+1)+"/10")+`
-      <div class="game"><div class="qnote">La même note, <b>une octave plus haut</b></div>
-      <div class="timer">score ${OC.score}/${OC.n}</div></div>`+
-      fbHtml([{s:rs,f:rf,cls:"root",label:CHROM[OC.cur.pc].slice(0,2)}],{tap:(s,f)=>answerOC(s,f)}));
-    return;
-  }
-  endOC();
-}
-function answerOC(s,f){
-  if(!OC||!OC.cur) return;
-  const c=OC.cur, ok=c.valid.some(v=>v.s===s&&v.f===f);
-  OC.n++;
-  pluckSF(c.rs,c.rf,0,.45); pluckSF(s,f,.3,.45);
-  const marks=[{s:c.rs,f:c.rf,cls:"root",label:CHROM[c.pc].slice(0,2)}];
-  if(ok){ OC.score++; marks.push({s,f,cls:"ok"}); c.valid.filter(v=>!(v.s===s&&v.f===f)).forEach(v=>marks.push({s:v.s,f:v.f,cls:"ghost"})); }
-  else { marks.push({s,f,cls:"ko"}); c.valid.forEach(v=>marks.push({s:v.s,f:v.f,cls:"ok"})); }
-  openOv(ovTop("🔁 Octaves · "+OC.n+"/10")+`
-    <div class="game"><div class="qnote">${ok?"✓ La forme a parlé":"✗ — les positions justes, et regarde la FORME qu'elles dessinent"}</div>
-    <div class="timer">${ok?"les points bleus : ses autres octaves — même dessin, partout":"+2 cordes +2 cases (+3 via le Si). Compte, puis retiens le dessin."}</div></div>`+
-    fbHtml(marks,{})+`<button class="btn" onclick="nextOC()">${OC.n>=10?"Résultat":"Question suivante"}</button>`);
-}
-function endOC(){
-  const sc=OC.score; OC=null;
-  const rec=sc>(S.game.octBest||0); if(rec) S.game.octBest=sc;
-  addXP(rec?12:5); checkMenu("manche","oct"); save();
-  openOv(ovTop("🔁 Résultat")+`
-    <div class="result"><div class="big">${sc}/10</div>
-    <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Le manche est plié en deux dans ta tête — c'est exactement le but.":sc>=6?"La forme rentre. Tes erreurs sont sûrement des traversées du Si : +3, pas +2.":"Relis f6, puis rejoue lentement : la forme d'abord, la vitesse jamais."}</p></div>
-    <button class="btn" onclick="startOct()">Rejouer</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
+/* ================================================================
+   VUE : THÉORIE (de la base, simplement)
+   ================================================================ */
+const LESSONS=[
+{id:'12notes', ic:'🔢', title:'Les 12 notes', sub:'Tout part de là', body:`
+<p>La musique occidentale, c’est <b>12 notes</b>, et rien de plus :</p>
+<div class="formula">Do · Do♯ · Ré · Ré♯ · Mi · Fa · Fa♯ · Sol · Sol♯ · La · La♯ · Si</div>
+<p>(en lettres, comme sur les guitares : <b>C C♯ D D♯ E F F♯ G G♯ A A♯ B</b>). Après le Si, on reboucle sur le Do — une <b>octave</b> plus haut. Tout le manche n’est que ces 12 notes qui se répètent.</p>
+<h3>Deux pièges à connaître</h3>
+<ul><li>Entre <b>Mi–Fa</b> et entre <b>Si–Do</b>, il n’y a <b>pas</b> de dièse : ce sont des demi-tons « collés ».</li>
+<li>Une case = <b>un demi-ton</b>. Monte d’une case = la note suivante dans la liste.</li></ul>
+<div class="tip">Sur une corde à vide, monte de <b>12 cases</b> : tu retombes sur la même note, une octave plus haut. La case 12, c’est le grand repère du manche.</div>`},
+{id:'accordage', ic:'🎸', title:'L’accordage : E A D G B E', sub:'Le nom des 6 cordes', body:`
+<p>De la plus grave (la plus grosse) à la plus aiguë :</p>
+<div class="formula">Mi – La – Ré – Sol – Si – Mi<br>E &nbsp; A &nbsp; D &nbsp; G &nbsp; B &nbsp; E</div>
+<p>Moyen mnémotechnique : « <b>Every Adult Dog Growls, Barks, Eats</b> ». Les deux Mi (6e et 1re corde) sont à <b>deux octaves</b> d’écart — mêmes notes, hauteurs différentes.</p>
+<h3>La logique cachée</h3>
+<p>Chaque corde est accordée une <b>quarte</b> (5 cases) au-dessus de la précédente… <b>sauf</b> entre Sol et Si (une tierce, 4 cases). C’est cette petite exception qui rend le manche déroutant au début — mais une fois su, tout se déduit.</p>
+<div class="tip">Conséquence utile : la case 5 d’une corde donne la note de la corde du dessus à vide. Case 5 de Mi grave = La = corde suivante à vide. (Exception : corde de Sol, c’est la case 4.)</div>`},
+{id:'reperes', ic:'📍', title:'Se repérer sur le manche', sub:'Les cases-repères et les octaves', body:`
+<p>Tu ne connais pas 72 cases séparément — tu connais <b>quelques repères</b> et tu déduis le reste.</p>
+<h3>Les cases marquées</h3>
+<p>Les points sur le manche sont à <b>3, 5, 7, 9</b> et (double point) <b>12</b>. Ce sont tes balises. Mémorise d’abord les notes sur la <b>corde de Mi grave</b> à ces cases : Sol (3), La (5), Si (7), Do♯ (9), Mi (12).</p>
+<h3>Le motif de l’octave</h3>
+<p>Un motif magique : <b>2 cordes plus haut, 2 cases plus loin</b> = la même note à l’octave. Tu connais une note ? Tu connais son octave, gratuitement.</p>
+<div class="tip">Priorité : apprends d’abord la <b>corde de Mi grave</b> et la <b>corde de La</b>. Ce sont les fondamentales des accords — les connaître, c’est déjà pouvoir jouer partout.</div>`},
+{id:'pourquoi-gammes', ic:'🪜', title:'Pourquoi la gamme majeure', sub:'L’alphabet de la musique (aperçu)', body:`
+<p>Sur les 12 notes, une chanson n’en utilise en général que <b>7</b> : c’est une <b>gamme</b>. La plus importante, la gamme <b>majeure</b>, suit toujours le même écart de cases :</p>
+<div class="formula">2 – 2 – 1 – 2 – 2 – 2 – 1 (cases)</div>
+<p>Pars de n’importe quelle note, applique ce motif, et tu as sa gamme majeure. Ces 7 notes forment <b>l’alphabet</b> du morceau : les accords, la mélodie et tes solos en sortent tous.</p>
+<h3>À quoi ça sert, concrètement</h3>
+<p>Quand tu improvises, la gamme te dit <b>quelles notes vont sonner juste</b>. Pas besoin de deviner. Et sur la guitare, une gamme, c’est un <b>schéma de doigts</b> qu’on déplace : apprends la forme une fois, joue-la dans les 12 tonalités.</p>
+<div class="tip">On attaque ça pour de vrai à l’<b>étape 3 (impro)</b> — d’abord le manche. Mais garde en tête : gamme = 7 notes qui appartiennent à la maison, et un schéma de doigts qui se déplace.</div>`},
+];
+function renderTheorie(){
+  const m=document.getElementById('main'); m.innerHTML='';
+  m.appendChild(el('h1','page','Théorie'));
+  m.appendChild(el('p','lead','La base, vraiment simple, en partant de zéro. Juste ce qu’il faut pour comprendre le manche — le reste viendra.'));
+  LESSONS.forEach(L=>{ const c=el('div','lesson',`<div class="ico">${L.ic}</div><div class="t"><b>${L.title}</b><small>${L.sub}</small></div>`);
+    c.onclick=()=>openOverlay(L.title, inner=>{ inner.appendChild(el('div','theory',L.body)); const b=el('button','btn ghost','← Retour'); b.onclick=closeOverlay; inner.appendChild(b); }); m.appendChild(c); });
 }
 
-// ================= CARTE DU MANCHE =================
-function openCarte(){
-  const st=S.noteStats||{};
-  const marks=[];
-  for(let s=0;s<6;s++) for(let f=0;f<=12;f++){
-    const pc=(STRINGS[s][1]+f)%12, n=st[pc];
-    const cls=!n||n.tot<3?"h0":(n.ok/n.tot>=0.8?"h3":n.ok/n.tot>=0.5?"h2":"h1");
-    marks.push({s,f,cls,label:CHROM[pc].slice(0,2)});
-  }
-  const weak=Object.entries(st).filter(([,n])=>n.tot>=3&&n.ok/n.tot<0.6).map(([pc])=>CHROM[pc]);
-  openOv(ovTop("🗺️ Ta carte du manche")+`
-    <div class="pt">Construite depuis tes parties du jeu des 60 s. <b style="color:#7ee2ab">Vert</b> : acquis · <b style="color:#ffce7a">ambre</b> : fragile · <b style="color:#ff9aa5">rouge</b> : zone aveugle · gris : pas assez de données. Le jeu <b>vise automatiquement tes zones rouges</b> plus souvent.</div>`+
-    fbHtml(marks,{})+
-    (weak.length?`<div class="crit"><b>Tes notes aveugles : ${weak.join(", ")}.</b> Ce n'est pas un hasard : tout le monde connaît Mi-La-Ré (les cordes à vide) et ignore les altérations. Dix parties et cette carte change de couleur.</div>`
-      :`<div class="crit">Pas encore de zone rouge identifiée — joue au jeu des 60 s pour nourrir la carte.</div>`));
-}
-
-// ================= SÉANCE GUIDÉE =================
-// Le menu dit QUOI ; la séance dit QUAND. Quatre blocs chronométrés, enchaînés.
-// Le minuteur survit pendant que tu es dans un exercice, et l'écran séance
-// te récupère quand tu le fermes.
-let SEA=null;
-function startSeance(){
-  const m=S.menu;
-  const MD={game:["🎮","Le manche en 60 s","openGame()"],intervals:["📐","Intervalles","openIntervals()"],ear:["👂","Oreille","openEar()"],pompe:["🥁","La Pompe","openPompe()"],oct:["🔁","Octaves","openOct()"]};
-  const sc=MD[m.manche]?null:SCALES.find(s=>s.id===m.manche);
-  const cp=curPiece();
-  const blocks=[
-    {icon:"🔥",name:"Échauffement",dur:300,desc:"Mains chaudes, tendons réveillés — obligatoire avant les BPM.",open:"openWarmup()"},
-    {icon:tmod(m.mod).icon,name:"Technique — "+tmod(m.mod).name,dur:720,desc:"Un exo du module, au métronome. Logue ton BPM avant la fin du bloc.",open:`openMod('${m.mod}')`},
-    sc?{icon:sc.icon,name:"Manche — "+sc.name,dur:480,desc:"La gamme du jour, lentement, en NOMMANT les notes.",open:`openScale('${sc.id}')`}
-      :{icon:MD[m.manche][0],name:"Manche — "+MD[m.manche][1],dur:480,desc:"Une ou deux parties, concentré.",open:MD[m.manche][2]},
-    {icon:"🎵",name:"Répertoire — "+(cp?cp.title:"choisis ton morceau"),dur:300,desc:cp?"Travail ciblé sur LE passage qui coince, pas sur ce que tu sais déjà. Cinq minutes denses.":"Va d'abord choisir un morceau en cours.",open:cp?`openPiece('${cp.id}')`:"nav('rep')"},
-    (d=>({icon:d?"🎺":"🌑",name:"Impro — "+(d?"blues 12 mesures":"vamp éolien"),dur:300,
-      desc:"Cinq minutes de liberté encadrée : la Jam Station tient la grille, toi tu phrases en penta"+(d?" + blue note":" / éolien")+". Phrases courtes, silences, atterris sur la fondamentale.",
-      open:d?"openJam('blues')":"openJam('aeol')"}))(new Date().getDate()%2===0)
+/* ================================================================
+   VUE : SUITE (feuille de route)
+   ================================================================ */
+function renderSuite(){
+  const m=document.getElementById('main'); m.innerHTML='';
+  m.appendChild(el('h1','page','La suite'));
+  m.appendChild(el('p','lead','On construit dans l’ordre. Chaque étape s’appuie sur la précédente — on n’ouvre la suivante que quand la base est solide.'));
+  const steps=[
+    ['1','🎸 Connaître le manche','En cours. Notes par cœur via les cartes, corde par corde. La fondation de tout le reste.',true],
+    ['2','🎼 Accompagnement','Les accords (formes CAGED, barrés), avec des cartes « connais-tu cet accord ? » et des grilles à plaquer en rythme.',false],
+    ['3','🎤 Impro','La penta d’abord (schémas à déplacer), puis viser les notes des accords dans le solo (la tierce, la fondamentale…) et pourquoi ça marche.',false],
+    ['4','🌈 Les modes','Une fois le manche et l’impro en place : les 7 couleurs, par l’oreille et par les schémas.',false],
   ];
-  SEA={active:true,blocks,i:0,left:blocks[0].dur,paused:false,iv:setInterval(seaTick,1000)};
-  seaScreen();
-}
-function seaFmt(){ const mn=Math.floor(SEA.left/60),s2=SEA.left%60; return mn+":"+String(s2).padStart(2,"0"); }
-function seaTick(){
-  if(!SEA||SEA.paused) return;
-  if(SEA.left>0){
-    SEA.left--;
-    const el=document.getElementById("seaT"); if(el) el.textContent=seaFmt();
-    const bg=document.getElementById("seaBadge"); if(bg) bg.textContent=SEA.left===0?"⏱ bloc fini ✓":"⏱ "+seaFmt();
-    if(SEA.left===0){ buzzWU(); toast("⏱️ <b>Bloc terminé.</b> Enchaîne quand tu es prêt — l'écran séance t'attend."); }
-  }
-}
-function seaScreen(){
-  if(!SEA) return;
-  const b=SEA.blocks[SEA.i];
-  ovin.innerHTML=`<div class="top"><button class="x" onclick="seaQuit()">✕</button><b>⏱️ Séance guidée · bloc ${SEA.i+1}/${SEA.blocks.length}</b></div>
-    <div class="game" style="text-align:center">
-      <div class="qnote" style="font-size:22px">${b.icon} ${b.name}</div>
-      <div class="timer" id="seaT" style="font-size:44px;font-weight:800;color:${SEA.left===0?"var(--ok)":"var(--txt)"}">${SEA.left===0?"✓":seaFmt()}</div>
-    </div>
-    <div class="pt">${b.desc}</div>
-    <button class="btn" onclick='${b.open.replace(/'/g,"&#39;")}'>Ouvrir l'exercice</button>
-    <div class="exrow">
-      <button class="btn ghost" onclick="SEA.paused=!SEA.paused;this.textContent=SEA.paused?'▶ Reprendre':'⏸ Pause'">⏸ Pause</button>
-      <button class="btn ghost" onclick="seaNext()">Bloc suivant →</button>
-    </div>
-    <h2 class="sec">La séance</h2>
-    ${SEA.blocks.map((x,k)=>`<div class="act ${k<SEA.i?"done":""}" style="${k===SEA.i?"border-color:#4a3823":""};pointer-events:none">
-      <div class="ico">${k<SEA.i?"✓":x.icon}</div><div class="t"><b>${x.name}</b><small>${Math.round(x.dur/60)} min</small></div>
-    </div>`).join("")}`;
-  ov.classList.add("on"); ov.scrollTop=0;
-}
-function seaNext(){
-  if(!SEA) return;
-  SEA.i++;
-  if(SEA.i>=SEA.blocks.length) return seaEnd();
-  SEA.left=SEA.blocks[SEA.i].dur; SEA.paused=false;
-  seaScreen();
-}
-function seaEnd(){
-  clearInterval(SEA.iv); SEA=null;
-  addXP(10); save();
-  ovin.innerHTML=ovTop("⏱️ Séance bouclée")+`
-    <div class="result"><div class="big">🤘</div><div class="xp">+10 XP</div>
-    <p>Trente-cinq minutes structurées valent deux heures de noodling. Si tu as logué tes exercices pendant la séance, ta journée est déjà validée — sinon les cases du menu t'attendent.</p></div>
-    <button class="btn" onclick="closeOv()">Terminer</button>`;
-  ov.classList.add("on");
-}
-function seaQuit(){
-  if(SEA){ clearInterval(SEA.iv); SEA=null; }
-  closeOv();
+  steps.forEach(a=>{ const s=el('div','step'+(a[3]?' now':' soon')); s.innerHTML=`<div class="n">${a[0]}</div><div><b>${a[1]}${a[3]?'':'<span class="pill">bientôt</span>'}</b><small>${a[2]}</small></div>`; m.appendChild(s); });
+  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">Impossible d’improviser ou de comprendre les accords sans savoir où sont les notes. Le manche d’abord, sans exception — c’est le seul raccourci qui existe.</p>'));
 }
 
-// ============ SÉANCE SANS GUITARE — théorie pure, guidée, pas à pas ============
-// Pas de chrono : la théorie ne se joue pas contre la montre, elle s'ancre.
-let SEAT=null;
-function startSeanceTheorie(){
-  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
-  // la fiche « pourquoi » tourne : gamme majeure, penser en degrés, forme des intervalles, harmonisation
-  const fiche=["f7","f10","th1","f8"][doy%4];
-  const due=fichesDue();
-  const closer=due.length
-    ?{icon:"🧠",name:"Rappel de théorie",desc:"Un rappel espacé arrive à échéance. Sans relire : c'est l'effort de mémoire qui grave.",open:`openFicheRev('${due[0]}')`}
-    :{icon:"🌈",name:"Les modes, à froid",desc:"Nomme le mode, reconnais sa couleur, situe-le dans la tonalité. Le sommet de l'édifice.",open:"startThEx('mod')"};
-  const blocks=[
-    {icon:"📖",name:"Comprendre — la théorie derrière les notes",desc:"Lis la fiche du jour et réponds à ses 2 questions. Le « pourquoi » avant le « combien » : sans lui, le reste n'est que du par-cœur.",open:`openFiche('${fiche}')`},
-    {icon:"☀️",name:"Placer les degrés de la gamme",desc:"Tonique, seconde, tierce, quinte… Situe chaque degré dans les 12 tonalités majeures, sans manche, juste la tête. C'est le cœur de la séance — enchaîne jusqu'à 8/10.",open:"startThEx('sca')"},
-    {icon:"📏",name:"Les intervalles à froid",desc:"Nomme la distance, trouve la note. La brique élémentaire dont sont faits gammes, accords et arpèges.",open:"startThEx('int')"},
-    {icon:"🏠",name:"Degrés & harmonisation",desc:"Quel accord vit à quel degré — l'harmonie qui devient un réflexe, et la clé pour repérer une tonalité.",open:"startThEx('deg')"},
-    closer
-  ];
-  SEAT={active:true,blocks,i:0};
-  seatScreen();
-}
-function seatScreen(){
-  if(!SEAT) return;
-  const b=SEAT.blocks[SEAT.i], last=SEAT.i>=SEAT.blocks.length-1;
-  ovin.innerHTML=`<div class="top"><button class="x" onclick="seatQuit()">✕</button><b>🧠 Séance sans guitare · étape ${SEAT.i+1}/${SEAT.blocks.length}</b></div>
-    <div class="game" style="text-align:center"><div class="qnote" style="font-size:21px">${b.icon} ${b.name}</div></div>
-    <div class="pt">${b.desc}</div>
-    <button class="btn" onclick='${b.open.replace(/'/g,"&#39;")}'>Ouvrir l'étape</button>
-    <button class="btn ghost" onclick="seatNext()">${last?"Terminer la séance ✓":"Étape suivante →"}</button>
-    <h2 class="sec">La séance</h2>
-    ${SEAT.blocks.map((x,k)=>`<div class="act ${k<SEAT.i?"done":""}" style="${k===SEAT.i?"border-color:#4a3823":""};pointer-events:none">
-      <div class="ico">${k<SEAT.i?"✓":x.icon}</div><div class="t"><b>${x.name}</b></div></div>`).join("")}`;
-  ov.classList.add("on"); ov.scrollTop=0;
-}
-function seatNext(){ if(!SEAT) return; SEAT.i++; if(SEAT.i>=SEAT.blocks.length) return seatEnd(); seatScreen(); }
-function seatEnd(){
-  SEAT=null; addXP(10); save();
-  ovin.innerHTML=ovTop("🧠 Séance théorie bouclée")+`
-    <div class="result"><div class="big">🧠</div><div class="xp">+10 XP</div>
-    <p>Cinq étapes de théorie pure, sans toucher une corde. La tonique, les degrés, les intervalles, l'harmonisation : c'est exactement ce qui transforme « jouer des notes justes » en « viser ». Quand tu reprends la guitare, tu n'as plus qu'à poser la main.</p></div>
-    <button class="btn" onclick="closeOv()">Terminer</button>`;
-  ov.classList.add("on"); ov.scrollTop=0;
-}
-function seatQuit(){ SEAT=null; closeOv(); }
-
-// ============ CHOIX À L'OUVERTURE : avec / sans guitare ============
-function openModeGate(){
-  ovin.innerHTML=`<div class="top"><button class="x" onclick="closeOv()">✕</button><b>🎸 Ta séance du jour</b></div>
-    <div class="sub" style="margin-bottom:12px">As-tu ta guitare à portée de main ? Choisis ta séance — tu pourras changer à tout moment.</div>
-    <div class="act hot" onclick="closeOv();nav('jour')">
-      <div class="ico">🎸</div><div class="t"><b>Avec guitare</b><small>le Chemin : technique, manche, morceau — l'entraînement complet</small></div><div class="st">›</div></div>
-    <div class="act hot" onclick="closeOv();startSeanceTheorie()">
-      <div class="ico">🧠</div><div class="t"><b>Sans guitare — séance théorie</b><small>placer la tonique, les degrés, intervalles, harmonisation — sans toucher une corde</small></div><div class="st">›</div></div>
-    <div class="crit" style="margin-top:12px">Pensée pour les jours sans instrument — transport, tendinite, pause : la théorie qui rend l'impro possible se travaille dans la tête, pas seulement sur le manche.</div>`;
-  ov.classList.add("on"); ov.scrollTop=0;
-}
-
-// ================= MICRO : détection de hauteur (autocorrélation ACF+) =================
-function autoCorrelate(buf,sr){
-  let SIZE=buf.length,rms=0;
-  for(let i=0;i<SIZE;i++) rms+=buf[i]*buf[i];
-  rms=Math.sqrt(rms/SIZE);
-  if(rms<0.012) return -1;
-  let r1=0,r2=SIZE-1; const th=0.2;
-  for(let i=0;i<SIZE/2;i++) if(Math.abs(buf[i])<th){ r1=i; break; }
-  for(let i=1;i<SIZE/2;i++) if(Math.abs(buf[SIZE-i])<th){ r2=SIZE-i; break; }
-  const b=buf.slice(r1,r2); SIZE=b.length;
-  const c=new Array(SIZE).fill(0);
-  for(let i=0;i<SIZE;i++) for(let j=0;j<SIZE-i;j++) c[i]+=b[j]*b[j+i];
-  let d=0; while(d<SIZE-1&&c[d]>c[d+1]) d++;
-  let maxv=-1,maxp=-1;
-  for(let i=d;i<SIZE;i++) if(c[i]>maxv){ maxv=c[i]; maxp=i; }
-  let T0=maxp;
-  if(T0>0&&T0<SIZE-1){ const x1=c[T0-1],x2=c[T0],x3=c[T0+1],a=(x1+x3-2*x2)/2,bb=(x3-x1)/2; if(a) T0=T0-bb/(2*a); }
-  if(T0<=0) return -1;
-  return sr/T0;
-}
-function pitchInfo(f){ const mf=12*Math.log2(f/440)+69, m=Math.round(mf); return {midi:m,cents:Math.round((mf-m)*100)}; }
-const MICG={
-  stream:null,analyser:null,buf:null,raf:null,running:false,
-  async ensure(){
-    if(this.stream) return true;
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) return false;
-    try{ this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}}); return true; }
-    catch(e){ return false; }
-  },
-  async run(cb){
-    if(!await this.ensure()) return false;
-    const ctx=metCtx(); if(ctx.state==="suspended") ctx.resume();
-    const src=ctx.createMediaStreamSource(this.stream);
-    this.analyser=ctx.createAnalyser(); this.analyser.fftSize=2048;
-    src.connect(this.analyser);
-    this.buf=new Float32Array(this.analyser.fftSize);
-    this.running=true;
-    const loop=()=>{ if(!this.running) return;
-      this.analyser.getFloatTimeDomainData(this.buf);
-      cb(autoCorrelate(this.buf,ctx.sampleRate));
-      this.raf=requestAnimationFrame(loop); };
-    loop(); return true;
-  },
-  stop(){ this.running=false; if(this.raf){cancelAnimationFrame(this.raf);this.raf=null;} },
-  release(){ this.stop(); if(this.stream){ this.stream.getTracks().forEach(t=>t.stop()); this.stream=null; this.analyser=null; } }
-};
-function midiNameFR(m){ return CHROM[((m%12)+12)%12]+(Math.floor(m/12)-1); }
-
-// ================= ACCORDEUR =================
-async function openTuner(){
-  openOv(ovTop("🎯 Accordeur")+`
-    <div class="tuner">
-      <div class="vnote" id="tnote">—</div>
-      <div class="vsub" id="tsub">Joue une corde à vide, laisse-la sonner.</div>
-      <div class="gauge" id="tgauge"><div class="zone"></div><div class="center"></div><div class="ndl" id="tndl"></div></div>
-    </div>
-    <div class="strow" id="tstr">${STRINGS.slice().reverse().map((s,i)=>`<button onclick="pluck(${s[2]},0,.5)">${["Mi₂","La","Ré","Sol","Si","Mi₄"][i]}</button>`).join("")}</div>
-    <div class="pt" style="margin-top:12px">L'aiguille au centre et verte = juste (±8 cents). Trop à gauche : trop grave, tends. Trop à droite : détends. Les boutons jouent la note de référence. Rien n'est enregistré.</div>`);
-  const ok=await MICG.run(f=>{
-    const note=document.getElementById("tnote"),sub=document.getElementById("tsub"),ndl=document.getElementById("tndl"),g=document.getElementById("tgauge");
-    if(!note) return;
-    if(f<0){ note.style.opacity=.35; return; }
-    const p=pitchInfo(f);
-    note.style.opacity=1; note.textContent=CHROM[((p.midi%12)+12)%12];
-    sub.textContent=midiNameFR(p.midi)+" · "+(p.cents>0?"+":"")+p.cents+" cents · "+f.toFixed(1)+" Hz";
-    ndl.style.left=(50+Math.max(-48,Math.min(48,p.cents)))+"%";
-    g.classList.toggle("intune",Math.abs(p.cents)<=8);
-    document.querySelectorAll("#tstr button").forEach((b,i)=>b.classList.toggle("hit",STRINGS.slice().reverse()[i][2]===p.midi&&Math.abs(p.cents)<=8));
-  });
-  if(!ok){ const s=document.getElementById("tsub"); if(s) s.textContent="⚠️ Micro refusé ou indisponible — autorise-le dans les réglages du navigateur."; }
-}
-
-// ================= JEU DU MANCHE — MODE VRAIE GUITARE =================
-let LV=null;
-function openLive(){
-  const best=S.game.liveBest||0;
-  openOv(ovTop("🎤 À la vraie guitare")+`
-    <div class="pt">Le mode des apps payantes, en mieux : l'app te demande une note <b>sur une corde précise</b>, tu la joues <b>sur ta guitare</b>, le micro juge. C'est le seul exercice qui relie le système au geste réel.</div>
-    <div class="crit"><b>10 notes, sans chrono.</b> Laisse sonner la note franchement. Guitare accordée obligatoire — passe par l'accordeur d'abord.${best?` Record : <b>${best}/10</b>.`:""}</div>
-    <button class="btn" onclick="startLive()">Commencer (micro requis)</button>`);
-}
-async function startLive(){
-  LV={n:0,score:0,cur:null,stab:0,lastM:-1,cooldown:0};
-  const ok=await MICG.run(f=>liveTick(f));
-  if(!ok){ openOv(ovTop("🎤 À la vraie guitare")+`<div class="result"><div class="big">🎙️</div><p>Micro refusé ou indisponible. Autorise-le, puis reviens — cet exercice en vaut la peine.</p></div><button class="btn ghost" onclick="closeOv()">Fermer</button>`); return; }
-  nextLV();
-}
-function nextLV(){
-  if(!LV) return;
-  if(LV.n>=10) return endLV();
-  const si=Math.floor(Math.random()*6), pc=pickNote();
-  const fret=((pc-STRINGS[si][1])%12+12)%12;
-  LV.cur={si,pc,fret,target:STRINGS[si][2]+fret};
-  LV.stab=0; LV.lastM=-1; LV.cooldown=Date.now()+350; // évite que la note précédente valide la suivante
-  openOv(ovTop("🎤 À la vraie guitare · "+(LV.n+1)+"/10")+`
-    <div class="game">
-      <div class="qnote">Joue <b>${CHROM[pc]}</b> sur la corde de <b>${STRINGS[si][0]}</b></div>
-      <div class="timer">score ${LV.score}/${LV.n} · <span id="lvheard" style="color:var(--dim)">j'écoute…</span></div>
-    </div>`+
-    fbHtml([],{})+`
-    <div class="exrow"><button class="btn ghost" onclick="pluck(${LV.cur.target},0,.5)">👂 Entendre la cible</button>
-    <button class="btn ghost" onclick="skipLV()">Je passe</button></div>`);
-}
-function liveTick(f){
-  if(!LV||!LV.cur||Date.now()<LV.cooldown) return;
-  const el=document.getElementById("lvheard");
-  if(f<0){ LV.stab=0; return; }
-  const p=pitchInfo(f);
-  if(Math.abs(p.cents)>42){ return; }
-  if(el) el.textContent="j'entends "+midiNameFR(p.midi);
-  if(p.midi===LV.lastM) LV.stab++; else { LV.lastM=p.midi; LV.stab=1; }
-  if(LV.stab>=5){ // ~5 frames stables ≈ une vraie note tenue
-    const heard=LV.lastM, c=LV.cur;
-    LV.cur=null;
-    const ok=heard===c.target || heard===c.target+12 || heard===c.target-12; // pardon d'octave (harmoniques micro)
-    LV.n++; recNote(c.pc,ok);
-    if(ok) LV.score++;
-    const marks=[{s:c.si,f:c.fret,cls:ok?"ok":"root",label:CHROM[c.pc].slice(0,2)}];
-    openOv(ovTop("🎤 À la vraie guitare · "+LV.n+"/10")+`
-      <div class="game"><div class="qnote">${ok?"✓ C'était bien "+CHROM[c.pc]:"✗ J'ai entendu "+midiNameFR(heard)+" — la cible était "+CHROM[c.pc]+", case "+c.fret}</div>
-      <div class="timer">score ${LV.score}/${LV.n}</div></div>`+fbHtml(marks,{})+
-      `<button class="btn" onclick="nextLV()">${LV.n>=10?"Résultat":"Note suivante"}</button>`);
-  }
-}
-function skipLV(){ if(!LV||!LV.cur) return; const c=LV.cur; LV.cur=null; LV.n++; recNote(c.pc,false);
-  openOv(ovTop("🎤 À la vraie guitare · "+LV.n+"/10")+`
-    <div class="game"><div class="qnote">${CHROM[c.pc]} était corde de ${STRINGS[c.si][0]}, case ${c.fret}</div>
-    <div class="timer">score ${LV.score}/${LV.n}</div></div>`+
-    fbHtml([{s:c.si,f:c.fret,cls:"ok",label:CHROM[c.pc].slice(0,2)}],{})+
-    `<button class="btn" onclick="nextLV()">${LV.n>=10?"Résultat":"Note suivante"}</button>`); }
-function endLV(){
-  const sc=LV.score; LV=null; MICG.stop();
-  const rec=sc>(S.game.liveBest||0); if(rec) S.game.liveBest=sc;
-  addXP(rec?15:6); checkMenu("manche","game"); save();
-  openOv(ovTop("🎤 Résultat")+`
-    <div class="result"><div class="big">${sc}/10</div>
-    <p>${rec?"<b style='color:var(--acc)'>RECORD</b> · ":""}${sc>=9?"Le manche, les doigts et l'oreille sont d'accord. C'est ça, connaître son instrument.":sc>=6?"Solide — le geste suit le système. Les erreurs restantes sont probablement des cases voisines : ralentis la main, pas la tête.":"C'est l'exercice le plus dur de l'app, et le plus payant. Refais-le accordé, note tenue franche."}</p></div>
-    <button class="btn" onclick="startLive()">Rejouer</button>
-    <button class="btn ghost" onclick="closeOv()">Fermer</button>`);
-}
-
-// ================= LA BOUSSOLE : intervalles → positions → modes → viser =================
-const MAJ_DEG_G=[0,2,4,5,7,9,11];
-const DEGLBL=["1","2","3","4","5","6","7"];
-const POS_OFF=[0,2,4,7,9];   // les 5 positions démarrent sur les degrés 1,2,3,5,6
-const IV_LIST=[[2,"la seconde"],[3,"la tierce mineure"],[4,"la tierce majeure"],[5,"la quarte"],
-               [7,"la quinte"],[9,"la sixte"],[10,"la septième mineure"],[12,"l'octave"]];
-
-/* noms de TONALITÉS : on dit Si♭ majeur, pas La# majeur (La# n'est pas une tonalité praticable) */
-const KEYNAME=["Do","Ré♭","Ré","Mi♭","Mi","Fa","Fa#","Sol","La♭","La","Si♭","Si"];
-function kName(pc){ return KEYNAME[((pc%12)+12)%12]; }
-function rootFretE(pc){ return ((pc-4)%12+12)%12; }              // Mi grave à vide = pc 4
-function posWin(pc,p){ const lo=(rootFretE(pc)+POS_OFF[p])%12; return {lo,hi:lo+4}; }
-function posNotes(pc,p){
-  const w=posWin(pc,p), out=[];
-  for(let s=0;s<6;s++) for(let f=w.lo;f<=w.hi;f++){
-    const d=MAJ_DEG_G.indexOf(((STRINGS[s][2]+f-pc)%12+12)%12);
-    if(d>-1) out.push({s,f,deg:d});
-  }
-  return out;
-}
-function boussoleStat(id){ if(!S.bous) S.bous={}; return S.bous[id]||{n:0,best:0}; }
-function boussoleNext(){ for(const P of BOUSSOLE){ if(boussoleStat(P.id).best<80) return P.id; } return BOUSSOLE[BOUSSOLE.length-1].id; }
-
-let CR=null;
-function openBoussole(){
-  const reco=boussoleNext();
-  let h=ovTop("🧭 La Boussole")+`<p class="lead">Des intervalles jusqu'à l'improvisation ciblée. Chaque palier se termine par un exercice <b>sur le manche</b>, pas par une fiche à lire.</p>`;
-  BOUSSOLE.forEach(P=>{
-    const st=boussoleStat(P.id), isR=(P.id===reco);
-    h+=`<div class="act${isR?" hot":""}" onclick="boussoleBrief('${P.id}')">
-      <div class="ico">${P.icon}</div>
-      <div class="t"><b>${P.title}</b><small>${P.lvl}${st.n?` · record ${st.best}%`:""}${isR?" · <b style='color:var(--acc)'>COMMENCE ICI</b>":""}</small></div>
-      <div class="st">${st.best>=80?"✓":"›"}</div></div>`;
-  });
-  openOv(h);
-}
-function boussoleBrief(id){
-  const P=BOUSSOLE.find(x=>x.id===id);
-  openOv(ovTop("🧭 "+P.title)+`
-    <p class="lead" style="color:var(--acc)"><b>Pourquoi ce palier</b><br>${P.why}</p>
-    <div class="fiche">${P.brief}</div>
-    <button class="btn" onclick="boussoleRun('${id}')">${P.drill.type==="practice"?"✓ J'ai fait le protocole":"Lancer l'exercice"}</button>
-    <button class="btn ghost" onclick="openBoussole()">← Retour aux paliers</button>`);
-}
-function boussoleDone(id,pct){
-  const st=boussoleStat(id);
-  S.bous[id]={n:st.n+1,best:Math.max(st.best,pct)};
-  addXP(pct>=80?10:4); save();
-  openOv(ovTop("🧭 Résultat")+`<div class="result"><div class="big">${pct}%</div>
-    <p>${pct>=80?"Palier tenu. Tu peux monter.":pct>=60?"Ça vient — refais-le, c'est la répétition qui installe la carte.":"Reste sur ce palier. Relis le pourquoi avant de recommencer."}</p></div>
-    <button class="btn" onclick="boussoleBrief('${id}')">↻ Refaire</button>
-    <button class="btn ghost" onclick="openBoussole()">← Les paliers</button>`);
-}
-function boussoleRun(id){
-  const P=BOUSSOLE.find(x=>x.id===id);
-  const d=P.drill;
-  if(d.type==="practice"){ boussoleDone(id,100); return; }
-  CR={id,type:d.type,cfg:d,i:0,n:d.n,score:0,sel:[],cur:null};
-  crNext();
-}
-function crHead(txt,sub){
-  return ovTop("🧭 "+BOUSSOLE.find(x=>x.id===CR.id).title)+
-    `<div class="game"><div class="timer">${CR.i+1}/${CR.n}</div>
-     <div class="qnote">${txt}</div><div class="timer">score ${CR.score}</div></div>
-     ${sub?`<p class="lead" style="text-align:center">${sub}</p>`:""}`;
-}
-function crEnd(){ const pct=Math.round(CR.score/CR.n*100); const id=CR.id; CR=null; boussoleDone(id,pct); }
-function crNext(){
-  if(!CR) return;
-  if(CR.i>=CR.n) return crEnd();
-  ({interval:crInterval,degree:crDegree,color:crColor,chordmode:crChordMode,connect:crConnect})[CR.type]();
-}
-
-/* --- palier 1 : placer un intervalle depuis une tonique --- */
-function crInterval(){
-  let root,iv,targets;
-  do{
-    const si=3+Math.floor(Math.random()*3);            // cordes Ré / La / Mi grave
-    const fr=Math.floor(Math.random()*8);
-    root={s:si,f:fr,midi:STRINGS[si][2]+fr};
-    iv=IV_LIST[Math.floor(Math.random()*IV_LIST.length)];
-    targets=[];
-    for(let s=0;s<6;s++){ const f=root.midi+iv[0]-STRINGS[s][2];
-      if(f>=0&&f<=12&&!(s===root.s&&f===root.f)) targets.push({s,f}); }
-  } while(!targets.length);
-  CR.cur={root,iv,targets};
-  const marks=[{s:root.s,f:root.f,cls:"root",label:"1"}];
-  openOv(crHead(`Place <b>${iv[1]}</b> au-dessus de la tonique`,"Vise la forme, ne compte pas les cases une à une.")+
-    fbHtml(marks,{tap:crTapInterval}));
-  pluckSF(root.s,root.f,0,.45);
-}
-function crTapInterval(s,f){
-  if(!CR||!CR.cur) return;
-  const c=CR.cur, ok=c.targets.some(t=>t.s===s&&t.f===f);
-  pluckSF(s,f,0,.45);
-  if(ok) CR.score++;
-  const marks=[{s:c.root.s,f:c.root.f,cls:"root",label:"1"},{s,f,cls:ok?"ok":"ko"}];
-  if(!ok) c.targets.forEach(t=>marks.push({s:t.s,f:t.f,cls:"ok",label:"✓"}));
-  openOv(crHead(ok?`✓ ${c.iv[1]}`:`✗ c'était ici`,"")+fbHtml(marks,{}));
-  setTimeout(()=>{ CR.i++; crNext(); }, ok?600:1700);
-}
-
-/* --- paliers 2/4 : allumer tous les degrés demandés dans une position --- */
-function crDegree(){
-  const cfg=CR.cfg;
-  const pc=Math.floor(Math.random()*12);
-  const p=cfg.anyPos?Math.floor(Math.random()*5):(cfg.pos||0);
-  const deg=cfg.degs?cfg.degs[Math.floor(Math.random()*cfg.degs.length)]:cfg.deg;
-  const notes=posNotes(pc,p);
-  const targets=notes.filter(n=>n.deg===deg);
-  if(!targets.length){ crDegree(); return; }
-  CR.cur={pc,p,deg,notes,targets,found:[]};
-  crDrawDegree();
-}
-function crDrawDegree(){
-  const c=CR.cur;
-  const lbl=["la TONIQUE","la seconde","la TIERCE","la quarte","la QUINTE","la sixte","la septième"][c.deg];
-  const marks=c.notes.map(n=>{
-    const hit=c.found.some(x=>x.s===n.s&&x.f===n.f);
-    return {s:n.s,f:n.f,cls:hit?"ok":"ghost",label:hit?DEGLBL[n.deg]:""};
-  });
-  openOv(crHead(`Position ${c.p+1} en <b>${kName(c.pc)}</b> — allume <b>${lbl}</b>`,
-    `${c.found.length}/${c.targets.length} trouvée(s). Les points gris sont la position.`)+
-    fbHtml(marks,{tap:crTapDegree,frets:15}));
-}
-function crTapDegree(s,f){
-  if(!CR||!CR.cur) return;
-  const c=CR.cur;
-  pluckSF(s,f,0,.45);
-  const t=c.targets.find(x=>x.s===s&&x.f===f);
-  if(t&&!c.found.some(x=>x.s===s&&x.f===f)){
-    c.found.push({s,f});
-    if(c.found.length===c.targets.length){
-      CR.score++;
-      setTimeout(()=>{ CR.i++; crNext(); },700);
-    }
-    crDrawDegree();
-  } else if(!t){
-    const marks=c.notes.map(n=>({s:n.s,f:n.f,cls:"ghost"}));
-    marks.push({s,f,cls:"ko"});
-    c.targets.forEach(x=>marks.push({s:x.s,f:x.f,cls:"ok",label:DEGLBL[c.deg]}));
-    openOv(crHead(`✗ Les voici`,"Regarde bien, puis on enchaîne.")+fbHtml(marks,{frets:15}));
-    setTimeout(()=>{ CR.i++; crNext(); },1900);
-  }
-}
-
-/* --- palier 5 : la note qui donne la couleur du mode --- */
-function crColor(){
-  const usable=GMODES.filter(m=>m.col!==null);
-  const m=usable[Math.floor(Math.random()*usable.length)];
-  const rootPc=Math.floor(Math.random()*12);
-  const parent=((rootPc-MAJ_DEG_G[m.deg-1])%12+12)%12;
-  const colPc=(rootPc+m.p[m.col])%12;
-  const p=Math.floor(Math.random()*5);
-  const notes=posNotes(parent,p);
-  const targets=notes.filter(n=>(STRINGS[n.s][2]+n.f)%12===colPc);
-  if(!targets.length){ crColor(); return; }
-  CR.cur={m,rootPc,parent,colPc,notes,targets,found:[]};
-  crDrawColor();
-}
-function crDrawColor(){
-  const c=CR.cur;
-  const marks=c.notes.map(n=>{
-    const hit=c.found.some(x=>x.s===n.s&&x.f===n.f);
-    return {s:n.s,f:n.f,cls:hit?"ok":"ghost",label:hit?CHROM[c.colPc].slice(0,2):""};
-  });
-  openOv(crHead(`<b>${kName(c.rootPc)} ${c.m.n}</b> — allume ${c.m.colTxt}`,
-    `Les notes de ${kName(c.parent)} majeur sont affichées. ${c.found.length}/${c.targets.length} trouvée(s).`)+
-    fbHtml(marks,{tap:crTapColor,frets:15}));
-}
-function crTapColor(s,f){
-  if(!CR||!CR.cur) return;
-  const c=CR.cur;
-  pluckSF(s,f,0,.45);
-  const t=c.targets.find(x=>x.s===s&&x.f===f);
-  if(t&&!c.found.some(x=>x.s===s&&x.f===f)){
-    c.found.push({s,f});
-    if(c.found.length===c.targets.length){ CR.score++; setTimeout(()=>{ CR.i++; crNext(); },700); }
-    crDrawColor();
-  } else if(!t){
-    const marks=c.notes.map(n=>({s:n.s,f:n.f,cls:"ghost"}));
-    marks.push({s,f,cls:"ko"});
-    c.targets.forEach(x=>marks.push({s:x.s,f:x.f,cls:"ok",label:CHROM[c.colPc].slice(0,2)}));
-    openOv(crHead(`✗ ${c.m.colTxt} de ${kName(c.rootPc)} ${c.m.n} = <b>${CHROM[c.colPc]}</b>`,"")+fbHtml(marks,{frets:15}));
-    setTimeout(()=>{ CR.i++; crNext(); },2100);
-  }
-}
-
-/* --- palier 6 : quel mode sur quel accord --- */
-function crChordMode(){
-  const rows=CHORD_MODE.filter(r=>r.modes[0]!=="melmin");
-  const r=rows[Math.floor(Math.random()*rows.length)];
-  const pc=Math.floor(Math.random()*12);
-  const good=GMODES.find(m=>m.id===r.modes[0]).n;
-  const pool=GMODES.filter(m=>m.n!==good).map(m=>m.n).sort(()=>Math.random()-.5).slice(0,3);
-  const opts=[good,...pool].sort(()=>Math.random()-.5);
-  CR.cur={good,opts,why:r.why,ch:kName(pc)+r.ch};
-  openOv(crHead(`Sur <b>${CR.cur.ch}</b>, quel mode ?`,"")+
-    `<div class="gopts">${opts.map((o,i)=>`<button onclick="crAnsChord(${i})">${o}</button>`).join("")}</div>`);
-}
-function crAnsChord(i){
-  if(!CR||!CR.cur) return;
-  const c=CR.cur, ok=c.opts[i]===c.good;
-  if(ok) CR.score++;
-  document.querySelectorAll(".gopts button").forEach((b,k)=>{ b.disabled=true;
-    if(c.opts[k]===c.good) b.classList.add("ok"); else if(k===i) b.classList.add("ko"); });
-  const box=document.createElement("p"); box.className="lead";
-  box.style.cssText="margin-top:12px;color:var(--acc)";
-  box.innerHTML=(ok?"✓ ":"✗ ")+c.why;
-  ovin.appendChild(box);
-  setTimeout(()=>{ CR.i++; crNext(); }, ok?1400:2600);
-}
-
-/* --- palier 7 : la même note cible, à trois endroits --- */
-function crConnect(){
-  const pc=Math.floor(Math.random()*12);
-  const spots=[];
-  for(let s=0;s<6;s++) for(let f=0;f<=12;f++) if((STRINGS[s][2]+f)%12===pc) spots.push({s,f});
-  CR.cur={pc,spots,found:[]};
-  crDrawConnect();
-}
-function crDrawConnect(){
-  const c=CR.cur;
-  const marks=c.found.map(x=>({s:x.s,f:x.f,cls:"ok",label:CHROM[c.pc].slice(0,2)}));
-  openOv(crHead(`Trouve <b>${CHROM[c.pc]}</b> à <b>3 endroits</b> différents`,
-    `${c.found.length}/3. Ces points sont tes portes entre positions.`)+
-    fbHtml(marks,{tap:crTapConnect}));
-}
-function crTapConnect(s,f){
-  if(!CR||!CR.cur) return;
-  const c=CR.cur;
-  pluckSF(s,f,0,.45);
-  const good=(STRINGS[s][2]+f)%12===c.pc;
-  const already=c.found.some(x=>x.s===s&&x.f===f);
-  if(good&&!already){
-    c.found.push({s,f});
-    if(c.found.length>=3){ CR.score++; crDrawConnect(); setTimeout(()=>{ CR.i++; crNext(); },800); return; }
-    crDrawConnect();
-  } else if(!good){
-    const marks=c.found.map(x=>({s:x.s,f:x.f,cls:"ok"}));
-    marks.push({s,f,cls:"ko"});
-    c.spots.slice(0,4).forEach(x=>marks.push({s:x.s,f:x.f,cls:"ghost"}));
-    openOv(crHead(`✗ ce n'est pas ${CHROM[c.pc]}`,"Les points gris : où elle se trouve vraiment.")+fbHtml(marks,{}));
-    setTimeout(()=>{ CR.i++; crNext(); },1900);
-  }
-}
-
-// ================= LE CHEMIN : une seule échelle =================
-function cheminIdx(){ for(let i=0;i<CHEMIN.length;i++){ try{ if(!CHEMIN[i].gate()) return i; }catch(e){ return i; } } return CHEMIN.length; }
-function cheminDoneCount(){ let n=0; CHEMIN.forEach(e=>{ try{ if(e.gate()) n++; }catch(err){} }); return n; }
-function cheminMark(n){
-  if(!S.chemin) S.chemin={done:{}};
-  if(!S.chemin.done) S.chemin.done={};
-  S.chemin.done[n]=today(); addXP(10); save();
-  toast("✓ <b>Étape "+n+" validée</b>");
-  render();
-}
-function chapOf(id){ return CHAPITRES.find(c=>c.id===id)||CHAPITRES[0]; }
-
-function vChemin(){
-  const i=cheminIdx(), fait=cheminDoneCount(), tot=CHEMIN.length;
-  const r=rank(), pct=Math.round(fait/tot*100);
-  if(i>=tot){
-    return `<div class="card"><h2>🏁 Chemin terminé</h2>
-      <p class="lead">Les ${tot} étapes sont derrière toi. Le Chemin ne sert plus : entretiens via les Outils, et joue.</p></div>`;
-  }
-  const e=CHEMIN[i], ch=chapOf(e.ch);
-  // les 3 étapes suivantes, pour voir où ça va (sans pouvoir les faire)
-  const next=CHEMIN.slice(i+1,i+4);
-  return `
-  <div class="act hot" onclick="openModeGate()" style="margin-bottom:12px">
-    <div class="ico">🔀</div><div class="t"><b>Choisir ma séance</b><small>avec guitare (le Chemin) ou sans guitare (théorie pure)</small></div><div class="st">›</div>
-  </div>
-  <div class="card">
-    <div class="tierhead"><b>Chapitre ${ch.id} · ${ch.t}</b><span class="tierbar">${fait}/${tot}</span></div>
-    <div class="pbar"><i style="width:${pct}%"></i></div>
-    <p class="lead" style="margin-top:6px">${ch.d}</p>
-  </div>
-
-  <div class="card hot">
-    <div class="tierhead"><b style="font-size:12px;color:var(--acc);font-style:normal;letter-spacing:1px">ÉTAPE ${i+1} / ${tot} — AUJOURD'HUI</b></div>
-    <h2 style="margin:2px 0 6px">${e.t}</h2>
-    <p class="lead">${e.do}</p>
-    <p class="lead" style="color:var(--acc);margin-top:8px"><b>Critère :</b> ${e.crit}</p>
-    <button class="btn" onclick="${e.go}">Faire cette étape</button>
-    ${e.manual?`<button class="btn ghost" onclick="cheminMark(${e.n})">✓ C'est fait</button>`:
-      `<p class="lead" style="text-align:center;color:var(--dim);font-size:12px;margin-top:8px">L'app validera seule dès que le critère sera atteint.</p>`}
-  </div>
-
-  <div class="card">
-    <div class="tierhead"><b>Ensuite</b><small>tu ne peux pas sauter — c'est le principe</small></div>
-    ${next.map((x,k)=>`<div class="act" style="opacity:.5;pointer-events:none">
-      <div class="ico">${i+2+k}</div><div class="t"><b>${x.t}</b><small>${x.crit}</small></div></div>`).join("")||
-      `<p class="lead">Dernière étape.</p>`}
-  </div>
-
-  <div class="card">
-    <div class="tierhead"><b>Le chemin complet</b><small>${fait} validée(s)</small></div>
-    ${CHAPITRES.map(c=>{
-      const es=CHEMIN.filter(x=>x.ch===c.id);
-      const ok=es.filter(x=>{ try{return x.gate()}catch(err){return false} }).length;
-      return `<div class="act" style="pointer-events:none"><div class="ico">${ok===es.length?"✓":c.id}</div>
-        <div class="t"><b>${c.t}</b><small>${ok}/${es.length} étapes</small></div></div>`;
-    }).join("")}
-  </div>`;
-}
-
-function vOutils(){
-  return `<div class="card"><h2>🧰 Outils</h2>
-    <p class="lead">Tout reste disponible — mais rien ici n'est obligatoire. <b>Le Chemin décide, les outils exécutent.</b> Si tu ne sais pas quoi faire, retourne au Chemin.</p></div>`
-    + vTech() + vManche() + vTheorie() + vRep();
-}
-
-// ================= JAM STATION =================
-const JAM={on:false,jam:null,key:0,bpm:90,idx:0,next:0,iv:null,click:true};
-function jamChordMidis(rel,type){
-  const root=40+((JAM.key+rel-4)%12+12)%12; // fondamentale entre Mi grave (40) et Ré# (51)
-  const iv={M:[0,7,12,16,19],m:[0,7,12,15,19],"7":[0,7,10,16,19],m7:[0,7,10,15,19],maj7:[0,7,11,16,19]}[type];
-  return iv.map(x=>root+x);
-}
-function jamChordName(rel,type){ return CHROM[(JAM.key+rel)%12]+({M:"",m:"m","7":"7",m7:"m7",maj7:"maj7"})[type]; }
-function strum(midis,when,vel,down=true){
-  const list=down?midis:[...midis].reverse();
-  list.forEach((m,i)=>pluck(m,when+i*0.014,vel*(1-i*0.06),1.6));
-}
-function jamStart(){
-  jamStop();
-  const c=metCtx(); if(c.state==="suspended") c.resume();
-  JAM.on=true; JAM.idx=0;
-  const spb=60/JAM.bpm;
-  JAM.next=c.currentTime+0.12;
-  // décompte d'une mesure
-  for(let i=0;i<4;i++) metClick(JAM.next+i*spb,i===0?2:1);
-  JAM.next+=4*spb;
-  JAM.iv=setInterval(jamSched,40);
-  jamUI();
-}
-function jamSched(){
-  const c=metCtx(), spb=60/JAM.bpm, look=0.15;
-  while(JAM.on&&JAM.next<c.currentTime+look){
-    const bar=JAM.jam.prog[JAM.idx%JAM.jam.prog.length];
-    const midis=jamChordMidis(bar[0],bar[1]);
-    // pompe : accord plein sur 1 et 3, remontée légère sur les "et" de 2 et 4
-    strum(midis,JAM.next,0.34,true);
-    if(JAM.click) metClick(JAM.next,2);
-    strum(midis.slice(1),JAM.next+1.5*spb,0.14,false);
-    strum(midis,JAM.next+2*spb,0.26,true);
-    if(JAM.click){ metClick(JAM.next+spb,1); metClick(JAM.next+2*spb,1); metClick(JAM.next+3*spb,1); }
-    strum(midis.slice(1),JAM.next+3.5*spb,0.14,false);
-    const at=JAM.idx;
-    setTimeout(()=>{ if(JAM.on) jamNow(at); },Math.max(0,(JAM.next-c.currentTime)*1000));
-    JAM.idx++; JAM.next+=4*spb;
-  }
-}
-function jamNow(i){
-  const p=JAM.jam.prog, cur=p[i%p.length], nx=p[(i+1)%p.length];
-  const el=document.getElementById("jamcur"); if(!el) return;
-  el.textContent=jamChordName(cur[0],cur[1]);
-  document.getElementById("jamnxt").textContent="puis : "+jamChordName(nx[0],nx[1])+" · mesure "+(i%p.length+1)+"/"+p.length;
-}
-function jamStop(){ JAM.on=false; if(JAM.iv){clearInterval(JAM.iv);JAM.iv=null;} jamUI(); }
-function jamUI(){ const b=document.getElementById("jamgo"); if(b) b.textContent=JAM.on?"⏸ Stop":"▶ Lancer le jam"; }
-function openJam(id){
-  const j=JAMS.find(x=>x.id===id);
-  JAM.jam=j; JAM.key=j.defKey; JAM.bpm=j.bpm;
-  openOv(ovTop(j.icon+" "+j.name)+`
-    <div class="jamnow"><div class="cur" id="jamcur">${jamChordName(j.prog[0][0],j.prog[0][1])}</div>
-    <div class="nxt" id="jamnxt">grille : ${j.prog.map(b=>jamChordName(b[0],b[1])).join(" · ")}</div></div>
-    <div class="crit"><b>Où improviser :</b> ${j.hint}</div>
-    <p class="sub" style="margin:10px 0 2px">Tonalité :</p>
-    <div class="keyrow">${CHROM.map((n,i)=>`<button class="${i===JAM.key?"on":""}" onclick="jamKey(${i},'${id}')">${n}</button>`).join("")}</div>
-    <p class="sub" style="margin:10px 0 2px">Tempo : <b id="jambpmv">${JAM.bpm}</b> BPM</p>
-    <input type="range" min="56" max="160" step="4" value="${JAM.bpm}" style="width:100%" oninput="JAM.bpm=+this.value;document.getElementById('jambpmv').textContent=this.value">
-    <button class="btn" id="jamgo" onclick="JAM.on?jamStop():jamStart()">▶ Lancer le jam</button>
-    <div class="xptxt" style="margin-top:8px;text-align:center">Guitare rythmique intégrée, hors-ligne. Décompte d'une mesure, puis c'est à toi par-dessus.</div>`);
-}
-function jamKey(k,id){ const was=JAM.on; jamStop(); JAM.key=k; openJam(id); JAM.key=k;
-  document.querySelectorAll(".keyrow button").forEach((b,i)=>b.classList.toggle("on",i===k));
-  if(was) jamStart(); }
-function openJamList(){
-  openOv(ovTop("🎛️ Jam Station")+`
-    <div class="pt">Des grilles jouées par l'app — guitare rythmique + clic — dans la tonalité et au tempo que tu veux. <b>Hors-ligne, sans YouTube.</b> C'est ici que les gammes deviennent des phrases.</div>`+
-    JAMS.map(j=>`<div class="act hot" onclick="openJam('${j.id}')">
-      <div class="ico">${j.icon}</div><div class="t"><b>${j.name}</b><small>${j.hint.slice(0,70)}…</small></div><div class="st">›</div></div>`).join("")+
-    `<div class="act" onclick="openBacking()"><div class="ico">🎚️</div><div class="t"><b>Backing tracks YouTube</b><small>pour des vrais sons de groupe, quand tu as du réseau</small></div><div class="st">›</div></div>`);
-}
-
-// ================= DICTIONNAIRE D'ACCORDS =================
-function chordMarks(ch){
-  const marks=[];
-  ch.frets.forEach((f,k)=>{
-    const s=5-k; // k=0 → Mi grave (rangée du bas)
-    if(f<0){ marks.push({s,f:0,cls:"h0",label:"✕"}); return; }
-    const pc=(STRINGS[s][1]+f)%12, deg=(pc-ch.root+12)%12;
-    const lab={0:"1",2:"2",3:"♭3",4:"3",5:"4",7:"5",9:"6",10:"♭7",11:"7"}[deg]||CHROM[pc].slice(0,2);
-    marks.push({s,f,cls:deg===0?"root":"ghost",label:lab});
-  });
-  return marks;
-}
-function strumChord(ch){
-  const midis=[];
-  ch.frets.forEach((f,k)=>{ if(f>=0) midis.push(STRINGS[5-k][2]+f); });
-  strum(midis,0,0.45,true);
-}
-function openChordDict(){
-  openOv(ovTop("📖 Dictionnaire d'accords")+`
-    <div class="pt">Chaque note étiquetée en <b>degré</b> (1, 3, ♭7…), pas seulement en nom — c'est la fiche f10 appliquée : tu vois <i>pourquoi</i> l'accord sonne majeur, mineur ou tendu. Touche un accord, écoute-le.</div>`+
-    CHORDLIB.map(cat=>`<h2 class="sec">${cat.cat}</h2>`+
-      cat.list.map(ch=>`<div class="act" onclick="openChord('${esc(ch.name).replace(/'/g,"\\'")}')">
-        <div class="ico">🎸</div><div class="t"><b>${ch.name}</b></div><div class="st">›</div></div>`).join("")).join(""));
-}
-function openChord(name){
-  let ch=null; CHORDLIB.forEach(c=>c.list.forEach(x=>{ if(x.name===name) ch=x; }));
-  if(!ch) return;
-  const degs=[...new Set(ch.frets.map((f,k)=>f<0?null:((STRINGS[5-k][1]+f)%12-ch.root+12)%12).filter(x=>x!==null))].sort((a,b)=>a-b);
-  const expl=degs.includes(4)?(degs.includes(10)?"1-3-5-♭7 : majeur à septième mineure — la tension du blues, elle veut résoudre.":degs.includes(11)?"1-3-5-7 : majeur septième — doux, jazzy, aucune urgence.":"1-3-5 : majeur — la tierce à 4 demi-tons fait le sourire.")
-    :degs.includes(3)?(degs.includes(10)?"1-♭3-5-♭7 : mineur septième — rond, soul, parfait pour les vamps.":"1-♭3-5 : mineur — la tierce baissée d'un demi-ton fait tout.")
-    :degs.includes(5)?"1-4-5 : suspendu — la quarte remplace la tierce, l'accord attend sa résolution."
-    :degs.includes(2)?"1-2-5 : sus2 — aérien, ni majeur ni mineur."
-    :"—";
-  openOv(ovTop("🎸 "+ch.name)+
-    fbHtml(chordMarks(ch),{})+
-    `<div class="pt"><b>${expl}</b>${ch.note?"<br><br>"+ch.note:""}</div>
-    <button class="btn" onclick='strumChord(CHORDLIB.flatMap(c=>c.list).find(x=>x.name==="${ch.name.replace(/"/g,'\\"')}"))'>🔊 Écouter (gratté)</button>
-    <button class="btn ghost" onclick="openChordDict()">← Tous les accords</button>`);
-}
-
-// ================= THÉORIE — le manuel de référence =================
-// Pas des fiches à quiz : le manuel brut, toujours ouvert, avec les 12 tonalités
-// calculées en direct et un détecteur de tonalité par harmonisation.
-const MAJ=[0,2,4,5,7,9,11];
-const DEGN=["I","ii","iii","IV","V","vi","vii°"];
-const DEGTYPE=["","m","m","","","m","°"];
-const DEGROLE=["tonique — la maison","sus-tonique","médiante — elle dit majeur/mineur","sous-dominante — l'appel","dominante — la tension qui veut rentrer","sus-dominante (relative mineure !)","sensible — à un demi-ton de la maison"];
-let THK=0; // tonalité affichée dans les chapitres 2-3
-const INTS=[["Seconde mineure",1,"Les Dents de la mer","frottement, menace"],["Seconde majeure",2,"Frère Jacques","un pas tranquille"],["Tierce mineure",3,"Smoke on the Water (riff)","le voile mineur"],["Tierce majeure",4,"Oh When the Saints","le sourire majeur"],["Quarte juste",5,"Amazing Grace","suspendue, solennelle"],["Triton",6,"Les Simpson (« The Simp- »)","le diable en musique"],["Quinte juste",7,"Star Wars","stable, puissante — le power chord"],["Sixte mineure",8,"The Entertainer (début)","mélancolie qui penche"],["Sixte majeure",9,"My Way / NBC","élan chaleureux"],["Septième mineure",10,"The Winner Takes It All","la tension blues"],["Septième majeure",11,"Take On Me (saut)","brillante, presque douloureuse"],["Octave",12,"Somewhere Over the Rainbow","la même, plus haut"]];
-function scaleOf(k){ return MAJ.map(x=>CHROM[(k+x)%12]); }
-function diatonic(k){ return MAJ.map((x,i)=>({name:CHROM[(k+x)%12]+DEGTYPE[i], roman:DEGN[i], pc:(k+x)%12, type:i===6?"dim":(DEGTYPE[i]==="m"?"min":"maj")})); }
-function playInt(st){ pluck(52,0,.5); pluck(52+st,.55,.5); setTimeout(()=>{ pluck(52,0,.35); pluck(52+st,.02,.35); },1300); }
-function scaleFB(k){
-  const marks=[];
-  for(let s=0;s<6;s++) for(let f=0;f<=12;f++){
-    const deg=MAJ.indexOf(((STRINGS[s][1]+f)%12-k+12)%12);
-    if(deg>=0) marks.push({s,f,cls:deg===0?"root":"ghost",label:String(deg+1)});
-  }
-  return fbHtml(marks,{tap:(s,f)=>pluckSF(s,f,0,.45)});
-}
-function thKeyRow(fn){
-  return `<div class="keyrow">${CHROM.map((n,i)=>`<button class="${i===THK?"on":""}" onclick="THK=${i};${fn}()">${n}</button>`).join("")}</div>`;
-}
-function vTheorie(){
-  const CH=[["🧱","La matière première","12 notes, les intervalles — avec leurs sons et leurs chansons","openTh1()"],
-    ["☀️","La gamme majeure","la formule, les 7 degrés, dans les 12 tonalités sur TON manche","openTh2()"],
-    ["🏠","L'harmonisation","pourquoi ces accords-là vont ensemble — la famille de chaque tonalité","openTh3()"],
-    ["🌙","Le mineur, la penta, les modes","la relative, l'éolien, et pourquoi ta penta marche","openTh4()"],
-    ["🔑","Trouver la tonalité d'une chanson","LA compétence d'impro — méthode + détecteur interactif","openTh5()"],
-    ["🎤","Improviser dans la tonalité","quelle gamme sur quoi, les notes cibles, et où s'entraîner","openTh6()"]];
-  const nEx=Object.keys(S.thex||{}).length;
-  return `<h1 class="page">La théorie</h1>
-  <div class="sub">Le manuel brut, sans quiz, toujours ouvert. Lis dans l'ordre la première fois — chaque chapitre s'appuie sur le précédent.</div>
-  <div class="hero" style="margin:10px 0 14px">
-    <div class="lab">🎯 Farm sans guitare</div>
-    <div style="font-weight:800;font-size:16px;margin:2px 0 4px">Exercices de théorie — générés à l'infini</div>
-    <div class="sub" style="margin-bottom:10px">9 catégories, questions renouvelées à chaque fois : placer les degrés de la gamme, repérer la tonalité depuis des accords, intervalles, harmonisation, triades, 7es, cadences, cycle des quintes, modes. C'est ici que la théorie devient un réflexe.</div>
-    <button class="btn" onclick="openThEx()">Ouvrir les exercices${nEx?" · "+nEx+"/9 entamées":""}</button>
-    <button class="btn ghost" onclick="startSeanceTheorie()" style="margin-top:8px">🧠 Lancer la séance sans guitare (guidée)</button>
-  </div>`+
-  CH.map(c=>`<div class="act hot" onclick="${c[3]}">
-    <div class="ico">${c[0]}</div><div class="t"><b>${c[1]}</b><small>${c[2]}</small></div><div class="st">›</div></div>`).join("")+
-  `<div class="crit" style="margin-top:14px"><b>Théorie ≠ fiches.</b> Les fiches du Manche t'interrogent et reviennent en rappel ; ce manuel, lui, répond quand TU as la question. Les deux se complètent.</div>`;
-}
-function openTh1(){
-  openOv(ovTop("🧱 La matière première")+`
-    <div class="story">
-    <p>Toute la musique occidentale tient dans <b>12 notes</b> qui se répètent : Do, Do#, Ré, Ré#, Mi, Fa, Fa#, Sol, Sol#, La, La#, Si. L'écart minimal entre deux d'entre elles est le <b>demi-ton</b> — sur ta guitare, <b>une case</b>. Deux cases = un <b>ton</b>. C'est tout le vocabulaire de base.</p>
-    <p>Un <b>intervalle</b> est une distance entre deux notes, comptée en demi-tons. Chacun a un nom, un caractère, et une chanson qui te le rappellera à vie. <b>Écoute-les</b> — c'est un tableau à entendre, pas à lire :</p></div>
-    ${INTS.map(iv=>`<div class="act" onclick="playInt(${iv[1]})">
-      <div class="ico" style="font-family:var(--mono);font-size:13px">${iv[1]}</div>
-      <div class="t"><b>${iv[0]}</b><small>${iv[3]} · repère : ${iv[2]}</small></div>
-      <div class="st">🔊</div></div>`).join("")}
-    <div class="pt">Note le motif : chaque intervalle existe en version <b>mineure</b> (plus courte d'un demi-ton, plus sombre) et <b>majeure</b> — sauf la quarte, la quinte et l'octave, dites <b>justes</b> : ni majeures ni mineures, juste stables. C'est pour ça que le power chord (fondamentale + quinte) sonne ni triste ni gai : il est neutre.</div>`);
-}
-function openTh2(){
-  const sc=scaleOf(THK);
-  openOv(ovTop("☀️ La gamme majeure")+`
-    <div class="story">
-    <p>LA structure-mère. Ce n'est pas une liste de notes : c'est une <b>formule de distances</b>, en tons et demi-tons : <b>2-2-1-2-2-2-1</b> (en cases). Applique-la depuis n'importe quelle note, tu obtiens SA gamme majeure. Il n'y a donc pas 12 gammes à apprendre — il y en a UNE, qui démarre à 12 endroits.</p></div>
-    <p class="sub" style="margin:8px 0 2px">Choisis ta tonalité :</p>
-    ${thKeyRow("openTh2")}
-    <div class="pt" style="margin-top:10px"><b>Gamme de ${CHROM[THK]} majeur :</b> ${sc.join(" – ")} – ${CHROM[THK]}</div>
-    <h2 class="sec">Les 7 degrés — la gamme déclinée en intervalles</h2>
-    ${MAJ.map((x,i)=>`<div class="act" onclick="pluck(52+THK,0,.45);pluck(52+THK+x,.5,.45)">
-      <div class="ico" style="font-family:var(--mono)">${i+1}</div>
-      <div class="t"><b>${sc[i]} — ${i===0?"unisson":INTS.find(v=>v[1]===x)[0].toLowerCase()} (${x} ½t)</b><small>${DEGROLE[i]}</small></div>
-      <div class="st">🔊</div></div>`).join("")}
-    <h2 class="sec">Sur ton manche (touche = écoute)</h2>
-    ${scaleFB(THK)}
-    <div class="pt">🟠 = la tonique, les chiffres = les degrés. Regarde le DESSIN : il est identique dans les 12 tonalités, juste décalé. C'est exactement pour ça que penser en degrés (fiche f10) bat penser en notes.</div>`);
-}
-function openTh3(){
-  const d=diatonic(THK);
-  openOv(ovTop("🏠 L'harmonisation")+`
-    <div class="story">
-    <p>Pourquoi certains accords « vont ensemble » ? Parce qu'ils habitent la même maison. Sur chaque degré de la gamme, empile une note sur deux (des tierces) : tu obtiens les <b>7 accords de la tonalité</b>. Leur qualité tombe TOUJOURS dans le même ordre : <b>M · m · m · M · M · m · dim</b>.</p></div>
-    <p class="sub" style="margin:8px 0 2px">Tonalité :</p>
-    ${thKeyRow("openTh3")}
-    <div class="prow" style="grid-template-columns:repeat(7,1fr);margin-top:10px">
-      ${d.map((c,i)=>`<div class="p ${i===0?"hit":""}" style="cursor:pointer" onclick="pluck(${48+c.pc},0,.4);pluck(${48+c.pc+(c.type==='maj'?4:3)},.03,.3);pluck(${48+c.pc+(c.type==='dim'?6:7)},.06,.3)">
-        <small>${c.roman}</small><b style="font-size:12.5px">${c.name}</b></div>`).join("")}
-    </div>
-    <div class="pt">En <b>${CHROM[THK]} majeur</b>, ces 7 accords sont « à la maison ». Un morceau qui les utilise est (presque sûrement) dans cette tonalité — c'est la clé du chapitre 🔑.</div>
-    <h2 class="sec">Les enchaînements qui font 90 % des chansons</h2>
-    <div class="pt"><b>I – V – vi – IV</b> (${d[0].name} – ${d[4].name} – ${d[5].name} – ${d[3].name}) : LA progression pop.<br>
-    <b>I – IV – V</b> (${d[0].name} – ${d[3].name} – ${d[4].name}) : le rock'n'roll et le blues.<br>
-    <b>ii – V – I</b> (${d[1].name} – ${d[4].name} – ${d[0].name}) : la cadence jazz.<br>
-    <b>vi – IV – I – V</b> (${d[5].name} – ${d[3].name} – ${d[0].name} – ${d[4].name}) : la pop « mélancolique ».</div>
-    <div class="crit">Le moteur de tout : <b>V veut rentrer vers I</b>. La dominante contient la sensible (à un demi-ton de la tonique) — cette attraction est LE ressort de la musique tonale. Écoute ${d[4].name} → ${d[0].name} dans la Jam Station : tu ne pourras plus ne plus l'entendre.</div>`);
-}
-function openTh4(){
-  openOv(ovTop("🌙 Le mineur, la penta, les modes")+`
-    <div class="story">
-    <p><b>La relative mineure.</b> Chaque gamme majeure cache une jumelle : démarre la MÊME gamme sur son 6e degré, et tout devient sombre. Do majeur et La mineur : mêmes 7 notes, autre maison. C'est le degré <b>vi</b> de l'harmonisation — d'où « Am est dans la famille de Do ».</p>
-    <p><b>La gamme mineure naturelle</b> (= le mode éolien, ton chantier) a donc sa formule : <b>2-1-2-2-1-2-2</b>. Son caractère vient de la <b>tierce mineure</b> (le voile) et de la <b>sixte mineure</b> (la note qui pleure).</p>
-    <p><b>La pentatonique</b> n'est pas une gamme de plus : c'est la majeure (ou la mineure) <b>moins ses deux notes risquées</b> — celles à un demi-ton d'une note d'accord. Penta majeure = 1-2-3-5-6. Penta mineure = 1-b3-4-5-b7. Cinq notes qui ne peuvent pas frotter : voilà pourquoi « ça marche toujours ».</p>
-    <p><b>Les modes</b>, en une phrase chacun : la même gamme démarrée sur un autre degré. Ionien (=majeur), <b>dorien</b> (mineur qui sourit — sixte majeure, Santana), phrygien (mineur espagnol — seconde mineure), lydien (majeur rêveur — quarte augmentée), <b>mixolydien</b> (majeur rock — septième mineure, AC/DC), <b>éolien</b> (=mineur naturel), locrien (le théorique). Règle d'apprentissage : jamais comme des gammes neuves, toujours comme <b>UNE note qui change</b> par rapport à ce que tu connais.</p></div>
-    <div class="crit"><b>Ce qu'il faut retenir :</b> majeur et mineur relatif = mêmes notes. Donc trouver la tonalité majeure d'un morceau te donne AUSSI sa mineure — et ta penta mineure relative marche dessus. Chapitre suivant : comment la trouver.</div>`);
-}
-// ---- détecteur de tonalité ----
-let THDET=new Set();
-function thChip(pc,type){ const k=pc+"_"+type; if(THDET.has(k)) THDET.delete(k); else THDET.add(k); openTh5(); }
-function thDetect(){
-  if(THDET.size<2) return null;
-  const sel=[...THDET].map(s=>{ const [pc,t]=s.split("_"); return {pc:+pc,t}; });
-  const scores=CHROM.map((_,k)=>{
-    const d=diatonic(k);
-    let hit=0;
-    sel.forEach(c=>{ if(d.some(x=>x.pc===c.pc && ((c.t==="maj"&&x.type==="maj")||(c.t==="min"&&x.type==="min")))) hit++; });
-    return {k,hit};
-  }).sort((a,b)=>b.hit-a.hit);
-  return {best:scores[0], second:scores[1], total:sel.length};
-}
-function openTh5(){
-  const det=thDetect();
-  let verdict="";
-  if(det){
-    const k=det.best.k, d=diatonic(k), rel=CHROM[(k+9)%12];
-    const sure=det.best.hit===det.total && det.best.hit>det.second.hit;
-    verdict=`<div class="crit"><b>${det.best.hit}/${det.total} accords collent avec ${CHROM[k]} majeur</b>${det.best.hit===det.second.hit?" (ex æquo avec "+CHROM[det.second.k]+" majeur — ajoute un accord pour trancher)":""}.
-    ${sure?`<br><br>🔑 <b>Tonalité : ${CHROM[k]} majeur</b> (relative : ${rel} mineur).<br>
-    🎸 <b>Improvise avec :</b> la penta mineure de <b>${rel}</b> (ta box 1, fondamentale sur ${rel}) = la penta majeure de ${CHROM[k]}. Gamme complète : ${scaleOf(k).join(" ")}.<br>
-    🎯 Note d'atterrissage : <b>${CHROM[k]}</b> (ou ${rel} si le morceau sonne mineur).`
-    :det.best.hit<det.total?`<br>Le ou les accords étrangers sont peut-être des emprunts (fréquent) — ou le morceau est dans une autre couleur. Vérifie l'accord sur lequel le morceau <b>se pose</b>.`:""}</div>`;
-  }
-  openOv(ovTop("🔑 Trouver la tonalité")+`
-    <div class="story">
-    <p>La compétence qui déverrouille l'impro sur N'IMPORTE QUEL morceau. Quatre méthodes, de la plus simple à la plus sûre :</p>
-    <p><b>1. L'accord maison.</b> Le morceau se REPOSE quelque part — souvent le dernier accord, ou celui qui revient comme un aimant. Cet accord est presque toujours le I (ou le vi si ça sonne triste). Écoute où « ça atterrit ».</p>
-    <p><b>2. La note qui marche partout.</b> Guitare en main sur le morceau : tiens une note, écoute. Trop de frottement ? Monte d'une case. La note qui sonne <b>posée sur tous les accords</b> est la tonique. Deux minutes, infaillible avec un peu d'oreille.</p>
-    <p><b>3. L'inventaire des accords</b> — la méthode du détecteur ci-dessous : liste les accords du morceau, cherche la tonalité dont la famille les contient tous (chapitre 🏠). C'est mathématique.</p>
-    <p><b>4. Majeur ou mineur ?</b> Même famille = deux réponses possibles (Do majeur / La mineur). Tranche à l'oreille : ça sourit ou ça se voile ? Et regarde l'accord maison : s'il est mineur, pense « relative mineure ».</p></div>
-    <h2 class="sec">🧪 Le détecteur — coche les accords que tu entends</h2>
-    <div class="sub" style="margin:-2px 0 8px">Trouve les accords du morceau (tabs, oreille, YouTube) et coche-les. L'app fait l'inventaire.</div>
-    <div class="prow" style="grid-template-columns:repeat(6,1fr)">
-      ${CHROM.map((n,pc)=>`<div class="p ${THDET.has(pc+"_maj")?"hit":""}" style="cursor:pointer" onclick="thChip(${pc},'maj')"><b style="font-size:12px">${n}</b></div>`).join("")}
-    </div>
-    <div class="prow" style="grid-template-columns:repeat(6,1fr);margin-top:4px">
-      ${CHROM.map((n,pc)=>`<div class="p ${THDET.has(pc+"_min")?"hit":""}" style="cursor:pointer" onclick="thChip(${pc},'min')"><b style="font-size:12px">${n}m</b></div>`).join("")}
-    </div>
-    ${verdict||`<div class="pt" style="margin-top:10px">Coche au moins 2 accords — exemple : un morceau avec C, G, Am et F → coche-les et regarde.</div>`}
-    ${THDET.size?`<button class="btn ghost" onclick="THDET.clear();openTh5()">Effacer</button>`:""}
-    <div class="pt" style="font-size:12.5px;margin-top:10px"><b>Cas particuliers :</b> tout en accords de 7 (A7, D7, E7) = un <b>blues</b> — la règle des familles ne s'applique pas, joue la penta mineure de la tonique du I. Un capo décale tout : trouve les formes, ajoute le numéro de la case du capo. Riffs métal sur corde de Mi à vide : tonalité de Mi, neuf fois sur dix.</div>`);
-}
-function openTh6(){
-  openOv(ovTop("🎤 Improviser dans la tonalité")+`
-    <div class="story">
-    <p>Tu connais la tonalité. Voici la table de correspondance, du plus sûr au plus riche :</p></div>
-    <div class="pt"><b>Le morceau est en X majeur :</b><br>· Penta majeure de X (= penta mineure de sa relative, ta box 1 décalée) — zéro risque<br>· Gamme majeure de X complète — plus mélodique, deux notes à surveiller<br><br>
-    <b>Le morceau est en X mineur :</b><br>· Penta mineure de X — ta maison<br>· + la blue note (b5) si ça sent le blues<br>· Éolien de X complet — la sixte mineure pour l'émotion<br><br>
-    <b>C'est un blues en X (accords de 7) :</b><br>· Penta mineure de X + blue note, même sur les accords majeurs — le mensonge magnifique (fiche th4)</div>
-    <h2 class="sec">Les trois niveaux du soliste</h2>
-    <div class="pt"><b>Niveau 1 — la bonne gamme.</b> Tu ne joues aucune fausse note. Nécessaire, pas suffisant : tout le monde s'arrête là.<br><br>
-    <b>Niveau 2 — les notes cibles.</b> Tu vises une note DE L'ACCORD en cours aux changements (sa fondamentale ou sa tierce). C'est ça, « jouer les changements » — la salle 📐 Intervalles t'y entraîne.<br><br>
-    <b>Niveau 3 — le phrasé.</b> Phrases courtes, silences, question/réponse, et atterrir sur la tonique pour conclure (fiche th5). C'est le niveau où on te reconnaît.</div>
-    <div class="crit"><b>Où pratiquer, là, maintenant :</b> la 🎛️ Jam Station (onglet Manche) — choisis une grille, la tonalité que tu veux, et applique ce chapitre. La théorie sans les mains n'est que de la lecture.</div>`);
-}
-
-// ================= EXERCICES DE THÉORIE (générés à l'infini) =================
-// Réponses CALCULÉES depuis les helpers existants (diatonic, CHROM, MAJ, GMODES…) :
-// jamais de bonne réponse fausse. Parfait pour farmer sans guitare (tendinite).
-function thRnd(n){ return Math.floor(Math.random()*n); }
-function thPick(a){ return a[thRnd(a.length)]; }
-function thShuf(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=thRnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function thSample(a,n){ return thShuf(a).slice(0,n); }
-function thDistinct(correct,pool,n){ const out=[]; for(const x of thShuf(pool)){ if(x!==correct&&out.indexOf(x)<0){ out.push(x); if(out.length>=n) break; } } return out; }
-// noms de notes selon l'armure (dièses vs bémols) — pour une orthographe correcte
-const TH_FLATKEYS=new Set([5,10,3,8,1]); // Fa, Si♭, Mi♭, La♭, Ré♭
-const TH_NAMES_F=["Do","Ré♭","Ré","Mi♭","Mi","Fa","Sol♭","Sol","La♭","La","Si♭","Si"];
-function thNote(pc,flat){ pc=((pc%12)+12)%12; return (flat?TH_NAMES_F:CHROM)[pc]; }
-function thDia(k){ const flat=TH_FLATKEYS.has(k); return diatonic(k).map(d=>({pc:d.pc,type:d.type,roman:d.roman,name:thNote(d.pc,flat)+(d.type==="min"?"m":d.type==="dim"?"°":"")})); }
-function thKeysContaining(chords){ return [0,1,2,3,4,5,6,7,8,9,10,11].filter(k=>{ const d=diatonic(k); return chords.every(c=>d.some(x=>x.pc===c.pc&&x.type===c.type)); }); }
-// audio (offsets relatifs, comme playInt)
-function thStrum(midis,when){ midis.forEach((m,i)=>pluck(m,when+i*0.02,0.32,1.6)); }
-function thPlayProg(chords){ const IV={maj:[0,4,7],min:[0,3,7],dim:[0,3,6]}; try{const c=metCtx();if(c.state==="suspended")c.resume();}catch(e){} chords.forEach((ch,i)=>{ const base=48+ch.pc,iv=IV[ch.type]||IV.maj; thStrum(iv.map(x=>base+x).concat(base+12), i*0.62); }); }
-function thPlayTriad(root,iv){ const base=48+root; thStrum(iv.map(x=>base+x).concat(base+12),0); }
-function thTwoNotes(a,b){ pluck(48+a,0,.5); pluck(48+b,.5,.5); }
-
-const TH_DET=[0,7,2,9,4,5,10,3]; // tonalités « propres » à l'affichage
-const TH_TRIAD={majeur:[0,4,7],mineur:[0,3,7],diminué:[0,3,6],augmenté:[0,4,8]};
-const TH_SEV={"maj7":[0,4,7,11],"7":[0,4,7,10],"m7":[0,3,7,10],"m7♭5":[0,3,6,10]};
-
-function gKey(){
-  const TPL=[[0,3,4],[0,3,4,5],[0,4,5,3],[5,3,0,4],[1,4,0],[0,5,3,4]];
-  let k,chords,t=0;
-  do{ k=thPick(TH_DET); const dia=thDia(k); chords=thPick(TPL).map(d=>dia[d]); t++; }
-  while(thKeysContaining(chords).length!==1 && t<14);
-  if(thKeysContaining(chords).length!==1){ const dia=thDia(k); chords=[dia[0],dia[3],dia[4]]; }
-  const correct=kName(k), wrong=thDistinct(correct,TH_DET.map(kName),3);
-  const I=chords.find(c=>c.roman==="I"), V=chords.find(c=>c.roman==="V"), IV=chords.find(c=>c.roman==="IV");
-  const key=`${I?I.name+" = I (la maison)":""}${I&&V?", ":""}${V?V.name+" = V (la dominante)":IV?IV.name+" = IV":""}`;
-  return {q:`Ces accords, à quelle tonalité majeure appartiennent-ils ?<br><b style="font-size:19px;color:var(--acc)">${chords.map(c=>c.name).join("   ·   ")}</b>`,
-    correct,wrong,exp:`${key} → <b>${correct} majeur</b>. Sa relative mineure : ${thNote((k+9)%12,TH_FLATKEYS.has(k))} mineur.`,play:()=>thPlayProg(chords)};
-}
-function gInterval(){
-  const m=thRnd(3);
-  if(m===0){ const iv=thPick(INTS); const correct=iv[1]+" demi-tons";
-    const wrong=thDistinct(correct,[iv[1]-3,iv[1]-2,iv[1]-1,iv[1]+1,iv[1]+2,iv[1]+3].filter(x=>x>0&&x<=12).map(x=>x+" demi-tons"),3);
-    return {q:`Combien de demi-tons dans une <b>${iv[0].toLowerCase()}</b> ?`,correct,wrong,exp:`${iv[0]} = ${iv[1]} demi-tons. Repère : « ${iv[2]} ».`}; }
-  if(m===1){ const a=thRnd(12),st=1+thRnd(11),b=(a+st)%12,iv=INTS.find(v=>v[1]===st);
-    return {q:`Quel intervalle sépare <b>${CHROM[a]}</b> de <b>${CHROM[b]}</b> (en montant) ?`,correct:iv[0],wrong:thDistinct(iv[0],INTS.map(v=>v[0]),3),
-      exp:`${CHROM[a]} → ${CHROM[b]} = ${st} demi-tons = ${iv[0].toLowerCase()}.`,play:()=>thTwoNotes(a,b)}; }
-  const a=thRnd(12),iv=thPick(INTS.slice(0,11)),b=(a+iv[1])%12;
-  return {q:`Quelle note est une <b>${iv[0].toLowerCase()}</b> au-dessus de <b>${CHROM[a]}</b> ?`,correct:CHROM[b],wrong:thDistinct(CHROM[b],CHROM,3),
-    exp:`${iv[0]} = ${iv[1]} cases. ${CHROM[a]} + ${iv[1]} = ${CHROM[b]}.`,play:()=>thTwoNotes(a,b)};
-}
-function gDegree(){
-  const k=thPick(TH_DET),dia=thDia(k),m=thRnd(3);
-  if(m===0){ const i=1+thRnd(6),d=dia[i];
-    return {q:`En <b>${kName(k)} majeur</b>, quel est l'accord du degré <b>${DEGN[i]}</b> ?`,correct:d.name,wrong:thDistinct(d.name,dia.map(x=>x.name),3),
-      exp:`${kName(k)} majeur : ${dia.map(x=>x.name).join(" ")}. Le ${DEGN[i]} est ${d.name}.`}; }
-  if(m===1){ const i=thRnd(7),d=dia[i];
-    return {q:`En <b>${kName(k)} majeur</b>, l'accord <b>${d.name}</b> occupe quel degré ?`,correct:DEGN[i],wrong:thDistinct(DEGN[i],DEGN,3),
-      exp:`Dans ${kName(k)} majeur, ${d.name} est le degré ${DEGN[i]}.`}; }
-  let op,ot; do{ op=thRnd(12); ot=thPick(["maj","min"]); }while(dia.some(x=>x.pc===op&&x.type===ot));
-  const out=thNote(op,TH_FLATKEYS.has(k))+(ot==="min"?"m":"");
-  return {q:`Lequel de ces accords n'appartient PAS à <b>${kName(k)} majeur</b> ?`,correct:out,wrong:thSample(dia.map(x=>x.name),3),
-    exp:`${kName(k)} majeur ne contient que : ${dia.map(x=>x.name).join(" ")}. ${out} en est absent.`};
-}
-function gTriad(){
-  const names=Object.keys(TH_TRIAD);
-  if(thRnd(2)===0){ const r=thRnd(12),q=thPick(names),iv=TH_TRIAD[q],correct=iv.map(x=>CHROM[(r+x)%12]).join(" · ");
-    const w=[[CHROM[r],CHROM[(r+(iv[1]===4?3:4))%12],CHROM[(r+iv[2])%12]].join(" · "),
-             [CHROM[r],CHROM[(r+iv[1])%12],CHROM[(r+(iv[2]===7?(q==="majeur"?8:6):7))%12]].join(" · "),
-             [CHROM[(r+2)%12],CHROM[(r+iv[1])%12],CHROM[(r+iv[2])%12]].join(" · ")];
-    return {q:`Épelle l'accord <b>${CHROM[r]} ${q}</b> :`,correct,wrong:thDistinct(correct,w,3),
-      exp:`${q} = ${iv.join("-")} demi-tons depuis la fondamentale → ${correct}.`,play:()=>thPlayTriad(r,iv)}; }
-  const r=thRnd(12),q=thPick(names),iv=TH_TRIAD[q];
-  return {q:`L'accord <b>${iv.map(x=>CHROM[(r+x)%12]).join(" · ")}</b> est de quel type ?`,correct:q,wrong:thDistinct(q,names,3),
-    exp:`Intervalles ${iv.join("-")} : tierce ${iv[1]===4?"majeure (4 cases)":"mineure (3 cases)"}, quinte ${iv[2]===7?"juste":iv[2]===6?"diminuée":"augmentée"} → ${q}.`,play:()=>thPlayTriad(r,iv)};
-}
-function gSeventh(){
-  if(thRnd(2)===0){ const k=thPick(TH_DET),vpc=(k+7)%12,flat=TH_FLATKEYS.has(k),correct=thNote(vpc,flat)+"7";
-    const wrong=thDistinct(correct,TH_DET.map(x=>thNote((x+7)%12,TH_FLATKEYS.has(x))+"7").concat([kName(k)+"maj7",thNote(k,flat)+"m7"]),3);
-    return {q:`Le <b>V7</b> (accord de dominante) de <b>${kName(k)} majeur</b>, c'est :`,correct,wrong,
-      exp:`Le V est une quinte au-dessus de la tonique : ${kName(k)} → ${thNote(vpc,flat)}. Avec sa 7e mineure : <b>${correct}</b>. C'est le SEUL accord de 7 de dominante de la tonalité — son triton ramène à la maison.`}; }
-  const r=thRnd(12),qn=thPick(Object.keys(TH_SEV)),iv=TH_SEV[qn],correct=iv.map(x=>CHROM[(r+x)%12]).join(" · ");
-  const w=[iv.map((x,ix)=>CHROM[(r+(ix===3?(iv[3]===11?10:11):x))%12]).join(" · "),
-           iv.map((x,ix)=>CHROM[(r+(ix===1?(iv[1]===4?3:4):x))%12]).join(" · "),
-           [CHROM[(r+2)%12]].concat(iv.slice(1).map(x=>CHROM[(r+x)%12])).join(" · ")];
-  return {q:`Épelle l'accord <b>${CHROM[r]}${qn}</b> :`,correct,wrong:thDistinct(correct,w,3),
-    exp:`${CHROM[r]}${qn} = ${iv.join("-")} demi-tons → ${correct}.`,play:()=>thPlayTriad(r,iv)};
-}
-function gCadence(){
-  if(thRnd(2)===0){ const C=[["V → I","parfaite"],["IV → I","plagale"],["… → V","demi-cadence"],["V → vi","rompue"]],c=thPick(C);
-    return {q:`La cadence <b>${c[0]}</b> s'appelle la cadence… ?`,correct:c[1],wrong:thDistinct(c[1],C.map(x=>x[1]),3),
-      exp:`${c[0]} = cadence ${c[1]}.`}; }
-  const Q=[["Quelle cadence conclut le plus fermement ?","parfaite","V→I : la dominante résout sur la tonique. Le point final."],
-    ["Quelle cadence crée une surprise en évitant la tonique ?","rompue","V→vi : la dominante promet le I puis bifurque vers le vi."],
-    ["Quelle cadence laisse l'oreille en suspens (une question) ?","demi-cadence","S'arrêter SUR le V : une virgule, pas un point."],
-    ["Quelle est la cadence « Amen », douce ?","plagale","IV→I, plus reposée que V→I."]],c=thPick(Q);
-  return {q:c[0],correct:c[1],wrong:thDistinct(c[1],["parfaite","plagale","rompue","demi-cadence"],3),exp:c[2]};
-}
-function gCircle(){
-  const m=thRnd(3);
-  if(m===0){ const MAP={0:"aucune altération",7:"1 dièse",2:"2 dièses",9:"3 dièses",4:"4 dièses",11:"5 dièses",5:"1 bémol",10:"2 bémols",3:"3 bémols",8:"4 bémols",1:"5 bémols"};
-    const ks=Object.keys(MAP).map(Number),k=thPick(ks),correct=MAP[k];
-    return {q:`Combien d'altérations à l'armure de <b>${kName(k)} majeur</b> ?`,correct,wrong:thDistinct(correct,Object.values(MAP),3),
-      exp:`${kName(k)} majeur → ${correct}. (Cycle des quintes : +1 dièse par quinte montante, +1 bémol par quarte.)`}; }
-  if(m===1){ const a=thRnd(12),b=(a+7)%12;
-    return {q:`Une <b>quinte juste</b> au-dessus de <b>${CHROM[a]}</b> ?`,correct:CHROM[b],wrong:thDistinct(CHROM[b],CHROM,3),
-      exp:`+7 demi-tons : ${CHROM[a]} → ${CHROM[b]}. C'est le pas du cycle des quintes.`}; }
-  const k=thPick(TH_DET),correct=thNote((k+9)%12,TH_FLATKEYS.has(k))+" mineur";
-  return {q:`La relative mineure de <b>${kName(k)} majeur</b> ?`,correct,wrong:thDistinct(correct,TH_DET.map(x=>thNote((x+9)%12,TH_FLATKEYS.has(x))+" mineur"),3),
-    exp:`La relative mineure est bâtie sur le 6e degré : ${kName(k)} + 9 demi-tons = <b>${correct}</b>. Mêmes notes, centre différent.`};
-}
-function gMode(){
-  const m=thRnd(3);
-  if(m===0){ const md=thPick(GMODES);
-    return {q:`Le <b>${md.deg}${md.deg===1?"er":"e"} mode</b> de la gamme majeure s'appelle ?`,correct:md.n,wrong:thDistinct(md.n,GMODES.map(x=>x.n),3),
-      exp:`${md.deg}e degré → ${md.n}. Formule : ${md.form}.`}; }
-  if(m===1){ const Q=[["Quel mode est un MAJEUR avec une ♭7 ?","Mixolydien","1 2 3 4 5 6 ♭7 — tout le rock et le blues."],
-    ["Quel mode est un MINEUR avec une 6e MAJEURE ?","Dorien","Un mineur qui ne se plaint pas (Santana, jazz modal)."],
-    ["Quel mode a un ♯4 (un majeur qui flotte) ?","Lydien","1 2 3 ♯4 5 6 7 — le son des musiques de film."],
-    ["Quel mode a une ♭2 (couleur espagnole) ?","Phrygien","Le demi-ton dès la 2e note : flamenco, metal."],
-    ["Quel mode est le mineur naturel ?","Éolien","1 2 ♭3 4 5 ♭6 ♭7 — la 6e mineure qui pleure."]],c=thPick(Q);
-    return {q:c[0],correct:c[1],wrong:thDistinct(c[1],GMODES.map(x=>x.n),3),exp:c[2]}; }
-  const k=thPick(TH_DET),md=thPick(GMODES.filter(x=>x.deg>=2)),sp=(k+MAJ[md.deg-1])%12;
-  return {q:`Dans <b>${kName(k)} majeur</b>, le mode <b>${md.n}</b> démarre sur quelle note ?`,correct:thNote(sp,TH_FLATKEYS.has(k)),wrong:thDistinct(thNote(sp,TH_FLATKEYS.has(k)),CHROM,3),
-    exp:`${md.n} = ${md.deg}e degré de la majeure parente. ${kName(k)} majeur, ${md.deg}e degré = ${thNote(sp,TH_FLATKEYS.has(k))}. (Mêmes notes que ${kName(k)}, tonique différente.)`};
-}
-// ---- Les degrés de la gamme majeure : placer la tonique, la seconde, la tierce… sans manche ----
-const SCADEG=[
-  ["la tonique",0,"la maison — repos absolu, tout se résout ici"],
-  ["la seconde",2,"un ton au-dessus de la tonique — instable, elle veut bouger"],
-  ["la tierce",4,"elle décide majeur ou mineur — la note la plus émotive de la gamme"],
-  ["la quarte",5,"suspendue — elle appelle une résolution (le son des accords sus4)"],
-  ["la quinte",7,"stable et puissante — le socle du power chord et de la dominante"],
-  ["la sixte",9,"chaleureuse — c'est aussi la fondamentale de la relative mineure"],
-  ["la septième",11,"la sensible — à un demi-ton de la tonique, elle y attire irrésistiblement"]
-];
-function scaleNames(k){ const flat=TH_FLATKEYS.has(k); return MAJ.map(x=>thNote((k+x)%12,flat)); }
-function scaCap(s){ return s[0].toUpperCase()+s.slice(1); }
-function gScaleDeg(){
-  const k=thPick(TH_DET), flat=TH_FLATKEYS.has(k), kn=kName(k), m=thRnd(3);
-  if(m===0){ // nom du degré → note : « placer » le degré dans la gamme
-    const d=thPick(SCADEG.slice(1)), pc=(k+d[1])%12, correct=thNote(pc,flat);
-    const wrong=thDistinct(correct, scaleNames(k).concat(CHROM), 3);
-    return {q:`En <b>${kn} majeur</b>, quelle note est <b>${d[0]}</b> ?`, correct, wrong,
-      exp:`Gamme de ${kn} majeur : ${scaleNames(k).join(" – ")}. ${scaCap(d[0])} = <b>${correct}</b> — ${d[2]}.`,
-      play:()=>thTwoNotes(k,pc)};
-  }
-  if(m===1){ // note → nom du degré
-    const d=thPick(SCADEG), pc=(k+d[1])%12, note=thNote(pc,flat), roman=DEGN[MAJ.indexOf(d[1])];
-    return {q:`En <b>${kn} majeur</b>, <b>${note}</b> est quel degré ?`, correct:d[0], wrong:thDistinct(d[0],SCADEG.map(x=>x[0]),3),
-      exp:`Dans ${kn} majeur (${scaleNames(k).join(" ")}), ${note} est ${d[0]} — le degré ${roman}. ${d[2]}.`,
-      play:()=>thTwoNotes(k,pc)};
-  }
-  // rôle → degré : la théorie derrière les notes, valable dans les 12 tonalités
-  const d=thPick(SCADEG);
-  return {q:`Dans <b>n'importe quelle</b> gamme majeure, quel degré joue ce rôle :<br><span style="color:var(--acc)">« ${d[2]} »</span> ?`,
-    correct:d[0], wrong:thDistinct(d[0],SCADEG.map(x=>x[0]),3),
-    exp:`${scaCap(d[0])}. Ce rôle est identique dans les 12 tonalités — c'est exactement pour ça qu'on pense en degrés plutôt qu'en noms de notes.`};
-}
-
-const THEX=[
-  {id:"sca",icon:"☀️",name:"Les degrés de la gamme",sub:"placer tonique, seconde, tierce…",gen:gScaleDeg},
-  {id:"key",icon:"🔑",name:"Repérer la tonalité",sub:"des accords → quelle tonalité",gen:gKey},
-  {id:"int",icon:"📏",name:"Les intervalles",sub:"distances, noms, notes",gen:gInterval},
-  {id:"deg",icon:"🏠",name:"Degrés & harmonisation",sub:"quel accord à quel degré",gen:gDegree},
-  {id:"tri",icon:"🔺",name:"Triades",sub:"épeler & reconnaître maj/min/dim/aug",gen:gTriad},
-  {id:"sev",icon:"7️⃣",name:"Accords de 7e",sub:"V7, maj7, m7…",gen:gSeventh},
-  {id:"cad",icon:"🔚",name:"Cadences",sub:"parfaite, plagale, rompue…",gen:gCadence},
-  {id:"cyc",icon:"🌀",name:"Cycle des quintes",sub:"dièses/bémols, quintes, relatives",gen:gCircle},
-  {id:"mod",icon:"🌈",name:"Les modes",sub:"nommer, reconnaître, situer",gen:gMode}
-];
-let THX=null;
-function openThEx(){
-  openOv(ovTop("🎯 Exercices de théorie")+`
-    <div class="pt">Des exercices <b>générés à l'infini</b> — les questions changent à chaque fois. Réponses calculées, jamais approximatives. Le meilleur farm sans guitare : vise la <b>vitesse de reconnaissance</b>.</div>`+
-    THEX.map(c=>{ const st=S.thex[c.id]; return `<div class="act hot" onclick="startThEx('${c.id}')">
-      <div class="ico">${c.icon}</div><div class="t"><b>${c.name}</b><small>${c.sub}${st?` · record ${st.best}/10 · ${st.runs} sessions`:""}</small></div>
-      <div class="st">›</div></div>`; }).join(""));
-}
-function startThEx(id){ const c=THEX.find(x=>x.id===id); THX={c,i:0,n:10,good:0,streak:0,best:0,cur:null,answered:false}; thexQ(); }
-function thexQ(){
-  THX.cur=THX.c.gen(); THX.answered=false;
-  const it=THX.cur, opts=thShuf([it.correct,...it.wrong.slice(0,3)]);
-  THX.opts=opts; THX.aIdx=opts.indexOf(it.correct);
-  openOv(ovTop(THX.c.icon+" "+THX.c.name)+`
-    <div class="sub" style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Question ${THX.i+1}/${THX.n}</span><span>série ${THX.streak}${THX.best?" · record run "+THX.best:""}</span></div>
-    <div class="qq">${it.q}</div>
-    ${it.play?`<button class="btn ghost" style="margin-bottom:8px" onclick="THX.cur&&THX.cur.play&&THX.cur.play()">🔊 Écouter</button>`:""}
-    ${opts.map((o,p)=>`<button class="opt" onclick="thexA(${p})">${o}</button>`).join("")}
-    <div id="thexp"></div>`);
-  if(it.play) setTimeout(()=>{ if(THX.cur&&THX.cur.play) THX.cur.play(); },260);
-}
-function thexA(p){
-  if(THX.answered) return; THX.answered=true;
-  const it=THX.cur, ok=p===THX.aIdx;
-  if(ok){ THX.good++; THX.streak++; if(THX.streak>THX.best) THX.best=THX.streak; } else THX.streak=0;
-  document.querySelectorAll(".opt").forEach((b,k)=>{ b.disabled=true; if(k===THX.aIdx)b.classList.add("ok"); else if(k===p)b.classList.add("ko"); });
-  document.getElementById("thexp").innerHTML=`<div class="exp"><b style="color:${ok?"var(--ok)":"var(--bad)"}">${ok?"Exact.":"Non — "+it.correct+"."}</b> ${it.exp}</div>
-    <button class="btn" onclick="${THX.i<THX.n-1?"THX.i++;thexQ()":"thexEnd()"}">${THX.i<THX.n-1?"Suivante →":"Voir le score"}</button>`;
-}
-function thexEnd(){
-  const c=THX.c;
-  if(!S.thex[c.id]) S.thex[c.id]={best:0,runs:0};
-  const rec=S.thex[c.id]; rec.runs++;
-  const isRec=THX.good>rec.best; if(isRec) rec.best=THX.good;
-  addXP(4+THX.good); save();
-  openOv(ovTop(c.icon+" "+c.name)+`
-    <div style="font-size:46px;font-weight:800;text-align:center;color:var(--acc);margin:6px 0">${THX.good}/${THX.n}</div>
-    <div class="sub" style="text-align:center;margin-bottom:10px">${isRec?"🏆 Nouveau record !":"record : "+rec.best+"/10"} · meilleure série d'affilée : ${THX.best}</div>
-    <div class="crit">${THX.good===THX.n?"Sans-faute. Remets une couche pour la vitesse, ou change de catégorie.":THX.good>=7?"Solide. Les questions ratées reviendront différentes — refais un tour.":"Relis le module correspondant (Cours complet), puis reviens : c'est en te trompant ici que ça rentre pour de bon."}</div>
-    <button class="btn" onclick="startThEx('${c.id}')">↻ Rejouer — nouvelles questions</button>
-    <button class="btn ghost" onclick="openThEx()">← Toutes les catégories</button>`);
-}
-
-// ================= RÉPERTOIRE =================
-function pState(id){ return S.pieces[id]||{st:"todo",checks:[]}; }
-function tierDone(n){ return PIECES.filter(p=>p.tier===n&&pState(p.id).st==="ok").length; }
-function vRep(){
-  return `<h1 class="page">Le répertoire impératif</h1>
-  <div class="sub">Les morceaux-examens. Un exercice prouve un geste ; un morceau validé prouve un <b>niveau</b>. Un seul « en cours » à la fois — la dispersion est l'ennemie.</div>`+
-  RTIERS.map(t=>{
-    const done=tierDone(t.n);
-    return `<div class="tierhead"><b>Palier ${t.n} — ${t.name}</b><span class="tierbar">${done}/${t.need} validés</span></div>
-    <div class="sub" style="margin-bottom:8px">${t.desc}</div>`+
-    PIECES.filter(p=>p.tier===t.n).map(p=>{
-      const st=pState(p.id);
-      return `<div class="act ${st.st==="ok"?"done":""} ${st.st==="cur"?"hot":""}" onclick="openPiece('${p.id}')">
-        <div class="ico">${st.st==="ok"?"🏆":st.st==="cur"?"🎯":"🎵"}</div>
-        <div class="t"><b>${p.title}</b><small>${p.artist} · ${p.focus.join(" · ")}</small></div>
-        <div class="st">${st.st==="ok"?"✓":st.st==="cur"?"EN COURS":"›"}</div></div>`;
-    }).join("");
-  }).join("")+
-  `<h2 class="sec">📚 La grande histoire — en accès libre</h2>
-  <div class="sub" style="margin:-4px 0 10px">Du Delta au djent : d'où viennent les sons que tu travailles. Hors entraînement, hors révisions — on lit par plaisir, dans l'ordre ou pas.</div>`+
-  THEORY.filter(t=>t.culture).map(t=>`<div class="act ${S.fiches[t.id]!==undefined?"done":""}" onclick="openFiche('${t.id}')">
-    <div class="ico">📚</div><div class="t"><b>${t.title}</b></div>
-    <div class="st">${S.fiches[t.id]!==undefined?"✓":"›"}</div></div>`).join("");
-}
-function pieceTempoHtml(id){
-  const logs=(S.pieceT&&S.pieceT[id])||[];
-  const last=logs[0]?logs[0].v:null;
-  const bpm=(typeof PIECE_X!=="undefined"&&PIECE_X[id]&&PIECE_X[id].bpm)||null;
-  let coach="";
-  if(logs.length>=3){ const [a,b2,c]=logs.slice(0,3).map(h=>h.v);
-    if(Math.max(a,b2,c)-Math.min(a,b2,c)<=5) coach=`<div class="xptxt" style="margin-top:6px;color:var(--acc)">📉 Trois séances autour de ${a} % — plateau. Isole LE passage qui bloque et boucle-le seul à ${a-15} %${bpm?" ("+Math.round(bpm*(a-15)/100)+" BPM)":""}, pas le morceau entier.</div>`; }
-  return `<p class="sub" style="margin:12px 0 4px">À quel % du tempo du disque${bpm?" (≈"+bpm+" BPM)":""} le joues-tu <b>proprement</b> ?</p>
-  <div class="selfrow">${[50,60,70,80,90,100].map(v=>`<button class="${last===v?"on":""}" style="font-size:12px" onclick="logPieceT('${id}',${v})">${v}%</button>`).join("")}</div>
-  ${logs.length?`<div class="xptxt" style="margin-top:8px">Derniers : ${logs.slice(0,5).map(h=>h.v+"%").join(" · ")} · record <b style="color:var(--acc)">${Math.max(...logs.map(h=>h.v))}%</b></div>`:`<div class="xptxt" style="margin-top:8px">Premier log = ta référence. 100 % propre = le critère ultime de validation.</div>`}
-  ${bpm&&last?`<button class="btn ghost" onclick="MET.bpm=${Math.round(bpm*Math.min(100,last+5)/100)};openMet()">🕰️ Métronome à ${Math.round(bpm*Math.min(100,last+5)/100)} BPM (ton ${last} % +5)</button>`:""}
-  ${coach}`;
-}
-function logPieceT(id,v){
-  if(!S.pieceT) S.pieceT={};
-  S.pieceT[id]=S.pieceT[id]||[];
-  const old=S.pieceT[id][0]?Math.max(...S.pieceT[id].map(h=>h.v)):0;
-  S.pieceT[id].unshift({d:today(),v}); S.pieceT[id]=S.pieceT[id].slice(0,40);
-  let xp=3, msg="🎵 "+v+" % logué.";
-  if(v>old&&old>0){ xp=10; msg="🏆 <b>"+v+" % — record de tempo !</b>"; }
-  addXP(xp); checkMenu("rep",id); save(); toast(msg); openPiece(id);
-}
-function openPiece(id){
-  const p=PIECES.find(x=>x.id===id), st=pState(id);
-  const allChecked=st.checks.length===p.checks.length;
-  openOv(ovTop(p.title)+`
-    <div class="meta">${p.artist} · <span class="tag">Palier ${p.tier}</span>${p.focus.map(f=>`<span class="tag b">${f}</span>`).join("")}</div>
-    <div class="pt"><b>Pourquoi ce morceau :</b> ${p.why}</div>
-    ${(typeof PIECE_X!=="undefined"&&PIECE_X[p.id])?(x=>`
-    <div class="pt">🎼 <b>Tonalité : ${x.key}</b> · tempo du disque ≈ <b>${x.bpm} BPM</b><br>🎤 ${x.imp}</div>
-    ${st.st!=="ok"&&x.plan?`<p class="sub" style="margin:10px 0 4px">Le plan de travail :</p>${x.plan.map((s2,i)=>`<div class="pt" style="font-size:13px;padding:9px 12px"><b style="color:var(--acc)">${i+1}.</b> ${s2}</div>`).join("")}`:""}`)(PIECE_X[p.id]):""}
-    ${st.st==="ok"?`<div class="crit"><b>Validé.</b> Rejoue-le une fois par mois — un morceau qu'on ne joue plus se désapprend.</div>`:`
-    ${st.st==="cur"?pieceTempoHtml(id):""}
-    <p class="sub" style="margin:12px 0 6px">Critères de validation — coche seulement ce qui est VRAI, enregistrement à l'appui :</p>
-    ${p.checks.map((c,i)=>`<label class="chk ${st.checks.includes(i)?"on":""}"><input type="checkbox" ${st.checks.includes(i)?"checked":""} onchange="togCheck('${id}',${i})"><span>${c}</span></label>`).join("")}
-    ${st.st==="cur"
-      ?`<button class="btn ghost" onclick="workedPiece('${id}')">🎸 J'ai travaillé 10 min dessus (valide le jour)</button>
-        ${allChecked?`<button class="btn" onclick="validatePiece('${id}')">🏆 Valider le morceau</button>`:""}`
-      :`<button class="btn" onclick="setCur('${id}')">🎯 En faire mon morceau en cours</button>`}`}
-  `);
-}
-function togCheck(id,i){
-  const st=pState(id);
-  if(st.checks.includes(i)) st.checks=st.checks.filter(x=>x!==i); else st.checks.push(i);
-  S.pieces[id]=st; save(); openPiece(id);
-}
-function setCur(id){
-  Object.values(S.pieces).forEach(p=>{ if(p.st==="cur") p.st="todo"; });
-  const st=pState(id); st.st="cur"; S.pieces[id]=st; save();
-  toast("🎯 <b>Morceau en cours.</b> Il apparaît dans ton menu du jour.");
-  openPiece(id);
-}
-function workedPiece(id){ checkMenu("rep",id); toast("🎸 Session comptée. La régularité fait le morceau."); openPiece(id); }
-function validatePiece(id){
-  const p=PIECES.find(x=>x.id===id);
-  const st=pState(id); st.st="ok"; S.pieces[id]=st;
-  const xp=[0,80,100,130,180][p.tier];
-  addXP(xp); checkMenu("rep",id); save();
-  const t=RTIERS.find(x=>x.n===p.tier), done=tierDone(p.tier);
-  openOv(ovTop("🏆 Morceau validé")+`
-    <div class="result"><div class="big">🏆</div>
-    <div class="xp">+${xp} XP</div>
-    <p><b>${p.title}</b> rejoint ton répertoire certifié.<br>${done>=t.need?"Palier "+p.tier+" <b style='color:var(--acc)'>COMPLET</b> — le palier "+(p.tier+1<=4?p.tier+1:4)+" t'attend.":done+"/"+t.need+" pour compléter le palier « "+t.name+" »."}</p></div>
-    <button class="btn" onclick="closeOv();nav('rep')">Continuer</button>`);
-}
-
-// ================= BACKING TRACKS =================
-function openBacking(){
-  openOv(ovTop("🎚️ Backing tracks")+`
-    <div class="sub">Improviser sur une vraie grille est la seule manière de transformer la technique en musique. Chaque bouton ouvre une recherche YouTube qui marche toujours.</div>`+
-    BACKING.map(b=>`<div class="card" style="padding:13px">
-      <b style="font-size:14.5px">${b.label}</b>
-      <div class="pt" style="margin:8px 0">${b.tip}</div>
-      <a class="btn" style="text-decoration:none" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(b.search)}">▶ Ouvrir sur YouTube</a>
-    </div>`).join(""));
-}
-
-// ================= MÉTRONOME STANDALONE =================
-function openMet(){ openOv(ovTop("🕰️ Métronome")+metHtml()+`
-  <div class="pt"><b>Méthode des paliers :</b> trouve le tempo où c'est propre 3 fois de suite. +4 BPM. Si ça casse deux fois, −6 BPM et re-stabilise. Termine TOUJOURS par 30 s au tempo propre — le cerveau garde la dernière impression.</div>
-  <div class="pt"><b>Mode Paliers automatique :</b> active-le et le métronome monte tout seul de +${MET.tStep} BPM toutes les ${MET.tEvery} mesures — tu joues, il pousse. <b>Subdivisions :</b> ³ pour caler tes triolets, ♬♬ pour les doubles, indispensable sur le legato et les sextolets lents.</div>`); }
-
-// ================= PROFIL =================
-function heatmap(){
-  const c=[];const t=new Date();
-  for(let i=69;i>=0;i--){ const d=new Date(t-i*864e5).toISOString().slice(0,10);
-    c.push(`<i class="${S.days.includes(d)?"on":""}${d===today()?" today":""}"></i>`); }
-  return `<div class="hm">${c.join("")}</div>`;
-}
-function vProfil(){
-  const r=rank();
-  const logs=Object.values(S.bpm).reduce((s,a)=>s+a.length,0);
-  const stars=TEXOS.reduce((s,x)=>s+palierOf(x),0);
-  const pcs=PIECES.filter(p=>pState(p.id).st==="ok").length;
-  return `<h1 class="page">Profil</h1><div class="sub">Les BPM ne mentent pas, les morceaux validés non plus.</div>
-  <div class="statgrid">
-    <div class="stat"><b>${S.xp}</b><small>XP</small></div>
-    <div class="stat"><b>${dispStreak()} 🔥</b><small>STREAK</small></div>
-    <div class="stat"><b>${stars}/${TEXOS.length*4}</b><small>PALIERS TECHNIQUE</small></div>
-    <div class="stat"><b>${logs}</b><small>BPM LOGUÉS</small></div>
-    <div class="stat"><b>${pcs}/${PIECES.length}</b><small>MORCEAUX VALIDÉS</small></div>
-    <div class="stat"><b>${Math.max(gBest("fwd"),gBest("rev"))}</b><small>RECORD MANCHE 60s</small></div>
-    <div class="stat"><b>${S.game.intBest||0}/10</b><small>INTERVALLES</small></div>
-    <div class="stat"><b>${S.game.earBest||0}/10</b><small>OREILLE</small></div>
-    <div class="stat"><b>${S.game.liveBest||0}/10</b><small>VRAIE GUITARE 🎤</small></div>
-    <div class="stat"><b>${S.game.pompeLvl||0}/5</b><small>LA POMPE 🥁</small></div>
-    <div class="stat"><b>${S.game.octBest||0}/10</b><small>OCTAVES 🔁</small></div>
-  </div>
-  ${(()=>{ // le diagnostic : ce que les données disent de ton prochain combat
-    const items=[];
-    const st=S.noteStats||{};
-    const weak=Object.entries(st).filter(([,n])=>n.tot>=3&&n.ok/n.tot<0.6).map(([pc])=>CHROM[pc]);
-    if(weak.length) items.push("🗺️ Notes aveugles : <b>"+weak.join(", ")+"</b> — le jeu des 60 s les vise déjà, joue.");
-    let plateaux=0;
-    for(const id in S.bpm){ const l=S.bpm[id]; if(l.length>=3){ const v=l.slice(0,3).map(h=>h.v); if(Math.max(...v)-Math.min(...v)<=2) plateaux++; } }
-    if(plateaux) items.push("📉 <b>"+plateaux+" exo"+(plateaux>1?"s":"")+" en plateau</b> — la sortie est par le bas : −10 BPM ultra-propre.");
-    const due=fichesDue().length;
-    if(due) items.push("🧠 <b>"+due+" rappel"+(due>1?"s":"")+" de théorie</b> en attente sur l'écran du jour.");
-    if((S.game.earBest||0)<(S.game.intBest||0)-2) items.push("👂 Ton oreille est en retard sur tes yeux ("+(S.game.earBest||0)+"/10 contre "+(S.game.intBest||0)+"/10) — priorité à la salle Oreille.");
-    if(!items.length) items.push("Rien d'alarmant dans les données. Le combat du jour : ton morceau en cours, au métronome.");
-    return `<div class="card"><b style="font-size:14px">🎯 Ton prochain combat</b>
-      ${items.map(i=>`<div class="xptxt" style="margin-top:8px;line-height:1.5;font-size:12px">${i}</div>`).join("")}</div>`;
-  })()}
-  <div class="card"><b style="font-size:14px">Tes 10 dernières semaines</b>${heatmap()}
-    <div class="xptxt" style="margin-top:6px">Un carré = un jour validé. La mémoire musculaire lit ce calendrier.</div></div>
-  <div class="card"><b style="font-size:14px">La hiérarchie</b>
-    <ul class="ranks" style="margin-top:8px">${RANKS.map(x=>`<li class="${x[0]===r[0]?"cur":(S.xp>=x[1]?"past":"")}"><span>${x[0]}</span><small>${x[1]} XP</small></li>`).join("")}</ul></div>
-  <button class="btn ghost" onclick="exportSave()">Exporter ma progression</button>
-  <button class="btn ghost" onclick="importSave()">Importer</button>
-  <button class="danger" onclick="if(confirm('Tout effacer ? XP, records BPM, morceaux. Irréversible.')){localStorage.removeItem(KEY);location.reload()}">Réinitialiser</button>`;
-}
-function exportSave(){
-  const d=JSON.stringify(S);
-  const done=()=>toast("📋 <b>Copié.</b> Colle ça dans une note — sauvegarde.");
-  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(d).then(done,()=>prompt("Copie :",d));
-  else prompt("Copie :",d);
-}
-function importSave(){
-  const raw=prompt("Colle le JSON exporté :");
-  if(!raw) return;
-  try{ const s=JSON.parse(raw); if(typeof s.xp!=="number") throw 0; localStorage.setItem(KEY,raw); location.reload(); }
-  catch(e){ toast("❌ JSON invalide."); }
-}
-
-// ================= INIT =================
-if(location.protocol.startsWith("http")&&"serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js").catch(()=>{});
-}
-nav("jour");
-openModeGate();
+/* ---------------- overlay + nav ---------------- */
+const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
+function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
+function closeOverlay(){ overlay.classList.remove('open'); render(); }
+let tab='manche';
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; render(); });
+function render(){ const co=counts(); document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(co.due?('🔁 '+co.due):'🎸');
+  if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='theorie')renderTheorie(); else renderSuite(); }
+render();
+if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
 </body>
 </html>
