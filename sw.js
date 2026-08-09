@@ -2,7 +2,7 @@
 // Le réseau d'abord (les mises à jour arrivent immédiatement), le cache
 // en secours (l'app reste 100 % hors-ligne). Cache-first nous servait des
 // versions périmées après chaque déploiement.
-const CACHE="shred-v16-rebuild";
+const CACHE="shred-v17-chords";
 const ASSETS = [
   "./",
   "./index.html",

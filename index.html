@@ -10,106 +10,96 @@
 <link rel="manifest" href="manifest.webmanifest">
 <title>Shred</title>
 <style>
-  :root{
-    --bg:#0d0b09; --bg2:#171310; --bg3:#221c17; --line:#33291f;
-    --txt:#f0e9df; --dim:#a08f7c; --acc:#e8a13c; --acc2:#c07a1e;
-    --ok:#6bcf7a; --bad:#ff6b5c; --blue:#6aa9ff; --str:#e7d8b6; --r:14px;
-  }
+  :root{--bg:#0d0b09;--bg2:#171310;--bg3:#221c17;--line:#33291f;--txt:#f0e9df;--dim:#a08f7c;
+    --acc:#e8a13c;--acc2:#c07a1e;--ok:#6bcf7a;--bad:#ff6b5c;--blue:#6aa9ff;--str:#e7d8b6;--r:14px;}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
-  body{background:var(--bg);color:var(--txt);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
   #app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
   main{flex:1;padding:16px 16px 92px}
   header{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between}
-  .logo{font-weight:900;font-size:19px;letter-spacing:1px}
-  .logo span{color:var(--acc)}
+  .logo{font-weight:900;font-size:19px;letter-spacing:1px}.logo span{color:var(--acc)}
   .badge{font-weight:700;font-size:13px;background:var(--bg2);border:1px solid var(--line);padding:6px 12px;border-radius:20px}
-
   .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
   h1.page{font-size:22px;font-weight:800;margin-bottom:6px}
   .lead{color:var(--dim);font-size:14px;line-height:1.5;margin-bottom:14px}
-  .btn{display:inline-block;border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:800;
-    cursor:pointer;background:var(--acc);color:#1a1200;width:100%;text-align:center;margin-top:12px}
-  .btn:active{transform:scale(.98)}
-  .btn.ghost{background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
-  .btn.small{width:auto;padding:9px 15px;font-size:13px;margin-top:0}
+  .btn{display:inline-block;border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:800;cursor:pointer;background:var(--acc);color:#1a1200;width:100%;text-align:center;margin-top:12px}
+  .btn:active{transform:scale(.98)}.btn.ghost{background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
   .btn:disabled{opacity:.4;pointer-events:none}
-  .row2{display:flex;gap:10px} .row2 .btn{margin-top:0}
-
-  /* ---------- fretboard ---------- */
-  .fbwrap{overflow-x:auto;padding:4px 0 2px;margin:6px 0;scrollbar-width:none}
-  .fbwrap::-webkit-scrollbar{display:none}
-  .fb{display:flex;flex-direction:column;background:linear-gradient(180deg,#2a2018,#1c150f);
-    border:1px solid var(--line);border-radius:8px;min-width:520px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.row3 .btn{margin-top:0}
+  /* fretboard */
+  .fbwrap{overflow-x:auto;padding:4px 0 2px;margin:6px 0;scrollbar-width:none}.fbwrap::-webkit-scrollbar{display:none}
+  .fb{display:flex;flex-direction:column;background:linear-gradient(180deg,#2a2018,#1c150f);border:1px solid var(--line);border-radius:8px;min-width:520px}
   .frow{display:grid;grid-template-columns:38px repeat(12,minmax(34px,1fr));height:36px}
   .fcell{position:relative;border-right:1px solid #4a3826;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .fcell.nut{border-right:3px solid #b9a074}
   .fcell .sl{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--str);opacity:.45;transform:translateY(-1px)}
-  .frow:nth-child(1) .sl,.frow:nth-child(2) .sl{height:1.5px}
-  .frow:nth-child(6) .sl{height:3px}
-  .fdot{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-weight:800;font-size:12px;z-index:2;background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
+  .frow:nth-child(1) .sl,.frow:nth-child(2) .sl{height:1.5px}.frow:nth-child(6) .sl{height:3px}
+  .fdot{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;z-index:2;background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
   .fdot.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
   .fdot.root{background:var(--bad);color:#fff;border-color:var(--bad)}
-  .fdot.ask{background:transparent;color:var(--acc);border:2px dashed var(--acc);font-size:16px}
+  .fdot.pick{background:var(--blue);color:#04122b;border-color:var(--blue)}
   .fdot.ok{background:var(--ok);color:#04220c;border-color:var(--ok)}
+  .fdot.miss{background:transparent;color:var(--blue);border:2px dashed var(--blue)}
   .fdot.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .fdot.ask{background:transparent;color:var(--acc);border:2px dashed var(--acc);font-size:16px}
   .fcell.flash .sl{background:var(--acc);opacity:.9}
   .fnums{display:grid;grid-template-columns:38px repeat(12,minmax(34px,1fr));min-width:520px;margin-top:3px}
   .fnums div{text-align:center;font-size:11px;color:var(--dim);font-weight:700;position:relative}
-  .fnums div.mk::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:#5a4832}
-  .fnums div.mk2::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:none;box-shadow:-5px 0 0 #5a4832,5px 0 0 #5a4832}
-
+  .fnums div.mk::after,.fnums div.mk2::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:#5a4832}
+  .fnums div.mk2::after{background:none;box-shadow:-5px 0 0 #5a4832,5px 0 0 #5a4832}
   .toolrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
   .tag{padding:8px 13px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);font-size:13px;font-weight:700;cursor:pointer}
   .tag.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
-
-  /* ---------- review / cards ---------- */
-  .qhead{text-align:center;margin:6px 0}
-  .qhead .q{font-size:19px;font-weight:800}
-  .qhead .sub{color:var(--dim);font-size:13px;margin-top:3px}
+  /* chord diagram */
+  .cdiag{display:inline-block;background:#1c150f;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .cdrow{display:grid;grid-template-columns:repeat(6,24px)}
+  .cdmk .cdcell{height:16px;text-align:center;font-size:12px;color:var(--dim);line-height:16px}
+  .cdgrid{border-top:3px solid #b9a074}
+  .cdgrid.off{border-top:1px solid #6a533a}
+  .cdgrid .cdrow{height:26px}
+  .cdgrid .cdcell{position:relative;border-right:1px solid #4a3826;border-bottom:1px solid #4a3826}
+  .cdgrid .cdcell:first-child{border-left:1px solid #4a3826}
+  .cddot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:var(--acc)}
+  .cdbase{font-size:10px;color:var(--dim);text-align:right;padding-right:2px;margin-bottom:2px}
+  /* review / cards */
+  .qhead{text-align:center;margin:6px 0}.qhead .q{font-size:26px;font-weight:900}.qhead .sub{color:var(--dim);font-size:13px;margin-top:3px}
   .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
   .opt{background:var(--bg2);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:15px;font-size:18px;font-weight:800;cursor:pointer}
-  .opt.right{background:#16351f;border-color:var(--ok);color:var(--ok)}
-  .opt.wrong{background:#3a1a18;border-color:var(--bad);color:var(--bad)}
-  .fb-progress{display:flex;gap:14px;justify-content:center;margin:10px 0;font-size:13px;color:var(--dim);font-weight:700}
-  .fb-progress b{color:var(--acc)}
+  .opt.right{background:#16351f;border-color:var(--ok);color:var(--ok)}.opt.wrong{background:#3a1a18;border-color:var(--bad);color:var(--bad)}
+  .fb-progress{text-align:center;margin:8px 0;font-size:13px;color:var(--dim);font-weight:700}.fb-progress b{color:var(--acc)}
+  .rate{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+  .rate button{border:none;border-radius:12px;padding:14px 6px;font-weight:800;font-size:14px;cursor:pointer}
+  .rate .again{background:#3a1a18;color:var(--bad)}.rate .good{background:#16351f;color:var(--ok)}.rate .easy{background:var(--acc);color:#1a1200}
   .statgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px}
   .stat{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
-  .stat b{display:block;font-size:22px;color:var(--acc)} .stat small{color:var(--dim);font-size:11px}
-
-  /* ---------- theory ---------- */
-  .theory{line-height:1.6;font-size:15px}
-  .theory h3{color:var(--acc);font-size:16px;margin:18px 0 6px}
-  .theory p{margin-bottom:10px;color:#d8cebf}
-  .theory ul{margin:0 0 10px 18px;color:#d8cebf} .theory li{margin-bottom:5px}
+  .stat b{display:block;font-size:22px;color:var(--acc)}.stat small{color:var(--dim);font-size:11px}
+  .catcard{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:8px;cursor:pointer}
+  .catcard .ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg3);flex-shrink:0}
+  .catcard .t{flex:1;min-width:0}.catcard .t b{display:block;font-size:15px}.catcard .t small{color:var(--dim);font-size:12px}
+  .catcard .pc{font-size:12px;font-weight:800;color:var(--acc)}
+  .clogic{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.55;color:#d8cebf;margin-top:12px}
+  .clogic .deg{color:var(--acc);font-weight:800;font-size:13px;margin-bottom:4px}
+  /* theory / suite */
+  .theory{line-height:1.6;font-size:15px}.theory h3{color:var(--acc);font-size:16px;margin:18px 0 6px}
+  .theory p{margin-bottom:10px;color:#d8cebf}.theory ul{margin:0 0 10px 18px;color:#d8cebf}.theory li{margin-bottom:5px}
   .theory .tip{background:#241a10;border-left:3px solid var(--acc);padding:10px 12px;border-radius:0 10px 10px 0;margin:12px 0;font-size:14px}
   .theory .formula{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-weight:800;margin:12px 0;line-height:1.6}
   .lesson{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:8px;cursor:pointer}
   .lesson .ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg3);flex-shrink:0}
-  .lesson .t b{display:block;font-size:15px} .lesson .t small{color:var(--dim);font-size:12px}
-
-  .soon{opacity:.55}
-  .soon .pill{font-size:10px;font-weight:800;color:var(--acc);border:1px solid var(--acc);border-radius:10px;padding:2px 7px;margin-left:6px}
+  .lesson .t b{display:block;font-size:15px}.lesson .t small{color:var(--dim);font-size:12px}
+  .soon{opacity:.55}.soon .pill{font-size:10px;font-weight:800;color:var(--acc);border:1px solid var(--acc);border-radius:10px;padding:2px 7px;margin-left:6px}
   .step{display:flex;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px}
   .step .n{width:30px;height:30px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
-  .step.now .n{background:var(--acc);color:#1a1200}
-  .step b{font-size:15px} .step small{color:var(--dim);font-size:13px;line-height:1.5;display:block;margin-top:2px}
-
+  .step.now .n{background:var(--acc);color:#1a1200}.step b{font-size:15px}.step small{color:var(--dim);font-size:13px;line-height:1.5;display:block;margin-top:2px}
   nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,11,9,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:40}
   nav .in{max-width:560px;margin:0 auto;display:flex}
   nav button{flex:1;background:none;border:none;color:var(--dim);padding:10px 0 max(10px,env(safe-area-inset-bottom));font-size:11px;font-weight:700;cursor:pointer}
-  nav button .i{display:block;font-size:20px;margin-bottom:2px}
-  nav button.on{color:var(--acc)}
-
-  .overlay{position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;display:none}
-  .overlay.open{display:block}
+  nav button .i{display:block;font-size:20px;margin-bottom:2px}nav button.on{color:var(--acc)}
+  .overlay{position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;display:none}.overlay.open{display:block}
   .overlay .inner{max-width:560px;margin:0 auto;padding:16px 16px 40px}
   .topbar{display:flex;align-items:center;gap:12px;margin-bottom:8px;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:5}
-  .topbar .back{width:38px;height:38px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font-size:18px;cursor:pointer}
-  .topbar b{font-size:16px}
+  .topbar .back{width:38px;height:38px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font-size:18px;cursor:pointer}.topbar b{font-size:16px}
   #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--acc);color:var(--txt);padding:12px 20px;border-radius:14px;font-weight:700;z-index:100;transition:transform .35s;font-size:14px}
   #toast.show{transform:translateX(-50%) translateY(0)}
 </style>
@@ -120,7 +110,7 @@
   <main id="main"></main>
   <nav><div class="in">
     <button data-tab="manche" class="on"><span class="i">🎸</span>Manche</button>
-    <button data-tab="cartes"><span class="i">🔁</span>Cartes</button>
+    <button data-tab="cartes"><span class="i">🎴</span>Accords</button>
     <button data-tab="theorie"><span class="i">📖</span>Théorie</button>
     <button data-tab="suite"><span class="i">✨</span>Suite</button>
   </div></nav>
@@ -129,26 +119,26 @@
 <div id="toast"></div>
 <script>
 /* ================================================================
-   SHRED — reconstruction. Étape 1 : connaître le manche par cœur.
+   SHRED — Étape 1 manche + Anki d'accords (auto-évaluation).
    ================================================================ */
 const NOTES=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
-const NOTES_FR=['Do','Do♯','Ré','Ré♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
-const NAT=[0,2,4,5,7,9,11];                 /* pitch-class des notes naturelles */
-const OPEN=[40,45,50,55,59,64];             /* Mi La Ré Sol Si Mi (grave→aigu), MIDI */
+const NAT=[0,2,4,5,7,9,11];
+const OPEN=[40,45,50,55,59,64];              /* Mi La Ré Sol Si Mi (grave→aigu) */
 const STR_NAME=['Mi grave','La','Ré','Sol','Si','Mi aigu'];
-const strNo=s=>6-s;                          /* numéro guitariste : corde 1 = Mi aigu */
+const strNo=s=>6-s;
 const midiAt=(s,f)=>OPEN[s]+f;
 const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
-/* ---------------- état ---------------- */
-const DEFAULT={cards:{}, newDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  seen:0, right:0, showNames:false, natOnly:true};
+const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
+  findBest:{}, quizBest:0, showNames:false, natOnly:true};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
 const today=()=>new Date().toISOString().slice(0,10);
 function markDay(){ const t=today(); if(S.lastDay!==t){ const y=new Date(Date.now()-864e5).toISOString().slice(0,10); S.streak=(S.lastDay===y)?S.streak+1:1; S.lastDay=t; save(); } }
+function el(t,c,h){ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2100); }
 
 /* ---------------- audio : corde pincée (Karplus-Strong) ---------------- */
 let AC=null;
@@ -158,81 +148,42 @@ function pluck(midi,dur=1.3,vel=.5){
   const N=Math.max(2,Math.round(sr/f)), len=Math.floor(sr*dur);
   const buf=ctx.createBuffer(1,len,sr), d=buf.getChannelData(0), y=new Float32Array(len);
   for(let i=0;i<N;i++) y[i]=Math.random()*2-1;
-  const damp=.9955;
-  for(let i=N;i<len;i++) y[i]=damp*.5*(y[i-N]+y[i-N+1]);
+  const damp=.9955; for(let i=N;i<len;i++) y[i]=damp*.5*(y[i-N]+y[i-N+1]);
   for(let i=0;i<len;i++){ const env=Math.min(1,i/220)*(1-i/len); d[i]=y[i]*vel*env; }
   const src=ctx.createBufferSource(); src.buffer=buf;
   const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.min(sr/2,f*7+1800);
-  const g=ctx.createGain(); g.gain.value=1;
-  src.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start();
+  const g=ctx.createGain(); g.gain.value=1; src.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start();
 }
-
-/* ---------------- SRS (façon Anki / SM-2 simplifié) ---------------- */
-function deck(){ const ids=[]; for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ const pc=midiAt(s,f)%12; if(S.natOnly&&!NAT.includes(pc))continue; ids.push('fb:'+s+':'+f); } return ids; }
-function parseCard(id){ const p=id.split(':'); const s=+p[1], f=+p[2]; return {s,f,note:noteAt(s,f)}; }
-const NEW_PER_DAY=8;
-function newBudget(){ const t=today(); if(S.newDay.date!==t){ S.newDay={date:t,n:0}; save(); } return Math.max(0,NEW_PER_DAY-S.newDay.n); }
-function dueList(){ const now=Date.now(); return deck().filter(id=>S.cards[id]&&S.cards[id].due<=now); }
-function newList(){ return deck().filter(id=>!S.cards[id]); }
-function counts(){ return {due:dueList().length, neu:Math.min(newBudget(),newList().length), learned:Object.keys(S.cards).filter(id=>S.cards[id].reps>=2).length, total:deck().length}; }
-function grade(id,q){ /* q: 'again' | 'good' | 'easy' */
-  let c=S.cards[id]; const isNew=!c;
-  if(isNew){ c={ef:2.4,iv:0,reps:0,due:0,lapses:0}; S.newDay.n++; }
-  if(q==='again'){ c.reps=0; c.iv=0; c.lapses++; c.ef=Math.max(1.3,c.ef-.2); c.due=Date.now()+60000; }
-  else{
-    c.reps++;
-    if(c.reps===1) c.iv=1; else if(c.reps===2) c.iv=3; else c.iv=Math.max(1,Math.round(c.iv*c.ef));
-    if(q==='easy'){ c.iv=Math.round(c.iv*1.35); c.ef+=.15; }
-    c.ef=Math.max(1.3,Math.min(2.8,c.ef));
-    c.due=Date.now()+c.iv*864e5;
-  }
-  S.cards[id]=c; save();
-}
-
-/* ---------------- helpers DOM ---------------- */
-function el(t,c,h){ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; }
-function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2100); }
+function strum(ch){ ac(); const ms=[]; for(let s=0;s<6;s++){ if(ch.frets[s]>=0) ms.push(OPEN[s]+ch.frets[s]); } ms.forEach((m,i)=>setTimeout(()=>pluck(m,1.5,.42),i*42)); }
 
 /* ---------------- fretboard ---------------- */
 function buildFretboard(onTap){
-  const wrap=el('div','fbwrap');
-  const fb=el('div','fb'); wrap.appendChild(fb);
-  const cells={};
-  for(let s=5;s>=0;s--){                       /* aigu en haut, grave en bas */
-    const row=el('div','frow');
-    for(let f=0;f<=FRETS;f++){
-      const c=el('div','fcell'+(f===0?' nut':''));
-      c.appendChild(el('div','sl'));
-      c.dataset.s=s; c.dataset.f=f;
-      c.onclick=()=>onTap&&onTap(s,f,c);
-      row.appendChild(c); cells[s+':'+f]=c;
-    }
-    fb.appendChild(row);
-  }
-  const nums=el('div','fnums');
-  const marks={3:1,5:1,7:1,9:1,12:2};
-  for(let f=0;f<=FRETS;f++){ nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f)); }
+  const wrap=el('div','fbwrap'), fb=el('div','fb'), cells={};
+  for(let s=5;s>=0;s--){ const row=el('div','frow');
+    for(let f=0;f<=FRETS;f++){ const c=el('div','fcell'+(f===0?' nut':'')); c.appendChild(el('div','sl')); c.dataset.s=s; c.dataset.f=f; c.onclick=()=>onTap&&onTap(s,f,c); row.appendChild(c); cells[s+':'+f]=c; }
+    fb.appendChild(row); }
+  wrap.appendChild(fb);
+  const nums=el('div','fnums'), marks={3:1,5:1,7:1,9:1,12:2};
+  for(let f=0;f<=FRETS;f++) nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f));
   wrap.appendChild(nums);
-  wrap.cell=(s,f)=>cells[s+':'+f];
   wrap.clearDots=()=>{ Object.values(cells).forEach(c=>{ const d=c.querySelector('.fdot'); if(d)d.remove(); }); };
   wrap.dot=(s,f,label,cls)=>{ const c=cells[s+':'+f]; if(!c)return; let d=c.querySelector('.fdot'); if(!d){ d=el('div','fdot'); c.appendChild(d);} d.className='fdot '+(cls||''); d.textContent=label==null?'':label; return d; };
   return wrap;
 }
 
 /* ================================================================
-   VUE : LE MANCHE (explorer)
+   VUE : LE MANCHE
    ================================================================ */
 function renderManche(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','Le manche'));
-  m.appendChild(el('p','lead','Étape 1 : le connaître par cœur. Touche une case pour l’entendre et voir sa note. Puis fais les cartes — c’est la répétition espacée qui ancre.'));
-
+  m.appendChild(el('p','lead','Étape 1 : le connaître par cœur. Explore, puis entraîne-toi à trouver TOUTES les positions d’une note d’un coup.'));
   const c=el('div','card');
   const showTag=el('div','tag'+(S.showNames?' on':''),'👁 Voir les notes');
   const natTag=el('div','tag'+(S.natOnly?' on':''),'Naturelles seules');
   const tools=el('div','toolrow'); tools.appendChild(showTag); tools.appendChild(natTag); c.appendChild(tools);
   const fb=buildFretboard((s,f,cell)=>{ pluck(midiAt(s,f)); cell.classList.add('flash'); setTimeout(()=>cell.classList.remove('flash'),200);
-    if(!S.showNames){ const d=fb.dot(s,f, noteAt(s,f), midiAt(s,f)%12===0?'root':(NAT.includes(midiAt(s,f)%12)?'on':'')); setTimeout(()=>{ if(!S.showNames&&d&&d.parentNode)d.remove(); },1100); } });
+    if(!S.showNames){ const d=fb.dot(s,f,noteAt(s,f), midiAt(s,f)%12===0?'root':(NAT.includes(midiAt(s,f)%12)?'on':'')); setTimeout(()=>{ if(!S.showNames&&d&&d.parentNode)d.remove(); },1100); } });
   c.appendChild(fb); m.appendChild(c);
   function paint(){ fb.clearDots(); if(S.showNames){ for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ const pc=midiAt(s,f)%12; if(S.natOnly&&!NAT.includes(pc))continue; fb.dot(s,f,noteAt(s,f), pc===0?'root':(NAT.includes(pc)?'on':'')); } } }
   showTag.onclick=()=>{ S.showNames=!S.showNames; save(); showTag.classList.toggle('on',S.showNames); paint(); };
@@ -240,156 +191,265 @@ function renderManche(){
   paint();
 
   const c2=el('div','card');
-  c2.appendChild(el('b',null,'🎯 Entraînement rapide'));
-  c2.appendChild(el('p','lead','L’app te montre une case, tu nommes la note. 10 cases au hasard, sans pression.'));
-  const b=el('button','btn','Nommer les cases (10)'); b.onclick=()=>openReview('quick'); c2.appendChild(b);
+  c2.innerHTML='<b>🔎 Trouve toutes les positions</b><p class="lead" style="margin:6px 0 10px">L’app te donne une note. Touche TOUTES ses cases sur le manche, puis valide — tu vois combien tu en as trouvées.</p>';
+  const b=el('button','btn','Lancer « trouve tout »'); b.onclick=()=>openFindAll(); c2.appendChild(b);
+  const b2=el('button','btn ghost','🎯 Nommer 10 cases au hasard'); b2.onclick=()=>openNameQuiz(); c2.appendChild(b2);
   m.appendChild(c2);
 
-  const co=counts();
-  const c3=el('div','card');
-  c3.innerHTML='<b>Ta maîtrise du manche</b>';
+  const c3=el('div','card'); c3.innerHTML='<b>Tes records</b>';
   c3.appendChild(el('div','statgrid',
-    `<div class="stat"><b>${co.learned}</b><small>cases sues</small></div>
-     <div class="stat"><b>${co.due}</b><small>à revoir</small></div>
-     <div class="stat"><b>${co.total}</b><small>au total</small></div>`));
+    `<div class="stat"><b>${S.quizBest||0}/10</b><small>nommer les cases</small></div>
+     <div class="stat"><b>${bestFind()}</b><small>meilleur « trouve tout »</small></div>
+     <div class="stat"><b>${S.streak||0}</b><small>jours de suite</small></div>`));
   m.appendChild(c3);
 }
+function bestFind(){ const v=Object.values(S.findBest||{}); return v.length?Math.max.apply(null,v.map(x=>x.pct))+'%':'—'; }
 
-/* ================================================================
-   VUE : CARTES (révision espacée)
-   ================================================================ */
-function renderCartes(){
-  const m=document.getElementById('main'); m.innerHTML='';
-  m.appendChild(el('h1','page','Les cartes'));
-  m.appendChild(el('p','lead','Répétition espacée, comme Anki. Une case bien sue revient de plus en plus tard ; une case ratée revient vite. C’est LE moteur pour graver le manche.'));
-  const co=counts();
-  const c=el('div','card');
-  c.innerHTML='<b>Aujourd’hui</b>';
-  c.appendChild(el('div','statgrid',
-    `<div class="stat"><b>${co.due}</b><small>à réviser</small></div>
-     <div class="stat"><b>${co.neu}</b><small>nouvelles</small></div>
-     <div class="stat"><b>${co.learned}/${co.total}</b><small>ancrées</small></div>`));
-  const total=co.due+co.neu;
-  const b=el('button','btn', total? `▶ Réviser (${total} cartes)` : '✓ Rien à réviser — reviens plus tard');
-  if(!total) b.disabled=true; b.onclick=()=>openReview('srs');
-  c.appendChild(b); m.appendChild(c);
-
-  const c2=el('div','card');
-  c2.innerHTML=`<b>Comment ça marche</b>
-   <p class="lead" style="margin:6px 0 0">Chaque case du manche est une carte. Tu la vois → tu nommes la note. Juste = elle revient plus tard (1 j, 3 j, 8 j…). Faux = elle revient dans la minute. ${NEW_PER_DAY} nouvelles cartes par jour, pour ne jamais te noyer.</p>`;
-  m.appendChild(c2);
-}
-
-/* ---------------- moteur de révision ---------------- */
-function openReview(mode){
+/* ---------------- trouve toutes les positions ---------------- */
+function posOf(pc){ const out=[]; for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++) if(midiAt(s,f)%12===pc) out.push([s,f]); return out; }
+function openFindAll(){
   ac(); markDay();
-  let queue;
-  if(mode==='quick'){
-    const d=deck().slice(); for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=d[i];d[i]=d[j];d[j]=t;}
-    queue=d.slice(0,10);
-  } else {
-    queue=dueList(); queue=queue.concat(newList().slice(0,newBudget()));
-    for(let i=queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=queue[i];queue[i]=queue[j];queue[j]=t;}
-  }
-  if(!queue.length){ toast('Rien à réviser'); return; }
-  let i=0, good=0;
-  openOverlay('Révision', inner=>{
+  const pc=NAT[Math.floor(Math.random()*NAT.length)], name=NOTES[pc], target=posOf(pc), picked=new Set();
+  openOverlay('Trouve toutes les '+name, inner=>{
+    const qh=el('div','qhead',`<div class="q">${name}</div><div class="sub">Touche toutes les cases « ${name} » (cordes à vide comprises). <b>${target.length}</b> à trouver.</div>`); inner.appendChild(qh);
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const fb=buildFretboard((s,f,cell)=>{ if(fb._done)return; const key=s+':'+f;
+      if(picked.has(key)){ picked.delete(key); const d=cell.querySelector('.fdot'); if(d)d.remove(); }
+      else { picked.add(key); pluck(midiAt(s,f)); fb.dot(s,f,'',(midiAt(s,f)%12===pc)?'pick':'pick'); }
+      prog.innerHTML=`Sélectionnées : <b>${picked.size}</b>`;
+    }); inner.appendChild(fb);
+    prog.innerHTML='Sélectionnées : <b>0</b>';
+    const foot=el('div'); inner.appendChild(foot);
+    const val=el('button','btn','✓ Valider'); foot.appendChild(val);
+    val.onclick=()=>{
+      fb._done=true; fb.clearDots();
+      let found=0; const tset=new Set(target.map(p=>p[0]+':'+p[1]));
+      target.forEach(([s,f])=>{ const key=s+':'+f; if(picked.has(key)){ found++; fb.dot(s,f,name,'ok'); } else fb.dot(s,f,name,'miss'); });
+      let wrong=0; picked.forEach(k=>{ if(!tset.has(k)){ wrong++; const [s,f]=k.split(':').map(Number); fb.dot(s,f,noteAt(s,f),'no'); } });
+      const pct=Math.round(found/target.length*100);
+      qh.innerHTML=`<div class="q">${found}/${target.length}</div><div class="sub">${wrong?wrong+' en trop (en rouge). ':''}${pct===100?'Parfait !':pct>=70?'Bien — les manquantes sont en pointillé bleu.':'Regarde les pointillés bleus : ce sont les '+name+' que tu as ratés.'}</div>`;
+      const b=S.findBest[name]||{pct:0}; if(pct>b.pct){ S.findBest[name]={pct}; }
+      S.xp+=found; save();
+      foot.innerHTML='';
+      const again=el('button','btn ghost','↻ Une autre note'); again.onclick=()=>{ closeOverlay(); openFindAll(); }; foot.appendChild(again);
+      const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl);
+    };
+  });
+}
+/* ---------------- nommer les cases (10) ---------------- */
+function openNameQuiz(){
+  ac(); markDay();
+  const pool=[]; for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ if(S.natOnly&&!NAT.includes(midiAt(s,f)%12))continue; pool.push([s,f]); }
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=pool[i];pool[i]=pool[j];pool[j]=t;}
+  const q=pool.slice(0,10); let i=0, good=0;
+  openOverlay('Nommer les cases', inner=>{
     const prog=el('div','fb-progress'); inner.appendChild(prog);
     const qh=el('div','qhead'); inner.appendChild(qh);
     const fb=buildFretboard(null); inner.appendChild(fb);
     const opts=el('div','opts'); inner.appendChild(opts);
     const foot=el('div'); inner.appendChild(foot);
     function step(){
-      if(i>=queue.length) return finish();
-      const id=queue[i], card=parseCard(id);
-      prog.innerHTML=`Carte <b>${i+1}</b>/${queue.length} · ✓ ${good}`;
-      qh.innerHTML=`<div class="q">Quelle note ?</div><div class="sub">Corde ${strNo(card.s)} (${STR_NAME[card.s]}) · case ${card.f}</div>`;
-      fb.clearDots(); fb.dot(card.s,card.f,'?','ask'); foot.innerHTML='';
-      const set=new Set([card.note]); while(set.size<4){ set.add(NOTES[NAT[Math.floor(Math.random()*NAT.length)]]); }
-      const arr=[...set].sort(()=>Math.random()-.5);
-      opts.innerHTML='';
-      arr.forEach(n=>{ const bo=el('button','opt',n); bo.onclick=()=>answer(n,bo,id,card); opts.appendChild(bo); });
+      if(i>=q.length) return finish();
+      const [s,f]=q[i], note=noteAt(s,f);
+      prog.innerHTML=`Case <b>${i+1}</b>/10 · ✓ ${good}`;
+      qh.innerHTML=`<div class="q" style="font-size:19px">Quelle note ?</div><div class="sub">Corde ${strNo(s)} (${STR_NAME[s]}) · case ${f}</div>`;
+      fb.clearDots(); fb.dot(s,f,'?','ask'); foot.innerHTML='';
+      const set=new Set([note]); while(set.size<4) set.add(NOTES[NAT[Math.floor(Math.random()*NAT.length)]]);
+      const arr=[...set].sort(()=>Math.random()-.5); opts.innerHTML='';
+      arr.forEach(n=>{ const bo=el('button','opt',n); bo.onclick=()=>ans(n,bo,s,f,note); opts.appendChild(bo); });
     }
-    function answer(n,bo,id,card){
-      opts.querySelectorAll('.opt').forEach(x=>x.style.pointerEvents='none');
-      pluck(midiAt(card.s,card.f));
-      const ok=n===card.note;
-      if(ok){ bo.classList.add('right'); good++; fb.dot(card.s,card.f,card.note,'ok'); }
-      else{ bo.classList.add('wrong'); opts.querySelectorAll('.opt').forEach(x=>{ if(x.textContent===card.note)x.classList.add('right'); }); fb.dot(card.s,card.f,card.note,'no'); }
-      if(mode==='srs') grade(id, ok?'good':'again');
-      else { S.seen++; if(ok)S.right++; save(); }
-      const nx=el('button','btn', i+1<queue.length?'Suivant →':'Terminer');
-      nx.onclick=()=>{ i++; step(); }; foot.appendChild(nx);
+    function ans(n,bo,s,f,note){ opts.querySelectorAll('.opt').forEach(x=>x.style.pointerEvents='none'); pluck(midiAt(s,f));
+      if(n===note){ bo.classList.add('right'); good++; fb.dot(s,f,note,'ok'); } else { bo.classList.add('wrong'); opts.querySelectorAll('.opt').forEach(x=>{if(x.textContent===note)x.classList.add('right');}); fb.dot(s,f,note,'no'); }
+      const nx=el('button','btn', i+1<q.length?'Suivant →':'Terminer'); nx.onclick=()=>{ i++; step(); }; foot.appendChild(nx);
     }
-    function finish(){
-      if(mode==='srs'){ const back=queue.filter(id=>S.cards[id]&&S.cards[id].due<=Date.now()); if(back.length){ queue=back; i=0; return step(); } }
-      const pct=Math.round(good/queue.length*100);
-      qh.innerHTML=`<div class="q">${good}/${queue.length} — ${pct}%</div><div class="sub">${pct>=80?'Solide. Le manche se grave.':pct>=50?'Ça vient. Reviens demain, les cartes reviendront pile au bon moment.':'Normal au début. Regarde les notes dans « Manche », puis reviens.'}</div>`;
-      fb.clearDots(); opts.innerHTML='';
+    function finish(){ if(good>S.quizBest){S.quizBest=good;} S.xp+=good*2; save();
+      qh.innerHTML=`<div class="q">${good}/10</div><div class="sub">${good>=8?'Solide.':'Continue — regarde les notes dans « Manche ».'}</div>`; fb.clearDots(); opts.innerHTML='';
       const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.innerHTML=''; foot.appendChild(cl);
-      if(good>0){ S.xp+=good*2; save(); }
     }
     step();
   });
 }
 
 /* ================================================================
-   VUE : THÉORIE (de la base, simplement)
+   ACCORDS — bibliothèque + Anki auto-évalué
+   ================================================================ */
+/* frets : [Mi grave … Mi aigu], -1 = corde étouffée, 0 = à vide */
+const CHORDS=[
+ {n:'A',cat:'maj',deg:'1 · 3 · 5',frets:[-1,0,2,2,2,0],logic:'La MAJEUR : fondamentale La, tierce MAJEURE Do♯ (le son clair), quinte Mi.'},
+ {n:'C',cat:'maj',deg:'1 · 3 · 5',frets:[-1,3,2,0,1,0],logic:'Do majeur : Do, tierce majeure Mi, quinte Sol.'},
+ {n:'D',cat:'maj',deg:'1 · 3 · 5',frets:[-1,-1,0,2,3,2],logic:'Ré majeur : Ré, Fa♯, La — le petit triangle sur les 3 cordes aiguës.'},
+ {n:'E',cat:'maj',deg:'1 · 3 · 5',frets:[0,2,2,1,0,0],logic:'Mi majeur : Mi, Sol♯, Si. La forme REINE — déplacée en barré, elle donne tous les autres majeurs.'},
+ {n:'G',cat:'maj',deg:'1 · 3 · 5',frets:[3,2,0,0,0,3],logic:'Sol majeur : Sol, Si, Ré. Grand son ouvert.'},
+ {n:'Am',cat:'min',deg:'1 · ♭3 · 5',frets:[-1,0,2,2,1,0],logic:'La MINEUR : mêmes La et Mi que le A majeur, mais la tierce descend d’un demi-ton (Do♯ → Do). CETTE seule note = tout le « triste ». Astuce : c’est la forme du E majeur décalée d’une corde.'},
+ {n:'Dm',cat:'min',deg:'1 · ♭3 · 5',frets:[-1,-1,0,2,3,1],logic:'Ré mineur : Ré, Fa (tierce mineure), La.'},
+ {n:'Em',cat:'min',deg:'1 · ♭3 · 5',frets:[0,2,2,0,0,0],logic:'Mi mineur : Mi, Sol, Si. La plus facile — deux doigts. Forme mère des barrés mineurs.'},
+ {n:'E5',cat:'pow',deg:'1 · 5',frets:[0,2,2,-1,-1,-1],logic:'POWER CHORD : juste fondamentale + quinte, PAS de tierce → ni majeur ni mineur. C’est pour ça que ça passe partout en rock/métal. Forme déplaçable sur la corde de Mi grave.'},
+ {n:'A5',cat:'pow',deg:'1 · 5',frets:[-1,0,2,2,-1,-1],logic:'Power chord sur la corde de La : fondamentale La + quinte Mi. Même forme que E5, une corde plus haut.'},
+ {n:'G5',cat:'pow',deg:'1 · 5',frets:[3,5,5,-1,-1,-1],logic:'Power chord déplaçable : cette forme (cases 3-5-5 sur Mi grave) = Sol5. Glisse-la et tu obtiens n’importe quel power chord — la fondamentale est sous ton index.'},
+ {n:'E7',cat:'dom',deg:'1 · 3 · 5 · ♭7',frets:[0,2,0,1,0,0],logic:'Mi 7 : le E majeur + une 7e MINEURE (Ré). Cette 7e crée la tension bluesy qui « veut résoudre ».'},
+ {n:'A7',cat:'dom',deg:'1 · 3 · 5 · ♭7',frets:[-1,0,2,0,2,0],logic:'La 7 : A majeur + 7e mineure Sol. Le son du blues et de la dominante.'},
+ {n:'D7',cat:'dom',deg:'1 · 3 · 5 · ♭7',frets:[-1,-1,0,2,1,2],logic:'Ré 7 : Ré, Fa♯, La, Do.'},
+ {n:'G7',cat:'dom',deg:'1 · 3 · 5 · ♭7',frets:[3,2,0,0,0,1],logic:'Sol 7 : Sol, Si, Ré, Fa. Tire fort vers Do.'},
+ {n:'B7',cat:'dom',deg:'1 · 3 · 5 · ♭7',frets:[-1,2,1,2,0,2],logic:'Si 7 : la dominante de Mi. Indispensable en blues de Mi et de La.'},
+ {n:'Cmaj7',cat:'col',deg:'1 · 3 · 5 · 7',frets:[-1,3,2,0,0,0],logic:'Do maj7 : Do + une 7e MAJEURE (Si). Son doux, jazzy, rêveur — à ne pas confondre avec le C7.'},
+ {n:'Am7',cat:'col',deg:'1 · ♭3 · 5 · ♭7',frets:[-1,0,2,0,1,0],logic:'La m7 : Am + 7e mineure Sol. Velours, cool — et un doigt de moins que Am.'},
+ {n:'Em7',cat:'col',deg:'1 · ♭3 · 5 · ♭7',frets:[0,2,0,0,0,0],logic:'Mi m7 : la plus facile de toutes — un seul doigt.'},
+ {n:'Dm7',cat:'col',deg:'1 · ♭3 · 5 · ♭7',frets:[-1,-1,0,2,1,1],logic:'Ré m7 : Ré, Fa, La, Do.'},
+ {n:'Dsus2',cat:'sus',deg:'1 · 2 · 5',frets:[-1,-1,0,2,3,0],logic:'Ré sus2 : la tierce (Fa♯) est remplacée par la SECONDE (Mi). Ni majeur ni mineur — ça flotte, en attente.'},
+ {n:'Dsus4',cat:'sus',deg:'1 · 4 · 5',frets:[-1,-1,0,2,3,3],logic:'Ré sus4 : la tierce remplacée par la QUARTE (Sol). Ça « pousse » et se résout délicieusement sur le Ré majeur.'},
+ {n:'Asus2',cat:'sus',deg:'1 · 2 · 5',frets:[-1,0,2,2,0,0],logic:'La sus2 : A avec la seconde Si à la place de la tierce.'},
+ {n:'Asus4',cat:'sus',deg:'1 · 4 · 5',frets:[-1,0,2,2,3,0],logic:'La sus4 : A avec la quarte Ré. Enchaîne Asus4 → A, tu entends la résolution.'},
+ {n:'E9',cat:'ext',deg:'1 · 3 · ♭7 · 9',frets:[0,2,0,1,0,2],logic:'Mi 9 : un E7 enrichi de la 9e (Fa♯). Le son funk/soul. L’essentiel d’un 9, c’est la tierce, la ♭7 et la 9 — on lâche volontiers le reste.'},
+ {n:'A9',cat:'ext',deg:'1 · 3 · ♭7 · 9',frets:[-1,0,2,4,2,3],logic:'La 9 : A7 + la 9e (Si). Voicing jazz/funk typique, déplaçable.'},
+ {n:'Cmaj9',cat:'ext',deg:'1 · 3 · 7 · 9',frets:[-1,3,2,4,3,0],logic:'Do maj9 : Cmaj7 + la 9e (Ré). Très doux, lumineux — le son « coucher de soleil ».'},
+];
+const CHORD_CATS=[
+ {id:'maj',ic:'☀️',name:'Majeurs',d:'La base, son clair.'},
+ {id:'min',ic:'🌑',name:'Mineurs',d:'La tierce descend : le son triste.'},
+ {id:'pow',ic:'⚡',name:'Power chords',d:'Fond. + quinte, sans tierce. Le rock.'},
+ {id:'dom',ic:'🎺',name:'Accords de 7e',d:'La tension bluesy.'},
+ {id:'col',ic:'🎨',name:'Couleurs · maj7 / m7',d:'Le son adulte, jazz.'},
+ {id:'sus',ic:'🌀',name:'Suspendus · sus2 / sus4',d:'Ni majeur ni mineur.'},
+ {id:'ext',ic:'💎',name:'9e / 11e (avancé)',d:'Enrichir : le son moderne.'},
+];
+function chordsIn(cat){ return CHORDS.filter(c=>c.cat===cat); }
+function chordByName(n){ return CHORDS.find(c=>c.n===n); }
+function chordDiagram(ch){
+  const f=ch.frets, pos=f.filter(x=>x>0), maxF=pos.length?Math.max.apply(null,pos):1, minF=pos.length?Math.min.apply(null,pos):1;
+  const base = maxF<=4?0:minF-1;
+  const wrap=el('div','cdiag');
+  const mk=el('div','cdrow cdmk'); for(let s=0;s<6;s++){ const v=f[s]; mk.appendChild(el('div','cdcell', v<0?'✕':(v===0?'○':' '))); } wrap.appendChild(mk);
+  if(base>0) wrap.appendChild(el('div','cdbase', (base+1)+'e case'));
+  const grid=el('div','cdgrid'+(base>0?' off':''));
+  for(let r=1;r<=4;r++){ const fr=base+r, row=el('div','cdrow'); for(let s=0;s<6;s++){ const cc=el('div','cdcell'); if(f[s]===fr) cc.appendChild(el('div','cddot')); row.appendChild(cc); } grid.appendChild(row); }
+  wrap.appendChild(grid); return wrap;
+}
+/* SRS accords (auto-évalué) */
+const C_NEW_PER_DAY=5;
+function cBudget(){ const t=today(); if(S.cNewDay.date!==t){ S.cNewDay={date:t,n:0}; save(); } return Math.max(0,C_NEW_PER_DAY-S.cNewDay.n); }
+function cDue(cat){ const now=Date.now(); return chordsIn(cat).filter(c=>S.chords[c.n]&&S.chords[c.n].due<=now).map(c=>c.n); }
+function cNew(cat){ return chordsIn(cat).filter(c=>!S.chords[c.n]).map(c=>c.n); }
+function cKnown(cat){ return chordsIn(cat).filter(c=>S.chords[c.n]&&S.chords[c.n].reps>=1).length; }
+function cGrade(n,q){ let c=S.chords[n]; if(!c){ c={ef:2.4,iv:0,reps:0,due:0,lapses:0}; S.cNewDay.n++; }
+  if(q==='again'){ c.reps=0; c.iv=0; c.lapses++; c.ef=Math.max(1.3,c.ef-.2); c.due=Date.now()+60000; }
+  else { c.reps++; if(c.reps===1)c.iv=1; else if(c.reps===2)c.iv=3; else c.iv=Math.max(1,Math.round(c.iv*c.ef));
+    if(q==='easy'){ c.iv=Math.round(c.iv*1.35); c.ef+=.15; } c.ef=Math.max(1.3,Math.min(2.8,c.ef)); c.due=Date.now()+c.iv*864e5; }
+  S.chords[n]=c; save();
+}
+function cDueTotal(){ let n=0; CHORD_CATS.forEach(k=>{ n+=cDue(k.id).length; }); return n; }
+
+function renderCartes(){
+  const m=document.getElementById('main'); m.innerHTML='';
+  m.appendChild(el('h1','page','Les accords'));
+  m.appendChild(el('p','lead','Ton Anki d’accords. On te montre un accord : essaie de le jouer, puis dis si tu le sais. Su → il revient plus tard ; pas su → il revient vite. Chaque carte explique aussi sa construction.'));
+  const due=cDueTotal();
+  if(due){ const c=el('div','card'); c.innerHTML=`<b>À réviser maintenant</b><p class="lead" style="margin:6px 0 0"><b style="color:var(--acc)">${due}</b> accord(s) dû(s), toutes catégories.</p>`;
+    const b=el('button','btn','▶ Réviser les accords dus'); b.onclick=()=>{ let pool=[]; CHORD_CATS.forEach(k=>pool=pool.concat(cDue(k.id))); reviewChords(pool); }; c.appendChild(b); m.appendChild(c); }
+  m.appendChild(el('p','lead','Commence par les <b>Majeurs</b> et <b>Mineurs</b>, puis débloque le reste à ton rythme.'));
+  CHORD_CATS.forEach(k=>{ const tot=chordsIn(k.id).length, kn=cKnown(k.id), due=cDue(k.id).length;
+    const c=el('div','catcard',`<div class="ico">${k.ic}</div><div class="t"><b>${k.name}</b><small>${k.d}</small></div><div class="pc">${kn}/${tot}${due?' · 🔁'+due:''}</div>`);
+    c.onclick=()=>{ let pool=cDue(k.id).concat(cNew(k.id).slice(0,cBudget())); if(!pool.length) pool=chordsIn(k.id).map(x=>x.n); reviewChords(pool); };
+    m.appendChild(c); });
+}
+
+function reviewChords(pool){
+  ac(); markDay();
+  if(!pool.length){ toast('Rien à réviser'); return; }
+  pool=pool.slice(); for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=pool[i];pool[i]=pool[j];pool[j]=t;}
+  let i=0, done=0;
+  openOverlay('Accords', inner=>{
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const qh=el('div','qhead'); inner.appendChild(qh);
+    const body=el('div'); body.style.textAlign='center'; inner.appendChild(body);
+    const foot=el('div'); inner.appendChild(foot);
+    function step(){
+      if(i>=pool.length) return finish();
+      const ch=chordByName(pool[i]);
+      prog.innerHTML=`Carte <b>${i+1}</b>/${pool.length}`;
+      qh.innerHTML=`<div class="q">${ch.n}</div><div class="sub">Essaie de le jouer sur ta guitare…</div>`;
+      body.innerHTML=''; foot.innerHTML='';
+      const rev=el('button','btn','👁 Voir la forme + écouter'); rev.onclick=()=>reveal(ch); foot.appendChild(rev);
+    }
+    function reveal(ch){
+      strum(ch);
+      body.innerHTML=''; body.appendChild(chordDiagram(ch));
+      body.appendChild(el('div','clogic',`<div class="deg">Notes : ${ch.deg}</div>${ch.logic}`));
+      const play=el('button','btn ghost','🔊 Réécouter'); play.onclick=()=>strum(ch); body.appendChild(play);
+      qh.querySelector('.sub').textContent='Tu le connais ?';
+      foot.innerHTML='';
+      const rate=el('div','rate');
+      const a=el('button','again','❌ À revoir'), g=el('button','good','✅ Je sais'), e=el('button','easy','⭐ Facile');
+      a.onclick=()=>next(ch.n,'again'); g.onclick=()=>next(ch.n,'good'); e.onclick=()=>next(ch.n,'easy');
+      rate.appendChild(a); rate.appendChild(g); rate.appendChild(e); foot.appendChild(rate);
+    }
+    function next(n,q){ cGrade(n,q); done++; if(q!=='again')S.xp+=3; save(); i++; step(); }
+    function finish(){ qh.innerHTML=`<div class="q">✓</div><div class="sub">${done} carte(s) passée(s). Les accords sus reviendront plus tard, ceux « à revoir » très vite.</div>`;
+      body.innerHTML=''; const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.innerHTML=''; foot.appendChild(cl); }
+    step();
+  });
+}
+
+/* ================================================================
+   THÉORIE
    ================================================================ */
 const LESSONS=[
-{id:'12notes', ic:'🔢', title:'Les 12 notes', sub:'Tout part de là', body:`
-<p>La musique occidentale, c’est <b>12 notes</b>, et rien de plus :</p>
+{id:'12notes',ic:'🔢',title:'Les 12 notes',sub:'Tout part de là',body:`
+<p>La musique occidentale, c’est <b>12 notes</b> :</p>
 <div class="formula">Do · Do♯ · Ré · Ré♯ · Mi · Fa · Fa♯ · Sol · Sol♯ · La · La♯ · Si</div>
-<p>(en lettres, comme sur les guitares : <b>C C♯ D D♯ E F F♯ G G♯ A A♯ B</b>). Après le Si, on reboucle sur le Do — une <b>octave</b> plus haut. Tout le manche n’est que ces 12 notes qui se répètent.</p>
-<h3>Deux pièges à connaître</h3>
-<ul><li>Entre <b>Mi–Fa</b> et entre <b>Si–Do</b>, il n’y a <b>pas</b> de dièse : ce sont des demi-tons « collés ».</li>
-<li>Une case = <b>un demi-ton</b>. Monte d’une case = la note suivante dans la liste.</li></ul>
-<div class="tip">Sur une corde à vide, monte de <b>12 cases</b> : tu retombes sur la même note, une octave plus haut. La case 12, c’est le grand repère du manche.</div>`},
-{id:'accordage', ic:'🎸', title:'L’accordage : E A D G B E', sub:'Le nom des 6 cordes', body:`
-<p>De la plus grave (la plus grosse) à la plus aiguë :</p>
+<p>(en lettres, comme sur les guitares : <b>C C♯ D D♯ E F F♯ G G♯ A A♯ B</b>). Après le Si on reboucle sur le Do, une <b>octave</b> plus haut. Tout le manche n’est que ces 12 notes qui se répètent.</p>
+<h3>Deux pièges</h3>
+<ul><li>Entre <b>Mi–Fa</b> et <b>Si–Do</b>, pas de dièse : demi-tons « collés ».</li><li>Une case = <b>un demi-ton</b>.</li></ul>
+<div class="tip">Sur une corde à vide, monte de <b>12 cases</b> : même note, une octave plus haut. La case 12 est LE grand repère.</div>`},
+{id:'accordage',ic:'🎸',title:'L’accordage : E A D G B E',sub:'Le nom des 6 cordes',body:`
+<p>De la plus grave à la plus aiguë :</p>
 <div class="formula">Mi – La – Ré – Sol – Si – Mi<br>E &nbsp; A &nbsp; D &nbsp; G &nbsp; B &nbsp; E</div>
-<p>Moyen mnémotechnique : « <b>Every Adult Dog Growls, Barks, Eats</b> ». Les deux Mi (6e et 1re corde) sont à <b>deux octaves</b> d’écart — mêmes notes, hauteurs différentes.</p>
+<p>Mnémo : « <b>Every Adult Dog Growls, Barks, Eats</b> ».</p>
 <h3>La logique cachée</h3>
-<p>Chaque corde est accordée une <b>quarte</b> (5 cases) au-dessus de la précédente… <b>sauf</b> entre Sol et Si (une tierce, 4 cases). C’est cette petite exception qui rend le manche déroutant au début — mais une fois su, tout se déduit.</p>
-<div class="tip">Conséquence utile : la case 5 d’une corde donne la note de la corde du dessus à vide. Case 5 de Mi grave = La = corde suivante à vide. (Exception : corde de Sol, c’est la case 4.)</div>`},
-{id:'reperes', ic:'📍', title:'Se repérer sur le manche', sub:'Les cases-repères et les octaves', body:`
-<p>Tu ne connais pas 72 cases séparément — tu connais <b>quelques repères</b> et tu déduis le reste.</p>
-<h3>Les cases marquées</h3>
-<p>Les points sur le manche sont à <b>3, 5, 7, 9</b> et (double point) <b>12</b>. Ce sont tes balises. Mémorise d’abord les notes sur la <b>corde de Mi grave</b> à ces cases : Sol (3), La (5), Si (7), Do♯ (9), Mi (12).</p>
-<h3>Le motif de l’octave</h3>
-<p>Un motif magique : <b>2 cordes plus haut, 2 cases plus loin</b> = la même note à l’octave. Tu connais une note ? Tu connais son octave, gratuitement.</p>
-<div class="tip">Priorité : apprends d’abord la <b>corde de Mi grave</b> et la <b>corde de La</b>. Ce sont les fondamentales des accords — les connaître, c’est déjà pouvoir jouer partout.</div>`},
-{id:'pourquoi-gammes', ic:'🪜', title:'Pourquoi la gamme majeure', sub:'L’alphabet de la musique (aperçu)', body:`
-<p>Sur les 12 notes, une chanson n’en utilise en général que <b>7</b> : c’est une <b>gamme</b>. La plus importante, la gamme <b>majeure</b>, suit toujours le même écart de cases :</p>
-<div class="formula">2 – 2 – 1 – 2 – 2 – 2 – 1 (cases)</div>
-<p>Pars de n’importe quelle note, applique ce motif, et tu as sa gamme majeure. Ces 7 notes forment <b>l’alphabet</b> du morceau : les accords, la mélodie et tes solos en sortent tous.</p>
-<h3>À quoi ça sert, concrètement</h3>
-<p>Quand tu improvises, la gamme te dit <b>quelles notes vont sonner juste</b>. Pas besoin de deviner. Et sur la guitare, une gamme, c’est un <b>schéma de doigts</b> qu’on déplace : apprends la forme une fois, joue-la dans les 12 tonalités.</p>
-<div class="tip">On attaque ça pour de vrai à l’<b>étape 3 (impro)</b> — d’abord le manche. Mais garde en tête : gamme = 7 notes qui appartiennent à la maison, et un schéma de doigts qui se déplace.</div>`},
+<p>Chaque corde est une <b>quarte</b> (5 cases) au-dessus de la précédente… <b>sauf</b> Sol→Si (une tierce, 4 cases). Cette exception explique pourquoi le manche déroute au début.</p>
+<div class="tip">La case 5 d’une corde donne la corde du dessus à vide (exception : corde de Sol, case 4).</div>`},
+{id:'reperes',ic:'📍',title:'Se repérer',sub:'Cases-repères et octaves',body:`
+<p>Tu connais quelques <b>repères</b> et tu déduis le reste.</p>
+<h3>Cases marquées</h3><p>Les points sont à <b>3, 5, 7, 9</b> et (double) <b>12</b>. Mémorise d’abord la corde de <b>Mi grave</b> : Sol(3), La(5), Si(7), Do♯(9), Mi(12).</p>
+<h3>Motif de l’octave</h3><p><b>2 cordes plus haut, 2 cases plus loin</b> = la même note à l’octave. Une note connue = son octave gratuite.</p>
+<div class="tip">Priorité : la corde de <b>Mi grave</b> et la corde de <b>La</b> — ce sont les fondamentales des accords et des power chords.</div>`},
+{id:'construction',ic:'🧱',title:'D’où viennent les accords',sub:'Fondamentale, tierce, quinte',body:`
+<p>Un accord de base = <b>3 notes</b> empilées : la <b>fondamentale</b> (qui donne le nom), la <b>tierce</b>, la <b>quinte</b>.</p>
+<div class="formula">Majeur = fond. + tierce MAJEURE + quinte<br>Mineur = fond. + tierce MINEURE + quinte</div>
+<p>La <b>tierce</b> est la note qui décide tout : majeure (claire) ou mineure (sombre, un demi-ton plus bas). C’est pour ça que passer de A à Am ne change qu’<b>une note</b> sous tes doigts.</p>
+<h3>Les familles (onglet Accords)</h3>
+<ul><li><b>Power chord</b> : fond. + quinte, SANS tierce → ni l’un ni l’autre, passe-partout.</li>
+<li><b>7e</b> : on ajoute une 4e note (la 7e) → tension bluesy.</li>
+<li><b>sus</b> : on remplace la tierce par la 2de ou la 4te → suspendu.</li></ul>
+<div class="tip">Regarde les <b>degrés</b> affichés sous chaque carte d’accord (1 · 3 · 5…) : tu verras la même recette se répéter sur tout le manche.</div>`},
+{id:'pourquoi-gammes',ic:'🪜',title:'Pourquoi la gamme majeure',sub:'Aperçu — étape impro',body:`
+<p>Sur les 12 notes, une chanson n’en utilise que <b>7</b> : une <b>gamme</b>. La majeure suit toujours le même écart de cases :</p>
+<div class="formula">2 – 2 – 1 – 2 – 2 – 2 – 1</div>
+<p>Ces 7 notes forment l’<b>alphabet</b> du morceau : accords, mélodie et solos en sortent. Quand tu improviseras, la gamme te dira quelles notes sonnent juste.</p>
+<div class="tip">On attaque l’impro pour de vrai à l’<b>étape 3</b>. Pour l’instant : le manche, puis les accords.</div>`},
 ];
 function renderTheorie(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','Théorie'));
-  m.appendChild(el('p','lead','La base, vraiment simple, en partant de zéro. Juste ce qu’il faut pour comprendre le manche — le reste viendra.'));
+  m.appendChild(el('p','lead','La base, vraiment simple, en partant de zéro.'));
   LESSONS.forEach(L=>{ const c=el('div','lesson',`<div class="ico">${L.ic}</div><div class="t"><b>${L.title}</b><small>${L.sub}</small></div>`);
     c.onclick=()=>openOverlay(L.title, inner=>{ inner.appendChild(el('div','theory',L.body)); const b=el('button','btn ghost','← Retour'); b.onclick=closeOverlay; inner.appendChild(b); }); m.appendChild(c); });
 }
 
 /* ================================================================
-   VUE : SUITE (feuille de route)
+   SUITE
    ================================================================ */
 function renderSuite(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','La suite'));
-  m.appendChild(el('p','lead','On construit dans l’ordre. Chaque étape s’appuie sur la précédente — on n’ouvre la suivante que quand la base est solide.'));
+  m.appendChild(el('p','lead','On construit dans l’ordre. Chaque étape s’appuie sur la précédente.'));
   const steps=[
-    ['1','🎸 Connaître le manche','En cours. Notes par cœur via les cartes, corde par corde. La fondation de tout le reste.',true],
-    ['2','🎼 Accompagnement','Les accords (formes CAGED, barrés), avec des cartes « connais-tu cet accord ? » et des grilles à plaquer en rythme.',false],
-    ['3','🎤 Impro','La penta d’abord (schémas à déplacer), puis viser les notes des accords dans le solo (la tierce, la fondamentale…) et pourquoi ça marche.',false],
-    ['4','🌈 Les modes','Une fois le manche et l’impro en place : les 7 couleurs, par l’oreille et par les schémas.',false],
+    ['1','🎸 Le manche','En cours. Notes par cœur : « trouve tout » + nommer les cases.',true],
+    ['2','🎴 Accompagnement','En cours. Anki d’accords par familles (majeurs → sus → 9/11), avec la logique de construction.',true],
+    ['3','🎤 Impro','La penta d’abord (schémas déplaçables), puis viser les notes des accords dans le solo (si tu joues en penta de La : chercher la tierce Do♯ ? quels effets ?) — et pourquoi ça marche.',false],
+    ['4','🌈 Les modes','Une fois le manche et l’impro en place : les 7 couleurs, par l’oreille et les schémas.',false],
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a[3]?' now':' soon')); s.innerHTML=`<div class="n">${a[0]}</div><div><b>${a[1]}${a[3]?'':'<span class="pill">bientôt</span>'}</b><small>${a[2]}</small></div>`; m.appendChild(s); });
-  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">Impossible d’improviser ou de comprendre les accords sans savoir où sont les notes. Le manche d’abord, sans exception — c’est le seul raccourci qui existe.</p>'));
+  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">Impossible d’improviser sans savoir où sont les notes. Le manche d’abord — c’est le seul raccourci qui existe.</p>'));
 }
 
 /* ---------------- overlay + nav ---------------- */
@@ -398,7 +458,7 @@ function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><b
 function closeOverlay(){ overlay.classList.remove('open'); render(); }
 let tab='manche';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; render(); });
-function render(){ const co=counts(); document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(co.due?('🔁 '+co.due):'🎸');
+function render(){ const due=cDueTotal(); document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
   if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='theorie')renderTheorie(); else renderSuite(); }
 render();
 if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
