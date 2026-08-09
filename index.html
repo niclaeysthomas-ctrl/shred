@@ -302,6 +302,32 @@ const CHORDS=[
  {n:'E9',cat:'ext',deg:'1 · 3 · ♭7 · 9',frets:[0,2,0,1,0,2],logic:'Mi 9 : un E7 enrichi de la 9e (Fa♯). Le son funk/soul. L’essentiel d’un 9, c’est la tierce, la ♭7 et la 9 — on lâche volontiers le reste.'},
  {n:'A9',cat:'ext',deg:'1 · 3 · ♭7 · 9',frets:[-1,0,2,4,2,3],logic:'La 9 : A7 + la 9e (Si). Voicing jazz/funk typique, déplaçable.'},
  {n:'Cmaj9',cat:'ext',deg:'1 · 3 · 7 · 9',frets:[-1,3,2,4,3,0],logic:'Do maj9 : Cmaj7 + la 9e (Ré). Très doux, lumineux — le son « coucher de soleil ».'},
+ /* + power chords */
+ {n:'D5',cat:'pow',deg:'1 · 5',frets:[-1,-1,0,2,-1,-1],logic:'Ré5 sur les cordes Ré/Sol : Ré + La.'},
+ {n:'C5',cat:'pow',deg:'1 · 5',frets:[-1,3,5,-1,-1,-1],logic:'Do5 : la forme A5 déplacée à la case 3 (fondamentale sur la corde de La).'},
+ {n:'F5',cat:'pow',deg:'1 · 5',frets:[1,3,3,-1,-1,-1],logic:'Fa5 : la forme E5 à la case 1.'},
+ {n:'B5',cat:'pow',deg:'1 · 5',frets:[-1,2,4,-1,-1,-1],logic:'Si5 : la forme A5 à la case 2.'},
+ {n:'F♯5',cat:'pow',deg:'1 · 5',frets:[2,4,4,-1,-1,-1],logic:'Fa♯5 : forme E5 à la case 2. Une racine NOIRE — les power chords rendent Fa♯, Ré♭, Mi♭… aussi faciles que les autres (aucune tierce à gérer).'},
+ /* + une 7e */
+ {n:'C7',cat:'dom',deg:'1 · 3 · 5 · ♭7',frets:[-1,3,2,3,1,0],logic:'Do 7 : Do, Mi, Sol, Si♭. La tension du blues en Do.'},
+ /* enrichis : add9 / 6 / 7sus4 / m7b5 */
+ {n:'Cadd9',cat:'add',deg:'1 · 3 · 5 · 9',frets:[-1,3,2,0,3,0],logic:'Do add9 : un Do MAJEUR + la 9e (Ré) ajoutée, SANS 7e (≠ C9). Le son pop/folk scintillant.'},
+ {n:'Aadd9',cat:'add',deg:'1 · 3 · 5 · 9',frets:[-1,0,2,4,2,0],logic:'La add9 : A + la 9e (Si) ajoutée.'},
+ {n:'C6',cat:'add',deg:'1 · 3 · 6',frets:[-1,3,2,2,1,0],logic:'Do 6 : un Do majeur + la SIXTE (La). Doux, vintage, jazzy.'},
+ {n:'G6',cat:'add',deg:'1 · 3 · 5 · 6',frets:[3,2,0,0,0,0],logic:'Sol 6 : Sol majeur + la sixte (Mi). Très ouvert.'},
+ {n:'A6',cat:'add',deg:'1 · 3 · 5 · 6',frets:[-1,0,2,2,2,2],logic:'La 6 : A + la sixte (Fa♯).'},
+ {n:'A7sus4',cat:'add',deg:'1 · 4 · 5 · ♭7',frets:[-1,0,2,0,3,0],logic:'La 7sus4 : la tierce remplacée par la quarte, avec une 7e. Le son suspendu du rock/funk.'},
+ {n:'D7sus4',cat:'add',deg:'1 · 4 · 5 · ♭7',frets:[-1,-1,0,2,1,3],logic:'Ré 7sus4 : Ré, Sol, La, Do.'},
+ {n:'Bm7♭5',cat:'add',deg:'1 · ♭3 · ♭5 · ♭7',frets:[-1,2,3,2,3,-1],logic:'Si m7♭5 (demi-diminué) : Si, Ré, Fa, La. La quinte est DIMINUÉE (Fa au lieu de Fa♯) → son trouble. C’est le ii des tonalités mineures.'},
+ /* barrés & racines noires (formes déplaçables) */
+ {n:'F',cat:'bar',deg:'1 · 3 · 5',frets:[1,3,3,2,1,1],logic:'Fa majeur BARRÉ : la forme de Mi majeur, l’index couché sur toute la case 1. Le premier barré, le plus dur — mais LA clé : déplace-la et tu as tous les majeurs à racine sur la corde de Mi grave.'},
+ {n:'F♯',cat:'bar',deg:'1 · 3 · 5',frets:[2,4,4,3,2,2],logic:'Fa♯ majeur : la forme de F, une case plus haut (barré case 2). Racine noire, même forme.'},
+ {n:'A♭',cat:'bar',deg:'1 · 3 · 5',frets:[4,6,6,5,4,4],logic:'La♭ majeur : forme de E barrée à la case 4.'},
+ {n:'B♭',cat:'bar',deg:'1 · 3 · 5',frets:[-1,1,3,3,3,1],logic:'Si♭ majeur : la forme de La majeur, barrée à la case 1 (fondamentale sur la corde de La). L’AUTRE grande forme déplaçable.'},
+ {n:'D♭',cat:'bar',deg:'1 · 3 · 5',frets:[-1,4,6,6,6,4],logic:'Ré♭ majeur : forme de A barrée à la case 4.'},
+ {n:'E♭',cat:'bar',deg:'1 · 3 · 5',frets:[-1,6,8,8,8,6],logic:'Mi♭ majeur : forme de A barrée à la case 6.'},
+ {n:'F♯m',cat:'bar',deg:'1 · ♭3 · 5',frets:[2,4,4,2,2,2],logic:'Fa♯ mineur : la forme de Mi MINEUR barrée à la case 2.'},
+ {n:'B♭m',cat:'bar',deg:'1 · ♭3 · 5',frets:[-1,1,3,3,2,1],logic:'Si♭ mineur : la forme de La mineur barrée à la case 1.'},
 ];
 const CHORD_CATS=[
  {id:'maj',ic:'☀️',name:'Majeurs',d:'La base, son clair.'},
@@ -311,6 +337,8 @@ const CHORD_CATS=[
  {id:'col',ic:'🎨',name:'Couleurs · maj7 / m7',d:'Le son adulte, jazz.'},
  {id:'sus',ic:'🌀',name:'Suspendus · sus2 / sus4',d:'Ni majeur ni mineur.'},
  {id:'ext',ic:'💎',name:'9e / 11e (avancé)',d:'Enrichir : le son moderne.'},
+ {id:'add',ic:'✨',name:'Enrichis · add9 / 6 / 7sus4',d:'Les couleurs pop, funk, jazz.'},
+ {id:'bar',ic:'🅱️',name:'Barrés & racines noires',d:'F♯, B♭, D♭, E♭… formes déplaçables.'},
 ];
 function chordsIn(cat){ return CHORDS.filter(c=>c.cat===cat); }
 function chordByName(n){ return CHORDS.find(c=>c.n===n); }
@@ -338,6 +366,46 @@ function cGrade(n,q){ let c=S.chords[n]; if(!c){ c={ef:2.4,iv:0,reps:0,due:0,lap
 }
 function cDueTotal(){ let n=0; CHORD_CATS.forEach(k=>{ n+=cDue(k.id).length; }); return n; }
 
+/* --------- mode MIX : révision mélangée toutes familles --------- */
+function mixReview(){
+  let due=[]; CHORDS.forEach(c=>{ if(S.chords[c.n]&&S.chords[c.n].due<=Date.now()) due.push(c.n); });
+  let rest=CHORDS.map(c=>c.n).filter(n=>due.indexOf(n)<0);
+  for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=rest[i];rest[i]=rest[j];rest[j]=t;}
+  reviewChords(due.concat(rest).slice(0,12));
+}
+/* --------- mode PROGRESSION : jouer une suite cohérente --------- */
+const PROGRESSIONS=[
+ {n:'Pop · I–V–vi–IV',ch:['C','G','Am','F'],tip:'Des milliers de tubes. Vise des changements nets, sans blanc entre les accords.'},
+ {n:'Doo-wop · I–vi–IV–V',ch:['C','Am','F','G'],tip:'Le son des années 50.'},
+ {n:'Mélancolique · vi–IV–I–V',ch:['Am','F','C','G'],tip:'Même famille d’accords, ordre plus sombre.'},
+ {n:'Blues en La · les 7e',ch:['A7','D7','A7','E7'],tip:'Les accords de 7e du blues, en boucle. Ressens la tension.'},
+ {n:'Jazz · ii–V–I',ch:['Dm7','G7','Cmaj7'],tip:'La cadence reine. Enchaîne-la bien propre.'},
+ {n:'Barrés · ceux qu’on évite',ch:['F','B♭','C','G'],tip:'Force le F et le B♭ barrés. C’est LÀ que le vrai progrès se cache — pas dans ce que tu sais déjà.'},
+ {n:'Rock · power chords',ch:['E5','G5','A5','E5'],tip:'Palm mute, tempo régulier. Déplace la même forme.'},
+ {n:'Folk · sus qui bougent',ch:['D','Dsus4','D','Dsus2'],tip:'Le petit doigt qui danse autour du Ré.'},
+];
+let _progAuto=null;
+function openProgression(p){
+  ac(); markDay();
+  openOverlay(p.n, inner=>{
+    inner.appendChild(el('p','lead',p.tip));
+    const chips=el('div','toolrow'); chips.style.justifyContent='center'; inner.appendChild(chips);
+    const cur=el('div','qhead'); inner.appendChild(cur);
+    const dia=el('div'); dia.style.textAlign='center'; inner.appendChild(dia);
+    const foot=el('div'); inner.appendChild(foot);
+    let idx=0;
+    const chipEls=p.ch.map((n,k)=>{ const t=el('div','tag',n); t.onclick=()=>{ idx=k; show(); }; chips.appendChild(t); return t; });
+    function show(){ const ch=chordByName(p.ch[idx]); chipEls.forEach((t,k)=>t.classList.toggle('on',k===idx));
+      cur.innerHTML=`<div class="q">${p.ch[idx]}</div>`; dia.innerHTML=''; if(ch){ dia.appendChild(chordDiagram(ch)); strum(ch); } }
+    const nx=el('button','btn','⏭ Accord suivant'); nx.onclick=()=>{ idx=(idx+1)%p.ch.length; show(); }; foot.appendChild(nx);
+    const ap=el('button','btn ghost','▶ Lecture auto'); ap.onclick=()=>{
+      if(_progAuto){ clearInterval(_progAuto); _progAuto=null; ap.textContent='▶ Lecture auto'; }
+      else { ap.textContent='⏹ Stop'; _progAuto=setInterval(()=>{ idx=(idx+1)%p.ch.length; show(); },2200); } };
+    foot.appendChild(ap);
+    show();
+  });
+}
+
 function renderCartes(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','Les accords'));
@@ -350,6 +418,14 @@ function renderCartes(){
     const c=el('div','catcard',`<div class="ico">${k.ic}</div><div class="t"><b>${k.name}</b><small>${k.d}</small></div><div class="pc">${kn}/${tot}${due?' · 🔁'+due:''}</div>`);
     c.onclick=()=>{ let pool=cDue(k.id).concat(cNew(k.id).slice(0,cBudget())); if(!pool.length) pool=chordsIn(k.id).map(x=>x.n); reviewChords(pool); };
     m.appendChild(c); });
+
+  const cx=el('div','card'); cx.innerHTML='<b>🎲 Révision mixte</b><p class="lead" style="margin:6px 0 0">Un mélange de toutes les familles, priorité à ce qui est dû — pour ne pas ronronner sur une seule catégorie.</p>';
+  const bx=el('button','btn ghost','🎲 Mix — 12 accords'); bx.onclick=()=>mixReview(); cx.appendChild(bx); m.appendChild(cx);
+
+  m.appendChild(el('h1','page','Jouer une progression'));
+  m.appendChild(el('p','lead','Enchaîne une suite d’accords cohérente — c’est là qu’on apprend les CHANGEMENTS (le vrai enjeu). Choisis-en une qui te force les accords que tu évites.'));
+  PROGRESSIONS.forEach(p=>{ const c=el('div','catcard',`<div class="ico">🎵</div><div class="t"><b>${p.n}</b><small>${p.ch.join(' – ')}</small></div><div class="pc">›</div>`);
+    c.onclick=()=>openProgression(p); m.appendChild(c); });
 }
 
 function reviewChords(pool){
@@ -455,7 +531,7 @@ function renderSuite(){
 /* ---------------- overlay + nav ---------------- */
 const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
 function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
-function closeOverlay(){ overlay.classList.remove('open'); render(); }
+function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } render(); }
 let tab='manche';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; render(); });
 function render(){ const due=cDueTotal(); document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
