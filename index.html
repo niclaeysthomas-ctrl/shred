@@ -130,8 +130,8 @@ const midiAt=(s,f)=>OPEN[s]+f;
 const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
-const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  findBest:{}, quizBest:0, showNames:false, natOnly:true};
+const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, triads:{}, tNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
+  findBest:{}, quizBest:0, powBest:0, showNames:false, natOnly:true};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
@@ -382,12 +382,13 @@ function cBudget(){ const t=today(); if(S.cNewDay.date!==t){ S.cNewDay={date:t,n
 function cDue(cat){ const now=Date.now(); return chordsIn(cat).filter(c=>S.chords[c.n]&&S.chords[c.n].due<=now).map(c=>c.n); }
 function cNew(cat){ return chordsIn(cat).filter(c=>!S.chords[c.n]).map(c=>c.n); }
 function cKnown(cat){ return chordsIn(cat).filter(c=>S.chords[c.n]&&S.chords[c.n].reps>=1).length; }
-function cGrade(n,q){ let c=S.chords[n]; if(!c){ c={ef:2.4,iv:0,reps:0,due:0,lapses:0}; S.cNewDay.n++; }
+function srsGrade(map,n,q,dc){ let c=map[n]; if(!c){ c={ef:2.4,iv:0,reps:0,due:0,lapses:0}; if(dc)dc.n++; }
   if(q==='again'){ c.reps=0; c.iv=0; c.lapses++; c.ef=Math.max(1.3,c.ef-.2); c.due=Date.now()+60000; }
   else { c.reps++; if(c.reps===1)c.iv=1; else if(c.reps===2)c.iv=3; else c.iv=Math.max(1,Math.round(c.iv*c.ef));
     if(q==='easy'){ c.iv=Math.round(c.iv*1.35); c.ef+=.15; } c.ef=Math.max(1.3,Math.min(2.8,c.ef)); c.due=Date.now()+c.iv*864e5; }
-  S.chords[n]=c; save();
+  map[n]=c; save();
 }
+function cGrade(n,q){ srsGrade(S.chords,n,q,S.cNewDay); }
 function cDueTotal(){ let n=0; CHORD_CATS.forEach(k=>{ n+=cDue(k.id).length; }); return n; }
 
 /* --------- mode MIX : révision mélangée toutes familles --------- */
@@ -477,10 +478,311 @@ function openProgression(p){
   });
 }
 
+/* ================================================================
+   TRIADES — Anki des NOTES (épellation exacte, vérifiée)
+   ================================================================ */
+const TRIADS=[
+ /* majeures : 1 · 3 · 5 (racine, tierce MAJEURE, quinte) */
+ {n:'C',   q:'maj', notes:['C','E','G'],    root:0},
+ {n:'D♭',  q:'maj', notes:['D♭','F','A♭'],  root:1},
+ {n:'D',   q:'maj', notes:['D','F♯','A'],   root:2},
+ {n:'E♭',  q:'maj', notes:['E♭','G','B♭'],  root:3},
+ {n:'E',   q:'maj', notes:['E','G♯','B'],   root:4},
+ {n:'F',   q:'maj', notes:['F','A','C'],    root:5},
+ {n:'F♯',  q:'maj', notes:['F♯','A♯','C♯'], root:6},
+ {n:'G',   q:'maj', notes:['G','B','D'],    root:7},
+ {n:'A♭',  q:'maj', notes:['A♭','C','E♭'],  root:8},
+ {n:'A',   q:'maj', notes:['A','C♯','E'],   root:9},
+ {n:'B♭',  q:'maj', notes:['B♭','D','F'],   root:10},
+ {n:'B',   q:'maj', notes:['B','D♯','F♯'],  root:11},
+ /* mineures : 1 · ♭3 · 5 (racine, tierce mineure, quinte) */
+ {n:'Cm',  q:'min', notes:['C','E♭','G'],   root:0},
+ {n:'C♯m', q:'min', notes:['C♯','E','G♯'],  root:1},
+ {n:'Dm',  q:'min', notes:['D','F','A'],    root:2},
+ {n:'E♭m', q:'min', notes:['E♭','G♭','B♭'], root:3},
+ {n:'Em',  q:'min', notes:['E','G','B'],    root:4},
+ {n:'Fm',  q:'min', notes:['F','A♭','C'],   root:5},
+ {n:'F♯m', q:'min', notes:['F♯','A','C♯'],  root:6},
+ {n:'Gm',  q:'min', notes:['G','B♭','D'],   root:7},
+ {n:'G♯m', q:'min', notes:['G♯','B','D♯'],  root:8},
+ {n:'Am',  q:'min', notes:['A','C','E'],    root:9},
+ {n:'B♭m', q:'min', notes:['B♭','D♭','F'],  root:10},
+ {n:'Bm',  q:'min', notes:['B','D','F♯'],   root:11},
+];
+const T_NEW_PER_DAY=6;
+function tBudget(){ const t=today(); if(S.tNewDay.date!==t){ S.tNewDay={date:t,n:0}; save(); } return Math.max(0,T_NEW_PER_DAY-S.tNewDay.n); }
+function tDue(){ const now=Date.now(); return TRIADS.filter(x=>S.triads[x.n]&&S.triads[x.n].due<=now).map(x=>x.n); }
+function tNew(){ return TRIADS.filter(x=>!S.triads[x.n]).map(x=>x.n); }
+function tKnown(){ return TRIADS.filter(x=>S.triads[x.n]&&S.triads[x.n].reps>=1).length; }
+function tGrade(n,q){ srsGrade(S.triads,n,q,S.tNewDay); }
+function triadByName(n){ return TRIADS.find(x=>x.n===n); }
+function triadPcs(t){ return t.q==='maj'?[t.root,(t.root+4)%12,(t.root+7)%12]:[t.root,(t.root+3)%12,(t.root+7)%12]; }
+function reviewTriads(pool){
+  ac(); markDay();
+  if(!pool.length){ toast('Rien à réviser'); return; }
+  pool=pool.slice(); for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=pool[i];pool[i]=pool[j];pool[j]=t;}
+  let i=0,done=0;
+  openOverlay('Triades', inner=>{
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const qh=el('div','qhead'); inner.appendChild(qh);
+    const body=el('div'); body.style.textAlign='center'; inner.appendChild(body);
+    const foot=el('div'); inner.appendChild(foot);
+    function step(){ if(i>=pool.length) return finish();
+      const t=triadByName(pool[i]);
+      prog.innerHTML=`Carte <b>${i+1}</b>/${pool.length}`;
+      qh.innerHTML=`<div class="q">${t.n}</div><div class="sub">Ses 3 notes ? (${t.q==='maj'?'1 · 3 · 5':'1 · ♭3 · 5'})</div>`;
+      body.innerHTML=''; foot.innerHTML='';
+      const rev=el('button','btn','👁 Voir les notes'); rev.onclick=()=>reveal(t); foot.appendChild(rev);
+    }
+    function reveal(t){
+      const pcs=triadPcs(t), base=48+t.root, iv=t.q==='maj'?[0,4,7]:[0,3,7];
+      const arp=()=>iv.forEach((x,k)=>setTimeout(()=>pluck(base+x,1.2,.5),k*170)); arp();
+      body.innerHTML=`<div class="q" style="font-size:30px;letter-spacing:1px">${t.notes.join('  ·  ')}</div>`;
+      body.appendChild(el('div','',' ')).style.height='8px';
+      const names={}; pcs.forEach((p,k)=>{ names[p]=t.notes[k]; });
+      const fb=buildFretboard(null); body.appendChild(fb); paintScale(fb,t.root,pcs,{labels:true,names:names});
+      body.appendChild(el('div','clogic',`<div class="deg">${t.n} = ${t.q==='maj'?'racine + tierce MAJEURE + quinte':'racine + tierce mineure + quinte'}</div>Fondamentale ${t.notes[0]} en rouge. Toutes ses positions sont éclairées sur le manche.`));
+      const pl=el('button','btn ghost','🔊 Réécouter'); pl.onclick=arp; body.appendChild(pl);
+      qh.querySelector('.sub').textContent='Tu avais bon ?';
+      foot.innerHTML='';
+      const rate=el('div','rate'); const a=el('button','again','❌ À revoir'),g=el('button','good','✅ Je sais'),e=el('button','easy','⭐ Facile');
+      a.onclick=()=>next(t.n,'again'); g.onclick=()=>next(t.n,'good'); e.onclick=()=>next(t.n,'easy');
+      rate.append(a,g,e); foot.appendChild(rate);
+    }
+    function next(n,q){ tGrade(n,q); done++; if(q!=='again')S.xp+=2; save(); i++; step(); }
+    function finish(){ qh.innerHTML=`<div class="q">✓</div><div class="sub">${done} triade(s) passée(s). Les sues reviendront plus tard, les ratées très vite.</div>`; body.innerHTML=''; foot.innerHTML=''; const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl); }
+    step();
+  });
+}
+
+/* ================================================================
+   MOTEUR GAMMES (partagé penta + modes) + peinture sur le manche
+   ================================================================ */
+function pcsFrom(root,ints){ return ints.map(i=>(root+i)%12); }
+function paintScale(fb,root,pcs,o){ o=o||{}; fb.clearDots();
+  const lab=pc=> (o.names&&o.names[pc]!=null) ? o.names[pc] : (o.labels?NOTES[pc]:'');
+  for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ const pc=midiAt(s,f)%12; if(pcs.indexOf(pc)<0) continue;
+    const cls = pc===root?'root':(o.char!=null&&pc===o.char?'pick':'on');
+    fb.dot(s,f, lab(pc), cls); }
+  if(o.extra!=null){ for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ if(midiAt(s,f)%12===o.extra) fb.dot(s,f, lab(o.extra), 'pick'); } }
+}
+function rootPicker(cur,onPick){ const wrap=el('div','toolrow'); const tags=[];
+  for(let pc=0;pc<12;pc++){ const t=el('div','tag'+(pc===cur?' on':''),NOTES[pc]);
+    t.onclick=()=>{ tags.forEach(x=>x.classList.remove('on')); t.classList.add('on'); onPick(pc); };
+    tags.push(t); wrap.appendChild(t); }
+  return wrap;
+}
+function playScaleUp(root,ints){ ac(); const base=48+root, seq=ints.concat([12]); seq.forEach((iv,k)=>setTimeout(()=>pluck(base+iv,1.05,.5),k*145)); }
+
+/* ================================================================
+   MODULE IMPRO : la pentatonique & les notes à viser
+   ================================================================ */
+function openPentaModule(){
+  ac(); markDay();
+  let root=9, type='min', extra=null;   /* défaut : penta mineure de La (l’exemple de Thomas) */
+  openOverlay('Impro : penta & notes à viser', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Ta première boîte à solo</h3>
+      <p>Une <b>pentatonique</b> = <b>5 notes</b> au lieu de 7. Moins de notes, moins de risques de fausse note : c’est LA gamme du solo rock &amp; blues.</p>
+      <div class="formula">Mineure : 1 · ♭3 · 4 · 5 · ♭7<br>Majeure : 1 · 2 · 3 · 5 · 6</div>
+      <p><b>Le raccourci qui double ton manche :</b> la penta <b>mineure de La</b> et la penta <b>majeure de Do</b> sont les <b>mêmes 5 notes</b> — juste une maison différente. Une forme apprise = deux gammes.</p>
+      <div class="tip">Pour transformer une penta mineure en penta MAJEURE de <b>même fondamentale</b>, descends toute la forme de <b>3 cases</b>.</div>`));
+
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Explore-la sur le manche'));
+    const tsel=el('div','toolrow'); tsel.style.marginTop='10px';
+    const tmin=el('div','tag'+(type==='min'?' on':''),'Mineure'), tmaj=el('div','tag'+(type==='maj'?' on':''),'Majeure');
+    tmin.onclick=()=>{type='min';tmin.classList.add('on');tmaj.classList.remove('on');draw();};
+    tmaj.onclick=()=>{type='maj';tmaj.classList.add('on');tmin.classList.remove('on');draw();};
+    tsel.append(tmin,tmaj); c.appendChild(tsel);
+    c.appendChild(rootPicker(root,pc=>{root=pc;draw();}));
+    const fb=buildFretboard(null); c.appendChild(fb);
+    const xsel=el('div','toolrow');
+    const x0=el('div','tag on','Notes seules'), x3=el('div','tag','+ 3ce majeure'), xb=el('div','tag','+ blue note');
+    const setX=(v,e)=>{ extra=v; [x0,x3,xb].forEach(z=>z.classList.remove('on')); e.classList.add('on'); draw(); };
+    x0.onclick=()=>setX(null,x0); x3.onclick=()=>setX('maj3',x3); xb.onclick=()=>setX('blue',xb);
+    xsel.append(x0,x3,xb); c.appendChild(xsel);
+    const info=el('div','clogic'); c.appendChild(info);
+    const play=el('button','btn ghost','🔊 Écouter la gamme'); play.onclick=()=>playScaleUp(root, type==='min'?[0,3,5,7,10]:[0,2,4,7,9]); c.appendChild(play);
+    inner.appendChild(c);
+
+    inner.appendChild(el('div','theory',`
+      <h3>Quoi viser ? (le vrai secret du solo)</h3>
+      <p>Jouer la gamme ne suffit pas : ce qui sonne « juste et fort », ce sont les <b>notes de l’accord</b> qui passe sous toi. Sur un accord de La, vise <b>La · Do♯ · Mi</b> ; quand ça change pour un Fa, vise <b>Fa · La · Do</b>. On appelle ça <b>jouer les changements</b> — et la note la plus parlante, c’est presque toujours la <b>tierce</b> de l’accord.</p>
+      <h3>⭐ L’astuce reine (ton exemple)</h3>
+      <p>En penta <b>mineure de La</b>, tu as le <b>Do</b> (la ♭3). Si le morceau sonne <b>majeur</b> (accord de La majeur, blues en La…), vise plutôt le <b>Do♯</b> — la <b>tierce MAJEURE</b>. Effet : ça <b>s’éclaire</b>, ça devient joyeux/bluesy. C’est le son de Chuck Berry, de SRV, de la country.</p>
+      <p>Encore mieux : <b>glisse ou bende du Do au Do♯</b> (♭3 → 3). Ce petit mouvement est LA couleur blues par excellence. Active «&nbsp;+ 3ce majeure&nbsp;» pour voir où elle tombe (en <b>bleu</b>).</p>
+      <h3>La blue note</h3>
+      <p>Entre la 4 et la 5 de la penta mineure se cache une note « sale » : la <b>♭5</b> (blue note). En passage rapide (jamais tenue), elle donne le grain du blues. Active «&nbsp;+ blue note&nbsp;».</p>
+      <div class="tip">Programme : (1) une position par cœur → (2) cible la fondamentale sur chaque accord → (3) ajoute la 3ce majeure pour éclairer → (4) relie les positions.</div>`));
+
+    function draw(){
+      const ints = type==='min'?[0,3,5,7,10]:[0,2,4,7,9];
+      const pcs = pcsFrom(root,ints);
+      let ex=null; if(extra==='maj3') ex=(root+4)%12; else if(extra==='blue') ex=(root+6)%12;
+      paintScale(fb, root, pcs, {labels:true, extra:ex});
+      const rn=NOTES[root];
+      let t=`<div class="deg">Penta ${type==='min'?'mineure':'majeure'} de ${rn}</div>Notes : ${pcs.map(p=>NOTES[p]).join(' · ')}. Fondamentale ${rn} en rouge.`;
+      if(type==='min') t+=` <span style="color:var(--dim)">(mêmes 5 notes que la penta majeure de ${NOTES[(root+3)%12]}).</span>`;
+      else t+=` <span style="color:var(--dim)">(mêmes 5 notes que la penta mineure de ${NOTES[(root+9)%12]}).</span>`;
+      if(extra==='maj3') t+=`<br><b style="color:var(--blue)">En bleu : ${NOTES[(root+4)%12]}</b> = la 3ce majeure. Bende/glisse la ♭3 vers elle pour éclairer le son.`;
+      if(extra==='blue') t+=`<br><b style="color:var(--blue)">En bleu : ${NOTES[(root+6)%12]}</b> = la blue note (♭5), uniquement en passage.`;
+      info.innerHTML=t;
+    }
+    draw();
+  });
+}
+
+/* ================================================================
+   MODULE MODES : les 7 couleurs, par ordre
+   ================================================================ */
+const MODES=[
+ {n:'Ionien', deg:'Ie degré', sub:'la gamme majeure', ints:[0,2,4,5,7,9,11], form:'1 2 3 4 5 6 7', char:11, charTxt:'la 7e majeure (sensible)', mood:'Lumineux, résolu — « heureux ».', song:'toute la pop en majeur, « Let It Be »', chord:'majeur / maj7', txt:'Le mode de référence : c’est la gamme majeure elle-même, rien d’altéré. Tous les autres modes se mesurent à lui.'},
+ {n:'Dorien', deg:'IIe degré', sub:'le mineur « cool »', ints:[0,2,3,5,7,9,10], form:'1 2 ♭3 4 5 6 ♭7', char:9, charTxt:'la 6te MAJEURE', mood:'Mineur mais pas triste — jazzy, planant, funky.', song:'« So What », « Oye Como Va », « Scarborough Fair »', chord:'m7', txt:'Un mineur dont la 6te est MAJEURE (au lieu de mineure). Cette seule note relevée éclaire le mineur sans le rendre majeur : c’est toute sa couleur.'},
+ {n:'Phrygien', deg:'IIIe degré', sub:'le mineur « espagnol »', ints:[0,1,3,5,7,8,10], form:'1 ♭2 ♭3 4 5 ♭6 ♭7', char:1, charTxt:'la ♭2 (seconde mineure)', mood:'Sombre, tendu — flamenco, métal.', song:'flamenco, riffs métal (Metallica « Wherever I May Roam »)', chord:'m7', txt:'Un mineur avec une ♭2 : ce demi-ton collé au-dessus de la fondamentale crée la tension « espagnole »/orientale.'},
+ {n:'Lydien', deg:'IVe degré', sub:'le majeur « rêveur »', ints:[0,2,4,6,7,9,11], form:'1 2 3 ♯4 5 6 7', char:6, charTxt:'la ♯4 (quarte augmentée)', mood:'Majeur qui flotte, magique, cinéma.', song:'thème des Simpson, musiques de films (Elfman, Williams)', chord:'maj7 (♯11)', txt:'Un majeur avec une 4te DIÉSÉE. Cette note qui « monte » donne un son suspendu, lumineux, qui décolle.'},
+ {n:'Mixolydien', deg:'Ve degré', sub:'le majeur « blues/rock »', ints:[0,2,4,5,7,9,10], form:'1 2 3 4 5 6 ♭7', char:10, charTxt:'la ♭7 (septième mineure)', mood:'Majeur bluesy, dominant, groove.', song:'« Sweet Home Alabama », « Sympathy for the Devil »', chord:'7 (dominante)', txt:'Un majeur avec une 7e MINEURE. C’est LE mode des accords de dominante (7) et du rock : majeur, mais avec le grain du blues.'},
+ {n:'Éolien', deg:'VIe degré', sub:'le mineur naturel', ints:[0,2,3,5,7,8,10], form:'1 2 ♭3 4 5 ♭6 ♭7', char:8, charTxt:'la ♭6 (sixte mineure)', mood:'Triste, mélancolique — le « mineur » par défaut.', song:'« Losing My Religion », « Stairway » (solo), une montagne de rock', chord:'m7', txt:'La gamme mineure naturelle. Sa ♭6 (contre la 6te majeure du dorien) est ce qui le rend franchement mélancolique. Ton terrain de prédilection.'},
+ {n:'Locrien', deg:'VIIe degré', sub:'l’instable', ints:[0,1,3,5,6,8,10], form:'1 ♭2 ♭3 4 ♭5 ♭6 ♭7', char:6, charTxt:'la ♭5 (quinte diminuée)', mood:'Bancal, angoissé — rare.', song:'métal extrême ; jazz, sur un accord m7♭5', chord:'m7♭5 (demi-diminué)', txt:'Le seul mode dont la QUINTE est diminuée (♭5) : la fondamentale ne « tient » pas, tout reste en suspens. Très peu utilisé seul.'},
+];
+function openModesModule(){
+  ac(); markDay();
+  let root=9, mi=5;   /* défaut : La éolien (le mineur, son focus) */
+  openOverlay('Les modes, par ordre', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>C’est quoi un mode ?</h3>
+      <p>Prends la gamme majeure de Do (Do Ré Mi Fa Sol La Si). Joue ces <b>mêmes 7 notes</b> mais <b>en partant d’une autre</b> : tu obtiens un <b>mode</b>. Sept points de départ = sept modes = <b>sept couleurs</b>.</p>
+      <p>Chaque mode a une <b>note caractéristique</b> : l’altération qui le distingue et fait toute sa saveur. C’est elle qu’il faut entendre — et viser.</p>
+      <p>Choisis une <b>fondamentale</b>, puis compare les modes <b>sur la même note</b> (le meilleur moyen d’entendre la couleur basculer). La note caractéristique s’affiche en <b>bleu</b>.</p>`));
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Compare les modes sur une même fondamentale'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;draw();}));
+    const chips=el('div','toolrow'); const chipEls=MODES.map((M,k)=>{ const t=el('div','tag'+(k===mi?' on':''),M.n);
+      t.onclick=()=>{mi=k;chipEls.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; chips.appendChild(t); return t; }); c.appendChild(chips);
+    const fb=buildFretboard(null); c.appendChild(fb);
+    const play=el('button','btn ghost','🔊 Écouter le mode'); play.onclick=()=>playScaleUp(root, MODES[mi].ints); c.appendChild(play);
+    inner.appendChild(c);
+    const detail=el('div','card'); inner.appendChild(detail);
+    inner.appendChild(el('div','theory',`<div class="tip">L’autre façon de voir : tous ces modes partagent la <b>même gamme parente</b>. Ré dorien, Mi phrygien, Sol mixolydien… ce sont tous les notes de <b>Do majeur</b>, avec une fondamentale différente. Sur scène on pense souvent « quelle gamme majeure contient mon accord ? » puis on vise la note caractéristique.</div>`));
+    function draw(){
+      const M=MODES[mi], pcs=pcsFrom(root,M.ints), charPc=M.char!=null?(root+M.char)%12:null;
+      paintScale(fb, root, pcs, {labels:true, char:charPc});
+      detail.innerHTML=`<b>${NOTES[root]} ${M.n}</b> <span style="color:var(--dim);font-size:13px">· ${M.deg} · ${M.sub}</span>
+        <div class="clogic" style="margin-top:10px">
+          <div class="deg">Formule : ${M.form}</div>
+          <p style="margin:0 0 8px">${M.txt}</p>
+          <p style="margin:0 0 6px"><b style="color:var(--blue)">Note caractéristique : ${M.charTxt}</b>${charPc!=null?` (ici ${NOTES[charPc]}, en bleu)`:''}.</p>
+          <p style="margin:0 0 4px">🎭 <b>Couleur :</b> ${M.mood}</p>
+          <p style="margin:0 0 4px">🎧 <b>À écouter :</b> ${M.song}</p>
+          <p style="margin:0">🎸 <b>Se pose sur :</b> un accord ${M.chord}.</p>
+        </div>`;
+    }
+    draw();
+  });
+}
+
+/* ================================================================
+   MODULE POWER CHORDS
+   ================================================================ */
+function openPowerModule(){
+  ac(); markDay();
+  let rs=0, fret=3;   /* rs : 0 = fond. sur Mi grave, 1 = sur La */
+  openOverlay('Maîtriser les power chords', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Pourquoi ils sont partout</h3>
+      <p>Un <b>power chord</b> (accord de quinte, «&nbsp;X5&nbsp;») = seulement <b>2 notes</b> : la <b>fondamentale</b> et sa <b>quinte</b>. <b>Pas de tierce</b> → ni majeur ni mineur. Il passe donc sur tout, et avec la disto il sonne <b>énorme et net</b> (la tierce, elle, «&nbsp;bave&nbsp;» en saturation). C’est le carburant du rock et du métal.</p>
+      <div class="formula">Power chord = 1 + 5 &nbsp;(+ 8)</div>
+      <p>On ajoute souvent l’<b>octave</b> (la fondamentale au-dessus) pour un son plus plein : 3 cordes au lieu de 2.</p>`));
+
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 La forme, et comment elle se déplace'));
+    c.appendChild(el('p','lead','La <b>même</b> forme partout. Le nom de l’accord = la note sous ton <b>index</b> (la fondamentale). Tu connais déjà toutes les fondamentales grâce à l’étape Manche — déplace la forme, c’est tout.'));
+    const ss=el('div','toolrow'); const sE=el('div','tag on','Fond. sur Mi grave'), sA=el('div','tag','Fond. sur La');
+    sE.onclick=()=>{rs=0;sE.classList.add('on');sA.classList.remove('on');draw();}; sA.onclick=()=>{rs=1;sA.classList.add('on');sE.classList.remove('on');draw();};
+    ss.append(sE,sA); c.appendChild(ss);
+    const fsel=el('div','toolrow'); const fTags=[]; for(let f=1;f<=9;f++){ const t=el('div','tag'+(f===fret?' on':''),'C'+f);
+      t.onclick=()=>{fret=f;fTags.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; fTags.push(t); fsel.appendChild(t);} c.appendChild(fsel);
+    const fb=buildFretboard(null); c.appendChild(fb);
+    const nm=el('div','qhead'); c.appendChild(nm);
+    const play=el('button','btn ghost','🔊 Écouter'); play.onclick=()=>strum(shape()); c.appendChild(play);
+    inner.appendChild(c);
+
+    inner.appendChild(el('div','theory',`
+      <h3>Le palm mute (le «&nbsp;chuggo&nbsp;»)</h3>
+      <p>Pose le tranchant de ta main droite (côté auriculaire) sur les cordes <b>tout près du chevalet</b>. Ça étouffe juste ce qu’il faut → le fameux «&nbsp;<b>tchak-tchak</b>&nbsp;» du métal. Trop vers le manche = tout est mort ; ajuste de quelques millimètres.</p>
+      <h3>Pourquoi tu galères (et comment débloquer)</h3>
+      <ul>
+        <li><b>Ça frise / ça sonne mort</b> : appuie <b>juste derrière</b> la barrette (jamais dessus), et <b>cambre</b> les doigts pour ne pas coucher sur les cordes voisines.</li>
+        <li><b>Des cordes parasites sonnent</b> : laisse la <b>pulpe de l’index</b> effleurer les cordes graves inutilisées pour les étouffer.</li>
+        <li><b>L’écart index→annulaire fait mal</b> : garde <b>annulaire + auriculaire collés</b> (ils jouent la même case), poignet bas et relâché, pouce derrière le manche.</li>
+        <li><b>Les changements sont lents</b> : ne relâche pas la forme, <b>glisse-la</b> le long des cordes d’une position à la suivante.</li>
+      </ul>`));
+
+    const q=el('div','card'); q.innerHTML='<b>🎯 Trouve la fondamentale</b><p class="lead" style="margin:6px 0 10px">L’app te donne un power chord. Touche la case de sa <b>fondamentale</b> (sur Mi grave ou La). Ça muscle l’étape Manche là où ça sert vraiment.</p>';
+    const qb=el('button','btn','Lancer le quiz'); qb.onclick=()=>powerQuiz(); q.appendChild(qb); inner.appendChild(q);
+
+    const pr=el('div','card'); pr.innerHTML='<b>🤘 Mets-les en musique</b><p class="lead" style="margin:6px 0 10px">Une suite rock à enchaîner en power chords : palm mute, tempo régulier, même forme qui se déplace.</p>';
+    const prb=el('button','btn ghost','▶ Progression rock'); prb.onclick=()=>openProgression({n:'Rock · power chords',ch:['E5','G5','A5','E5'],tip:'Palm mute, tempo régulier. Déplace la même forme et vise bien la fondamentale sous ton index.'}); pr.appendChild(prb); inner.appendChild(pr);
+
+    function shape(){ const fr=[-1,-1,-1,-1,-1,-1]; fr[rs]=fret; fr[rs+1]=fret+2; fr[rs+2]=fret+2; return {frets:fr}; }
+    function draw(){ fb.clearDots();
+      const pc=midiAt(rs,fret)%12;
+      fb.dot(rs,fret,'1','root'); fb.dot(rs+1,fret+2,'5','on'); fb.dot(rs+2,fret+2,'8','on');
+      nm.innerHTML=`<div class="q">${NOTES[pc]}5</div><div class="sub">fondamentale ${NOTES[pc]} · quinte ${NOTES[midiAt(rs+1,fret+2)%12]} · octave ${NOTES[pc]}</div>`;
+    }
+    draw();
+  });
+}
+function powerQuiz(){
+  ac();
+  let i=0, good=0, cur=null;
+  openOverlay('Trouve la fondamentale', inner=>{
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const qh=el('div','qhead'); inner.appendChild(qh);
+    const fb=buildFretboard((s,f)=>{ if(fb._done)return; answer(s,f); }); inner.appendChild(fb);
+    const foot=el('div'); inner.appendChild(foot);
+    function step(){ if(i>=8) return finish();
+      const rs=Math.random()<.5?0:1, fret=1+Math.floor(Math.random()*9);
+      cur={rs,fret,pc:midiAt(rs,fret)%12};
+      fb._done=false; fb.clearDots(); foot.innerHTML='';
+      prog.innerHTML=`Question <b>${i+1}</b>/8 · ✓ ${good}`;
+      qh.innerHTML=`<div class="q">${NOTES[cur.pc]}5</div><div class="sub">Touche la fondamentale (${NOTES[cur.pc]}) sur Mi grave ou La.</div>`;
+    }
+    function answer(s,f){ const pc=midiAt(s,f)%12; pluck(midiAt(s,f)); fb._done=true;
+      const okPos=(s===0||s===1)&&pc===cur.pc; fb.clearDots();
+      fb.dot(cur.rs,cur.fret,NOTES[cur.pc],'ok'); fb.dot(cur.rs+1,cur.fret+2,'5','on'); fb.dot(cur.rs+2,cur.fret+2,'8','on');
+      if(!(s===cur.rs&&f===cur.fret)) fb.dot(s,f,NOTES[pc],okPos?'ok':'no');
+      if(okPos) good++;
+      qh.querySelector('.sub').textContent = okPos?'✓ Oui — n’importe quelle fondamentale sur Mi grave/La marche.':'Raté : la voilà en vert (+ la forme).';
+      const nx=el('button','btn', i+1<8?'Suivant →':'Terminer'); nx.onclick=()=>{i++;step();}; foot.appendChild(nx);
+    }
+    function finish(){ if(good>(S.powBest||0)){S.powBest=good;save();} qh.innerHTML=`<div class="q">${good}/8</div><div class="sub">${good>=6?'Tu places tes fondamentales — le plus dur est fait.':'Repasse par l’étape Manche : les fondamentales sur Mi grave et La.'}</div>`; fb.clearDots(); foot.innerHTML=''; const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl); }
+    step();
+  });
+}
+
 function renderCartes(){
   const m=document.getElementById('main'); m.innerHTML='';
-  m.appendChild(el('h1','page','Les accords'));
-  m.appendChild(el('p','lead','Ton Anki d’accords. On te montre un accord : essaie de le jouer, puis dis si tu le sais. Su → il revient plus tard ; pas su → il revient vite. Chaque carte explique aussi sa construction.'));
+  m.appendChild(el('h1','page','Accords & cartes'));
+  m.appendChild(el('p','lead','Deux jeux de cartes en répétition espacée — les <b>notes</b> des triades et les <b>formes</b> d’accords — plus un module pour dompter les power chords.'));
+
+  /* ---- Deck 1 : triades (leurs notes) ---- */
+  { const td=tDue(), tk=tKnown();
+    const c=el('div','card');
+    c.innerHTML=`<b>🎼 Triades — connais leurs notes</b><p class="lead" style="margin:6px 0 8px">«&nbsp;A = A · C♯ · E&nbsp;». On te montre un accord, tu dis ses 3 notes de tête, puis tu t’auto-évalues. Su → revient plus tard ; raté → revient vite.</p>`;
+    c.appendChild(el('div','statgrid',`<div class="stat"><b>${tk}/${TRIADS.length}</b><small>triades sues</small></div><div class="stat"><b>${td.length}</b><small>à réviser</small></div><div class="stat"><b>${tBudget()}</b><small>nouvelles auj.</small></div>`));
+    const b=el('button','btn','▶ Réviser les triades'); b.onclick=()=>reviewTriads(td.concat(tNew().slice(0,tBudget()))); c.appendChild(b);
+    const row=el('div','row3'); const bm=el('button','btn ghost','☀️ Majeures'),bn=el('button','btn ghost','🌑 Mineures'),ba=el('button','btn ghost','🎲 Tout');
+    bm.onclick=()=>reviewTriads(TRIADS.filter(x=>x.q==='maj').map(x=>x.n)); bn.onclick=()=>reviewTriads(TRIADS.filter(x=>x.q==='min').map(x=>x.n)); ba.onclick=()=>reviewTriads(TRIADS.map(x=>x.n));
+    row.append(bm,bn,ba); c.appendChild(row); m.appendChild(c); }
+
+  /* ---- Module power chords ---- */
+  { const c=el('div','card'); c.innerHTML='<b>⚡ Maîtriser les power chords</b><p class="lead" style="margin:6px 0 8px">La forme qui se déplace partout, le palm mute, et surtout <b>débloquer ce qui coince</b>. + un quiz «&nbsp;trouve la fondamentale&nbsp;».</p>';
+    const b=el('button','btn','Ouvrir le module'); b.onclick=()=>openPowerModule(); c.appendChild(b); m.appendChild(c); }
+
+  /* ---- Deck 2 : formes d’accords (l’Anki existant) ---- */
+  m.appendChild(el('h1','page','Cartes d’accords (formes)'));
+  m.appendChild(el('p','lead','On te montre un accord : essaie de le jouer, puis dis si tu le sais. Chaque carte explique aussi sa construction.'));
   const due=cDueTotal();
   if(due){ const c=el('div','card'); c.innerHTML=`<b>À réviser maintenant</b><p class="lead" style="margin:6px 0 0"><b style="color:var(--acc)">${due}</b> accord(s) dû(s), toutes catégories.</p>`;
     const b=el('button','btn','▶ Réviser les accords dus'); b.onclick=()=>{ let pool=[]; CHORD_CATS.forEach(k=>pool=pool.concat(cDue(k.id))); reviewChords(pool); }; c.appendChild(b); m.appendChild(c); }
@@ -616,13 +918,14 @@ function renderSuite(){
   m.appendChild(el('h1','page','La suite'));
   m.appendChild(el('p','lead','On construit dans l’ordre. Chaque étape s’appuie sur la précédente.'));
   const steps=[
-    ['1','🎸 Le manche','En cours. Notes par cœur : « trouve tout » + nommer les cases.',true],
-    ['2','🎴 Accompagnement','En cours. Anki d’accords par familles (majeurs → sus → 9/11), avec la logique de construction.',true],
-    ['3','🎤 Impro','La penta d’abord (schémas déplaçables), puis viser les notes des accords dans le solo (si tu joues en penta de La : chercher la tierce Do♯ ? quels effets ?) — et pourquoi ça marche.',false],
-    ['4','🌈 Les modes','Une fois le manche et l’impro en place : les 7 couleurs, par l’oreille et les schémas.',false],
+    {n:'1',t:'🎸 Le manche',d:'En cours. Notes par cœur : « trouve tout » + nommer les cases.',now:true},
+    {n:'2',t:'🎴 Accompagnement',d:'En cours. Anki d’accords + triades + power chords, avec la logique de construction.',now:true},
+    {n:'3',t:'🎤 Impro : penta & notes à viser',d:'La penta majeure/mineure, les 5 positions, et SURTOUT quoi viser : les notes d’accord, la 3ce majeure à ajouter (ton exemple du Do♯), la blue note.',open:openPentaModule},
+    {n:'4',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
   ];
-  steps.forEach(a=>{ const s=el('div','step'+(a[3]?' now':' soon')); s.innerHTML=`<div class="n">${a[0]}</div><div><b>${a[1]}${a[3]?'':'<span class="pill">bientôt</span>'}</b><small>${a[2]}</small></div>`; m.appendChild(s); });
-  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">Impossible d’improviser sans savoir où sont les notes. Le manche d’abord — c’est le seul raccourci qui existe.</p>'));
+  steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
+    if(a.open){ s.style.cursor='pointer'; s.onclick=a.open; } m.appendChild(s); });
+  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">Impossible d’improviser sans savoir où sont les notes. Le manche d’abord — c’est le seul raccourci qui existe. Mais l’impro et les modes sont là quand tu veux t’y projeter.</p>'));
 }
 
 /* ---------------- overlay + nav ---------------- */
@@ -631,7 +934,7 @@ function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><b
 function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } render(); }
 let tab='manche';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; render(); });
-function render(){ const due=cDueTotal(); document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
+function render(){ const due=cDueTotal()+tDue().length; document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
   if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='theorie')renderTheorie(); else renderSuite(); }
 render();
 if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
