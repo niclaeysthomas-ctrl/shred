@@ -61,6 +61,11 @@
   .snums div{text-align:center;font-size:11px;color:var(--dim);font-weight:700}
   .snums div.mk,.snums div.mk2{color:var(--acc)}
   .bigtimer{font-variant-numeric:tabular-nums}
+  /* tablature + grille blues */
+  .tab{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;color:var(--str);background:#140f0a;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;white-space:pre;margin:10px 0}
+  .g12{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+  .g12 .cell{background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:12px 4px;text-align:center;font-weight:800;font-size:15px}
+  .g12 .cell.iv{color:var(--acc);border-color:var(--acc2)}.g12 .cell.v{color:var(--blue);border-color:#3a5a8a}
   /* chord diagram */
   .cdiag{display:inline-block;background:#1c150f;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
   .cdrow{display:grid;grid-template-columns:repeat(6,24px)}
@@ -849,6 +854,152 @@ function powerQuiz(){
   });
 }
 
+/* ================================================================
+   IMPROVISATION — hub : penta · chanson→mode · blues 12 · licks · phrasé
+   ================================================================ */
+function openImproHub(){
+  markDay();
+  openOverlay('Improviser', inner=>{
+    inner.appendChild(el('p','lead','Le vrai terrain de jeu. Prends-le dans l’ordre : la penta et les notes à viser d’abord, puis relie une chanson à un mode, le blues, des licks à voler, et enfin le phrasé — ce qui sépare un solo d’une gamme récitée.'));
+    const items=[
+      ['🎯','La penta & les notes à viser','Les 5 notes, les positions, et surtout QUOI viser (ta 3ce majeure, la blue note).',openPentaModule],
+      ['🎼','De la chanson au mode','« Ma chanson est en Mi mineur → quelle gamme majeure, quelle position, pour quel mode ? » La formule, sur le manche.',openSongMode],
+      ['🥁','Le blues en 12 mesures','La grille, et la note qui fait « pro » sur chaque accord.',openBlues12],
+      ['🎸','Les licks à voler','Des phrases toutes faites (blues, rock) en tablature + au son. Vole-les, déforme-les.',openLicks],
+      ['🗣️','Bien phraser (le secret)','Le silence, les motifs, l’appel-réponse, la tension qui se résout. Le mindset du soliste.',openPhrasing],
+    ];
+    items.forEach(it=>{ const c=el('div','catcard',`<div class="ico">${it[0]}</div><div class="t"><b>${it[1]}</b><small>${it[2]}</small></div><div class="pc">›</div>`); c.onclick=it[3]; inner.appendChild(c); });
+  });
+}
+
+/* --- De la chanson au mode : la formule parent-majeur --- */
+function openSongMode(){
+  ac(); markDay();
+  let root=4, feel='min';                 /* Mi mineur par défaut */
+  const SETS={min:[5,1,2], maj:[0,3,4]};  /* éolien/dorien/phrygien ; ionien/lydien/mixo */
+  const OFF=[0,2,4,5,7,9,11];             /* intervalle du degré de départ dans la majeure */
+  const DEGN=['1er','2e','3e','4e','5e','6e','7e'];
+  let mi=SETS[feel][0];
+  openOverlay('De la chanson au mode', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>L’idée en une phrase</h3>
+      <p>Un <b>mode</b>, c’est une <b>gamme majeure que tu connais déjà</b>, jouée en te reposant sur une <b>autre note</b>. Pour colorer ta chanson, la question est donc : <b>quelle gamme majeure superposer, et sur quelle note revenir ?</b></p>
+      <div class="formula">Mode de degré N sur ta fondamentale<br>= la gamme MAJEURE dont ta fondamentale est le degré N</div>`));
+    const c=el('div','card');
+    c.appendChild(el('b',null,'1. Ta chanson est en…'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;draw();}));
+    const fsel=el('div','toolrow'); const fmin=el('div','tag on','mineur'),fmaj=el('div','tag','majeur');
+    fmin.onclick=()=>{feel='min';fmin.classList.add('on');fmaj.classList.remove('on');mi=SETS.min[0];rebuild();draw();};
+    fmaj.onclick=()=>{feel='maj';fmaj.classList.add('on');fmin.classList.remove('on');mi=SETS.maj[0];rebuild();draw();};
+    fsel.append(fmin,fmaj); c.appendChild(fsel);
+    const lbl=el('b',null,'2. Quelle couleur (mode) ?'); lbl.style.cssText='display:block;margin-top:10px'; c.appendChild(lbl);
+    const chips=el('div','toolrow'); c.appendChild(chips);
+    const fb=buildFretboard(null); c.appendChild(fb);
+    const info=el('div','clogic'); c.appendChild(info);
+    const play=el('button','btn ghost','🔊 Écouter le mode'); play.onclick=()=>playScaleUp(root,MODES[mi].ints); c.appendChild(play);
+    inner.appendChild(c);
+    let chipEls=[];
+    function rebuild(){ chips.innerHTML=''; chipEls=SETS[feel].map(k=>{ const t=el('div','tag'+(k===mi?' on':''),MODES[k].n); t.onclick=()=>{mi=k;chipEls.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; chips.appendChild(t); return t; }); }
+    function draw(){
+      const M=MODES[mi], pcs=pcsFrom(root,M.ints), charPc=M.char!=null?(root+M.char)%12:null;
+      paintScale(fb, root, pcs, {labels:true, char:charPc});
+      const parent=NOTES[((root-OFF[mi])%12+12)%12];
+      info.innerHTML=`<div class="deg">${NOTES[root]} ${M.n} = la gamme de <b>${parent} majeur</b></div>
+        Ta fondamentale <b>${NOTES[root]}</b> est le <b>${DEGN[mi]} degré</b> de ${parent} majeur : joue les <b>positions de ${parent} majeur</b> (celles que tu connais déjà) et <b>repose-toi sur le ${NOTES[root]}</b>.
+        <br><b style="color:var(--blue)">La note qui colore : ${M.charTxt}${charPc!=null?' ('+NOTES[charPc]+', en bleu)':''}.</b> ${feel==='min'&&mi!==5?'C’est elle qui change par rapport au mineur naturel. ':''}${M.txt}`;
+    }
+    rebuild(); draw();
+  });
+}
+
+/* --- Le blues en 12 mesures + notes à viser par accord --- */
+function openBlues12(){
+  ac(); markDay();
+  let chord='A7';
+  const TARG={ 'A7':{pc:1,name:'Do♯',deg:'la tierce majeure de La'}, 'D7':{pc:6,name:'Fa♯',deg:'la tierce de Ré'}, 'E7':{pc:8,name:'Sol♯',deg:'la tierce de Mi'} };
+  const GRID=['A7','A7','A7','A7','D7','D7','A7','A7','E7','D7','A7','E7'];
+  openOverlay('Le blues en 12 mesures', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>La grille (en La)</h3>
+      <p>Le blues, c’est <b>12 mesures</b> qui tournent en boucle, sur 3 accords : <b>La7 (I)</b>, <b>Ré7 (IV)</b>, <b>Mi7 (V)</b>.</p>`));
+    const g=el('div','g12'); GRID.forEach(ch=>g.appendChild(el('div','cell'+(ch==='D7'?' iv':ch==='E7'?' v':''),ch))); inner.appendChild(g);
+    inner.appendChild(el('div','theory',`
+      <h3>Quoi jouer</h3>
+      <p><b>Le raccourci magique :</b> la <b>penta mineure de La</b> sonne sur TOUT le morceau. Tu peux ne faire que ça et déjà être dans le blues.</p>
+      <p><b>Pour sonner pro :</b> sur chaque accord, vise sa <b>tierce</b> — souvent une note HORS de la penta mineure. C’est ça, « jouer les changements ».</p>`));
+    const c=el('div','card'); c.appendChild(el('b',null,'La note à viser sur chaque accord'));
+    const chips=el('div','toolrow'); const chipEls=['A7','D7','E7'].map(k=>{ const t=el('div','tag'+(k===chord?' on':''),k); t.onclick=()=>{chord=k;chipEls.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; chips.appendChild(t); return t; }); c.appendChild(chips);
+    const fb=buildFretboard(null); c.appendChild(fb);
+    const info=el('div','clogic'); c.appendChild(info);
+    inner.appendChild(c);
+    function draw(){
+      const pcs=pcsFrom(9,[0,3,5,7,10]); const tg=TARG[chord];
+      paintScale(fb, 9, pcs, {labels:true, extra:tg.pc});
+      info.innerHTML=`<div class="deg">Sur ${chord} → vise ${tg.name}</div>Penta mineure de La (fondamentale La en rouge). <b style="color:var(--blue)">En bleu : ${tg.name}</b> = ${tg.deg}. Atterris dessus quand ${chord} passe : ton solo « suit » les accords au lieu de rester plat.`;
+    }
+    draw();
+  });
+}
+
+/* --- Les licks : tablature générée depuis les notes + audio --- */
+const LICKS=[
+ {n:'La descente (le squelette)', key:'La min penta · boîte 1', seq:[{s:5,f:8},{s:5,f:5},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:3,f:5},{s:2,f:7},{s:2,f:5},{s:1,f:7},{s:1,f:5},{s:0,f:8},{s:0,f:5}], why:'La boîte 1 de haut en bas. Apprends-la jusqu’à la jouer les yeux fermés : tous les licks en sortent.'},
+ {n:'Le lick blues n°1', key:'La · bend + blue note', seq:[{s:3,f:7,t:'b'},{s:3,f:5},{s:2,f:7},{s:1,f:6,t:'/'},{s:1,f:7,t:'~'}], why:'Plie le Ré (corde de Sol, case 7) d’un ton jusqu’au Mi, redescends Do–La, puis glisse la blue note (Mi♭, case 6) vers le Mi. Ce ♭5→5, c’est LE frisson du blues.'},
+ {n:'Le B.B. King (2 notes)', key:'La · l’émotion', seq:[{s:4,f:8,t:'b'},{s:5,f:5,t:'~'}], why:'Le secret de B.B. : deux notes. Plie le Sol (corde de Si, case 8) jusqu’au La, puis chante le La (mi aigu, case 5) avec un gros vibrato. Moins de notes, plus d’émotion.'},
+ {n:'La cascade (pull-offs)', key:'La · fluidité', seq:[{s:4,f:8,t:'p'},{s:4,f:5},{s:3,f:7,t:'p'},{s:3,f:5},{s:2,f:7,t:'p'},{s:2,f:5}], why:'Des tirés en cascade : joue la case haute, laisse claquer le doigt vers la basse. Le son legato du blues-rock.'},
+ {n:'La couleur majeure (ton Do♯)', key:'La · ♭3 → 3', seq:[{s:2,f:7},{s:3,f:5},{s:3,f:6,t:'h'},{s:3,f:7},{s:4,f:5}], why:'Entre le Do (corde de Sol, case 5) et le Ré (case 7), passe par le Do♯ (case 6) — la tierce MAJEURE. Ce Do→Do♯ éclaire tout de suite le son. C’est ton exemple, en phrase.'},
+ {n:'Le riff rock (en Mi)', key:'Mi min penta · open', seq:[{s:0,f:0},{s:0,f:3,t:'h'},{s:1,f:0},{s:1,f:2},{s:0,f:0}], why:'En Mi, tout tombe sous les doigts en open. Mi–Sol (marteau) puis La–Si, retour au Mi. Palm mute et c’est un riff.'},
+];
+function renderTab(seq){
+  const names=['e','B','G','D','A','E'], rows=[[],[],[],[],[],[]];
+  const labels=seq.map(st=>''+st.f+(st.t?st.t:'')), w=Math.max(2,...labels.map(l=>l.length))+1;
+  seq.forEach((st,i)=>{ const lab=labels[i], rowIdx=5-st.s; for(let r=0;r<6;r++) rows[r].push(r===rowIdx?('-'.repeat(w-lab.length)+lab):'-'.repeat(w)); });
+  return names.map((nm,r)=>nm+'|'+rows[r].join('')+'-|').join('\n');
+}
+function playLick(seq){ ac(); seq.forEach((st,i)=>setTimeout(()=>{ pluck(midiAt(st.s,st.f)+(st.t==='b'?2:0),1.3,.5); },i*340)); }
+function openLicks(){
+  ac(); markDay();
+  openOverlay('Les licks à voler', inner=>{
+    inner.appendChild(el('p','lead','Des phrases toutes faites. Apprends-les LENTEMENT (au son + à la tablature), puis accélère, puis déforme-les — c’est comme ça qu’on se fait un vocabulaire. Légende : b = bend (tiré d’un ton), h = hammer, p = pull-off, / = slide, ~ = vibrato.'));
+    LICKS.forEach(L=>{ const c=el('div','card');
+      c.innerHTML=`<b>${L.n}</b> <span style="color:var(--acc);font-size:12px;font-weight:700">· ${L.key}</span>`;
+      const pre=el('pre','tab'); pre.textContent=renderTab(L.seq); c.appendChild(pre);
+      const p=el('p','lead',L.why); p.style.margin='4px 0 0'; c.appendChild(p);
+      const b=el('button','btn ghost','🔊 Jouer le lick'); b.onclick=()=>playLick(L.seq); c.appendChild(b);
+      inner.appendChild(c);
+    });
+    inner.appendChild(el('div','theory',`<div class="tip">Comment s’entraîner : 1 lick par jour. Joue-le sur La7, puis essaie de le déplacer sur Ré7 et Mi7. Le but n’est pas de les réciter mais de les <b>mélanger</b> et de les casser.</div>`));
+  });
+}
+
+/* --- Bien phraser : le mindset du soliste --- */
+function openPhrasing(){
+  markDay();
+  openOverlay('Bien phraser', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Un solo, c’est une phrase — pas une gamme</h3>
+      <p>Tu peux connaître toutes les notes et sonner ennuyeux. Ce qui fait un solo, c’est <b>comment</b> tu joues les notes. Les leviers, du plus payant au plus fin :</p>
+      <h3>1. Le silence</h3>
+      <p>Les débutants jouent trop. <b>Laisse respirer.</b> Une note tenue puis un blanc vaut mieux qu’une rafale : le silence met en valeur ce qui suit.</p>
+      <h3>2. L’appel-réponse</h3>
+      <p>Joue une petite phrase (l’<b>appel</b>), laisse un trou, réponds par une variation (la <b>réponse</b>). C’est une conversation — le blues n’est QUE ça.</p>
+      <h3>3. Le motif</h3>
+      <p>Prends 3-4 notes avec une <b>rythmique</b> reconnaissable et <b>répète-la</b> en la déplaçant sur les accords. Un motif répété, l’oreille l’attrape.</p>
+      <h3>4. La tension et la résolution</h3>
+      <p>Les notes hors-accord créent de la <b>tension</b> ; les notes de l’accord (surtout la <b>tierce</b>) la <b>résolvent</b>. Finis tes phrases sur une note d’accord et ça sonne « juste » ; reste sur une tension et ça garde du suspens.</p>
+      <h3>5. L’expression : bends & vibrato</h3>
+      <p>C’est ta <b>voix</b>. Un bend <b>juste</b> (bien dans le ton), un vibrato régulier au bout de la note : voilà ce qui sépare un humain d’un logiciel. Travaille-les <b>lentement</b>, à la justesse.</p>
+      <h3>Comment t’entraîner</h3>
+      <ul>
+        <li>Mets un <b>backing track</b> (cherche « backing track blues La » ou « Am jam »).</li>
+        <li>Impose-toi <b>une seule position</b> et <b>5 notes max</b> pendant 2 minutes.</li>
+        <li>Vise la <b>tierce</b> de chaque accord (onglet « Le blues en 12 mesures »).</li>
+        <li>Vole <b>1 lick</b>, joue-le, puis change UNE chose (le rythme, la dernière note).</li>
+      </ul>
+      <div class="tip">La règle d’or : <b>moins de notes, mieux placées, bien exprimées.</b> Toujours.</div>`));
+  });
+}
+
 function renderCartes(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','Accords & cartes'));
@@ -1008,7 +1159,7 @@ function renderSuite(){
   const steps=[
     {n:'1',t:'🎸 Le manche',d:'En cours. Notes par cœur : « trouve tout » + nommer les cases.',now:true},
     {n:'2',t:'🎴 Accompagnement',d:'En cours. Anki d’accords + triades + power chords, avec la logique de construction.',now:true},
-    {n:'3',t:'🎤 Impro : penta & notes à viser',d:'La penta majeure/mineure, les 5 positions, et SURTOUT quoi viser : les notes d’accord, la 3ce majeure à ajouter (ton exemple du Do♯), la blue note.',open:openPentaModule},
+    {n:'3',t:'🎤 Improviser',d:'Le hub complet : penta & notes à viser, de la chanson au mode (« Mi mineur → quelle gamme majeure »), le blues en 12 mesures, des licks à voler, et le phrasé.',open:openImproHub},
     {n:'4',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
