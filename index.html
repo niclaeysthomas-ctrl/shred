@@ -51,6 +51,16 @@
   .toolrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
   .tag{padding:8px 13px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);font-size:13px;font-weight:700;cursor:pointer}
   .tag.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
+  /* string sprint */
+  .sstrip{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));background:linear-gradient(180deg,#2a2018,#1c150f);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:8px 0 2px}
+  .scell{position:relative;height:60px;border-right:1px solid #4a3826;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .scell:first-child{border-right:3px solid #b9a074}
+  .scell .sl2{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--str);opacity:.5;transform:translateY(-1px)}
+  .scell.flash .sl2{background:var(--acc);opacity:.95}.scell.flash{background:rgba(232,161,60,.14)}
+  .snums{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));margin-top:3px}
+  .snums div{text-align:center;font-size:11px;color:var(--dim);font-weight:700}
+  .snums div.mk,.snums div.mk2{color:var(--acc)}
+  .bigtimer{font-variant-numeric:tabular-nums}
   /* chord diagram */
   .cdiag{display:inline-block;background:#1c150f;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
   .cdrow{display:grid;grid-template-columns:repeat(6,24px)}
@@ -131,7 +141,7 @@ const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
 const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, triads:{}, tNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  findBest:{}, quizBest:0, powBest:0, showNames:false, natOnly:true};
+  findBest:{}, quizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
@@ -172,6 +182,77 @@ function buildFretboard(onTap){
 }
 
 /* ================================================================
+   LE SPRINT DES CORDES — apprendre une corde à la fois, contre la montre
+   ================================================================ */
+var _sprintTimer=null;
+const SPRINT_N=10;
+function buildStringStrip(s,onTap){
+  const wrap=el('div'), strip=el('div','sstrip'), cells=[];
+  for(let f=0;f<=FRETS;f++){ const c=el('div','scell'); c.appendChild(el('div','sl2')); c.dataset.f=f; c.onclick=()=>onTap&&onTap(f,c); strip.appendChild(c); cells.push(c); }
+  wrap.appendChild(strip);
+  const nums=el('div','snums'), marks={3:1,5:1,7:1,9:1,12:2};
+  for(let f=0;f<=FRETS;f++) nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f));
+  wrap.appendChild(nums);
+  wrap.dot=(f,label,cls)=>{ const c=cells[f]; let d=c.querySelector('.fdot'); if(!d){ d=el('div','fdot'); c.appendChild(d);} d.className='fdot '+(cls||''); d.textContent=label==null?'':label; return d; };
+  wrap.clear=()=>cells.forEach(c=>{ const d=c.querySelector('.fdot'); if(d)d.remove(); });
+  wrap.flash=(f)=>{ const c=cells[f]; c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),200); };
+  return wrap;
+}
+function sprintBest(s){ return (S.sprint&&S.sprint.best&&S.sprint.best[s])||null; }
+function sprintRecommend(){ for(const k of [0,1,2,3,4,5]){ const b=sprintBest(k); if(!b||!b.clean) return k; } return 0; }
+function openStringSprint(){
+  ac(); markDay();
+  let s=sprintRecommend(), withSharps=false;
+  openOverlay('Le sprint des cordes', inner=>{
+    inner.appendChild(el('p','lead','Une corde à la fois. Je te dis une note, tu la touches sur cette corde le plus VITE possible. But : trouver chaque note sans réfléchir — la vitesse vient toute seule après.'));
+    const pick=el('div','card'); pick.appendChild(el('b',null,'1. Choisis ta corde'));
+    const chips=el('div','toolrow'); const chipEls=[0,1,2,3,4,5].map(k=>{ const b=sprintBest(k);
+      const t=el('div','tag'+(k===s?' on':''), STR_NAME[k]+(b&&b.clean?' ✓':'')); t.onclick=()=>{ s=k; chipEls.forEach(x=>x.classList.remove('on')); t.classList.add('on'); refresh(); }; chips.appendChild(t); return t; }); pick.appendChild(chips);
+    const shTag=el('div','tag','Inclure les ♯/♭'); const shRow=el('div','toolrow'); shRow.appendChild(shTag);
+    shTag.onclick=()=>{ withSharps=!withSharps; shTag.classList.toggle('on',withSharps); refresh(); }; pick.appendChild(shRow);
+    const rec=el('p','lead',''); pick.appendChild(rec); inner.appendChild(pick);
+    const arena=el('div','card'); inner.appendChild(arena);
+    function refresh(){
+      const b=sprintBest(s);
+      rec.innerHTML=`Corde <b>${strNo(s)}</b> — ${STR_NAME[s]}. ${b?('Record : <b style="color:var(--acc)">'+(b.ms/1000).toFixed(1)+'s</b>'+(b.clean?' · ✓ déjà sans faute':'')):'Jamais tenté.'}`;
+      arena.innerHTML=''; arena.appendChild(el('b',null,'2. Prêt ?'));
+      arena.appendChild(el('p','lead',`${SPRINT_N} notes à trouver sur la corde de <b>${STR_NAME[s]}</b>${withSharps?' (dièses compris)':''}. Le chrono part à la 1re note.`));
+      const go=el('button','btn','▶ Go !'); go.onclick=()=>runSprint(s,arena,refresh,withSharps); arena.appendChild(go);
+    }
+    refresh();
+  });
+}
+function runSprint(s,arena,back,withSharps){
+  const pool = withSharps? [0,1,2,3,4,5,6,7,8,9,10,11] : NAT.slice();
+  const shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i];a[i]=a[j];a[j]=t; } return a; };
+  const seq=shuf(pool).concat(shuf(pool)).slice(0,SPRINT_N);
+  let i=0, err=0, t0=0;
+  arena.innerHTML='';
+  const prompt=el('div','qhead'); arena.appendChild(prompt);
+  const strip=buildStringStrip(s,(f,cell)=>onTap(f,cell)); arena.appendChild(strip);
+  const foot=el('div'); arena.appendChild(foot);
+  function tick(){ const t=prompt.querySelector('.timer'); if(t&&t0) t.textContent=((performance.now()-t0)/1000).toFixed(1)+'s'; }
+  function show(){ const pc=seq[i], name=NOTES[pc], elapsed=t0?((performance.now()-t0)/1000).toFixed(1):'0.0';
+    prompt.innerHTML=`<div class="sub">Note <b>${i+1}</b>/${SPRINT_N} · ❌ ${err} · <span class="timer bigtimer">${elapsed}s</span></div><div class="q" style="font-size:40px">${name}</div><div class="sub">sur la corde de ${STR_NAME[s]}</div>`;
+    if(i===0 && !t0){ t0=performance.now(); if(_sprintTimer)clearInterval(_sprintTimer); _sprintTimer=setInterval(tick,100); }
+  }
+  function onTap(f,cell){ if(strip._done)return; pluck(midiAt(s,f));
+    if(midiAt(s,f)%12===seq[i]){ strip.flash(f); const d=strip.dot(f,NOTES[seq[i]],'ok'); setTimeout(()=>{ if(d&&d.parentNode)d.remove(); },260); i++; if(i>=SPRINT_N) return finish(); show(); }
+    else { err++; const d=strip.dot(f,NOTES[midiAt(s,f)%12],'no'); setTimeout(()=>{ if(d&&d.parentNode)d.remove(); },360); show(); }
+  }
+  function finish(){ strip._done=true; if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } const ms=performance.now()-t0;
+    if(!S.sprint.best)S.sprint.best={}; const prev=S.sprint.best[s]||{ms:Infinity,clean:false};
+    const isBest=ms<prev.ms; S.sprint.best[s]={ ms:Math.min(prev.ms,ms), clean:prev.clean||err===0 };
+    S.xp+=Math.max(2,SPRINT_N-err); save();
+    prompt.innerHTML=`<div class="q">${(ms/1000).toFixed(1)}s</div><div class="sub">${err===0?'⭐ Sans faute !':err+' erreur(s) — vise le sans-faute'}${isBest?' · 🏆 nouveau record !':''}</div>`;
+    strip.clear(); foot.innerHTML='';
+    const again=el('button','btn','↻ Encore'); again.onclick=()=>runSprint(s,arena,back,withSharps); foot.appendChild(again);
+    const chg=el('button','btn ghost','← Changer de corde'); chg.onclick=back; foot.appendChild(chg);
+  }
+  show();
+}
+
+/* ================================================================
    VUE : LE MANCHE
    ================================================================ */
 function renderManche(){
@@ -195,6 +276,13 @@ function renderManche(){
   const b=el('button','btn','Lancer « trouve tout »'); b.onclick=()=>openFindAll(); c2.appendChild(b);
   const b2=el('button','btn ghost','🎯 Nommer 10 cases au hasard'); b2.onclick=()=>openNameQuiz(); c2.appendChild(b2);
   m.appendChild(c2);
+
+  const cs=el('div','card');
+  cs.innerHTML='<b>⏱ Le sprint des cordes</b><p class="lead" style="margin:6px 0 10px">Corde par corde (Mi grave d’abord). Je nomme une note, tu la touches le plus vite possible sur cette corde. Le chrono te pousse à ne plus réfléchir.</p>';
+  const bs=el('button','btn','Lancer le sprint'); bs.onclick=()=>openStringSprint(); cs.appendChild(bs);
+  const done=[0,1,2,3,4,5].filter(k=>{ const b=sprintBest(k); return b&&b.clean; }).length;
+  cs.appendChild(el('p','lead',`<span style="color:var(--acc);font-weight:700">${done}/6</span> cordes réussies sans faute.`)).style.margin='10px 0 0';
+  m.appendChild(cs);
 
   const c3=el('div','card'); c3.innerHTML='<b>Tes records</b>';
   c3.appendChild(el('div','statgrid',
@@ -931,7 +1019,7 @@ function renderSuite(){
 /* ---------------- overlay + nav ---------------- */
 const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
 function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
-function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } render(); }
+function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } render(); }
 let tab='manche';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; render(); });
 function render(){ const due=cDueTotal()+tDue().length; document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
