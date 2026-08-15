@@ -860,12 +860,14 @@ function powerQuiz(){
 function openImproHub(){
   markDay();
   openOverlay('Improviser', inner=>{
-    inner.appendChild(el('p','lead','Le vrai terrain de jeu. Prends-le dans l’ordre : la penta et les notes à viser d’abord, puis relie une chanson à un mode, le blues, des licks à voler, et enfin le phrasé — ce qui sépare un solo d’une gamme récitée.'));
+    inner.appendChild(el('p','lead','Le vrai terrain de jeu. Commence par le lick du jour, puis pioche : la penta et les notes à viser, relier une chanson à un mode, le blues, des licks & riffs, la technique, et le phrasé.'));
+    inner.appendChild(lickOfDayCard(true));
     const items=[
       ['🎯','La penta & les notes à viser','Les 5 notes, les positions, et surtout QUOI viser (ta 3ce majeure, la blue note).',openPentaModule],
       ['🎼','De la chanson au mode','« Ma chanson est en Mi mineur → quelle gamme majeure, quelle position, pour quel mode ? » La formule, sur le manche.',openSongMode],
       ['🥁','Le blues en 12 mesures','La grille, et la note qui fait « pro » sur chaque accord.',openBlues12],
-      ['🎸','Les licks à voler','Des phrases toutes faites (blues, rock) en tablature + au son. Vole-les, déforme-les.',openLicks],
+      ['🎸','Licks, riffs & lick du jour','Des phrases toutes faites (blues, rock) + des riffs de style (metal, funk…), en tablature + au son.',openLicks],
+      ['🕷️','Technique & déliateurs','L’araignée, l’aller-retour, le legato… les exos qui construisent ta main : vitesse, indépendance, précision.',openTechnique],
       ['🗣️','Bien phraser (le secret)','Le silence, les motifs, l’appel-réponse, la tension qui se résout. Le mindset du soliste.',openPhrasing],
     ];
     items.forEach(it=>{ const c=el('div','catcard',`<div class="ico">${it[0]}</div><div class="t"><b>${it[1]}</b><small>${it[2]}</small></div><div class="pc">›</div>`); c.onclick=it[3]; inner.appendChild(c); });
@@ -949,6 +951,27 @@ const LICKS=[
  {n:'La cascade (pull-offs)', key:'La · fluidité', seq:[{s:4,f:8,t:'p'},{s:4,f:5},{s:3,f:7,t:'p'},{s:3,f:5},{s:2,f:7,t:'p'},{s:2,f:5}], why:'Des tirés en cascade : joue la case haute, laisse claquer le doigt vers la basse. Le son legato du blues-rock.'},
  {n:'La couleur majeure (ton Do♯)', key:'La · ♭3 → 3', seq:[{s:2,f:7},{s:3,f:5},{s:3,f:6,t:'h'},{s:3,f:7},{s:4,f:5}], why:'Entre le Do (corde de Sol, case 5) et le Ré (case 7), passe par le Do♯ (case 6) — la tierce MAJEURE. Ce Do→Do♯ éclaire tout de suite le son. C’est ton exemple, en phrase.'},
  {n:'Le riff rock (en Mi)', key:'Mi min penta · open', seq:[{s:0,f:0},{s:0,f:3,t:'h'},{s:1,f:0},{s:1,f:2},{s:0,f:0}], why:'En Mi, tout tombe sous les doigts en open. Mi–Sol (marteau) puis La–Si, retour au Mi. Palm mute et c’est un riff.'},
+ {n:'Le blues répétitif', key:'La · le motif qui insiste', seq:[{s:3,f:7,t:'b'},{s:3,f:5},{s:4,f:5},{s:3,f:7,t:'b'},{s:3,f:5},{s:4,f:5}], why:'Répète un petit motif (Ré-bendé-Mi, Do, Mi aigu) : l’oreille adore ce qui revient. Un bon solo, c’est souvent UNE idée répétée, pas dix idées.'},
+ {n:'La mitraillette (séquence)', key:'La · vitesse par groupes', seq:[{s:5,f:8},{s:5,f:5},{s:4,f:8},{s:5,f:5},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:4,f:5},{s:3,f:7},{s:3,f:5}], why:'Le secret des traits rapides : joue la penta par petits groupes qui se chevauchent, pas note par note. Lentement d’abord, la vitesse suit.'},
+ {n:'Le lick de résolution', key:'La · finir propre sur la tonique', seq:[{s:4,f:8,t:'b'},{s:5,f:5},{s:5,f:8},{s:5,f:5},{s:4,f:5},{s:2,f:7,t:'~'}], why:'Pour BIEN finir une phrase, tombe sur le La (la fondamentale, ici corde de Ré case 7) avec un vibrato. Ça sonne « résolu », posé — pas en suspens.'},
+];
+/* riffs : patterns originaux dans les grands styles (pas de copie d’œuvre) */
+const RIFFS=[
+ {n:'Shuffle blues (en La)', key:'boogie · corde de La & Ré', seq:[{s:1,f:0},{s:2,f:2},{s:2,f:4},{s:2,f:2},{s:1,f:0},{s:2,f:2},{s:2,f:4},{s:2,f:2}], why:'La pompe du blues : la basse monte 1–5–6–5 (La–Mi–Fa♯–Mi). Joue-la en swing (ternaire, « ta-tam ta-tam »). Toute la boogie et le rock’n’roll sont là-dessus.'},
+ {n:'Rock (power chords)', key:'Mi5 · Sol5 · La5', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:0}], why:'Joue chaque note en POWER CHORD (la forme du module ⚡), palm mute léger. Mi5–Sol5–La5 : la marche rock la plus classique du monde.'},
+ {n:'Gallop metal', key:'Mi grave · palm mute serré', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], why:'« Da-da-dum, da-da-dum » : trois Mi graves palm-mutés serrés, ponctués d’une note (Sol, La). Médiator en bas-bas-bas. Le moteur du metal.'},
+ {n:'Funk (single-note groove)', key:'Mi min · joue COURT', seq:[{s:2,f:2},{s:3,f:0},{s:2,f:2},{s:2,f:0},{s:3,f:2},{s:2,f:2}], why:'Le funk, c’est le rythme et les SILENCES. Joue des notes très courtes, étouffe entre chaque (ghost notes), reste collé au groove. Moins de notes, plus de place.'},
+];
+/* technique : déliateurs (l’araignée & co) — construits, pas « musicaux » */
+const SPIDER=[]; for(let s=0;s<6;s++)for(let f=1;f<=4;f++) SPIDER.push({s,f});
+const SPIDER_X=[]; for(let a=0;a<5;a++){ SPIDER_X.push({s:a,f:1},{s:a+1,f:2},{s:a,f:3},{s:a+1,f:4}); }
+const TECH=[
+ {n:'🕷️ L’araignée', key:'déliateur chromatique', seq:SPIDER, how:'Un doigt par case (1-2-3-4). Monte corde par corde du Mi grave au Mi aigu, puis redescends. Chaque note claire avant de passer à la suivante.', why:'LE déliateur : indépendance des 4 doigts + synchro main gauche/droite. 5 min par jour et ta main change en deux semaines.'},
+ {n:'🕸️ L’araignée croisée', key:'le vrai « spider »', seq:SPIDER_X, how:'Tu traverses les cordes en gardant chaque doigt sur SA case (1 et 3 sur une corde, 2 et 4 sur la voisine). Ne regarde pas ta main.', why:'Force les doigts faibles (annulaire, auriculaire) et t’apprend à changer de corde proprement — le point qui bloque tout le monde.'},
+ {n:'↔️ Aller-retour', key:'médiator régulier', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Bas-haut-bas-haut au médiator, STRICT. Sur une seule corde d’abord. Vise la régularité (comme un métronome), pas la vitesse.', why:'La base de toute la vitesse à droite. Un aller-retour régulier = des gammes et des licks rapides plus tard.'},
+ {n:'🌊 Legato (marteaux & tirés)', key:'la main gauche fait le son', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'},{s:3,f:8,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'Frappe (hammer) et arrache (pull-off) SANS repincer : une seule attaque au médiator, tout le reste vient des doigts gauches. Cherche l’égalité de volume.', why:'Le son fluide, « coulé », du blues-rock et du solo. Muscle aussi ta main gauche.'},
+ {n:'⛷️ Cordes sautées', key:'précision main droite', seq:[{s:0,f:5},{s:2,f:5},{s:1,f:5},{s:3,f:5},{s:2,f:5},{s:4,f:5}], how:'Saute une corde à chaque note. Vise juste, sans accrocher la corde du milieu. Lent et net.', why:'Précision de la main droite : tu vises la bonne corde à tous les coups. Ouvre les sons plus larges (arpèges).'},
+ {n:'🖐️ L’étirement', key:'gagner en allonge', seq:[{s:0,f:1},{s:0,f:5},{s:1,f:2},{s:1,f:6},{s:2,f:3},{s:2,f:7}], how:'Écarte index (case basse) et auriculaire (case haute) sur des cases éloignées. DOUCEMENT, jamais dans la douleur — on gagne en amplitude par petites touches.', why:'De la souplesse dans la main = des accords et des écarts plus confortables. À faire échauffé.'},
 ];
 function renderTab(seq){
   const names=['e','B','G','D','A','E'], rows=[[],[],[],[],[],[]];
@@ -957,18 +980,45 @@ function renderTab(seq){
   return names.map((nm,r)=>nm+'|'+rows[r].join('')+'-|').join('\n');
 }
 function playLick(seq){ ac(); seq.forEach((st,i)=>setTimeout(()=>{ pluck(midiAt(st.s,st.f)+(st.t==='b'?2:0),1.3,.5); },i*340)); }
+const dayNum=()=>Math.floor(Date.now()/864e5);
+function lickOfDay(){ return LICKS[dayNum()%LICKS.length]; }
+function lickCard(L){ const c=el('div','card');
+  c.innerHTML=`<b>${L.n}</b>${L.key?` <span style="color:var(--acc);font-size:12px;font-weight:700">· ${L.key}</span>`:''}`;
+  const pre=el('pre','tab'); pre.textContent=renderTab(L.seq); c.appendChild(pre);
+  if(L.how){ const h=el('p','lead','🖐 '+L.how); h.style.margin='4px 0 0'; c.appendChild(h); }
+  const p=el('p','lead',L.why); p.style.margin='4px 0 0'; c.appendChild(p);
+  const b=el('button','btn ghost','🔊 Jouer'); b.onclick=()=>playLick(L.seq); c.appendChild(b);
+  return c;
+}
+function lickOfDayCard(withOpen){ const L=lickOfDay(); const c=el('div','card'); c.style.borderColor='var(--acc)';
+  c.innerHTML=`<b>🎸 Lick du jour</b> <span style="color:var(--acc);font-size:12px;font-weight:700">· ${L.n}</span><p class="lead" style="margin:6px 0 8px">Celui à travailler aujourd’hui : lentement, puis plus vite, puis déforme-le. ${L.why}</p>`;
+  const pre=el('pre','tab'); pre.textContent=renderTab(L.seq); c.appendChild(pre);
+  const b=el('button','btn','🔊 Jouer le lick du jour'); b.onclick=()=>playLick(L.seq); c.appendChild(b);
+  if(withOpen){ const o=el('button','btn ghost','Tous les licks & riffs ›'); o.onclick=()=>openLicks(); c.appendChild(o); }
+  return c;
+}
 function openLicks(){
   ac(); markDay();
-  openOverlay('Les licks à voler', inner=>{
-    inner.appendChild(el('p','lead','Des phrases toutes faites. Apprends-les LENTEMENT (au son + à la tablature), puis accélère, puis déforme-les — c’est comme ça qu’on se fait un vocabulaire. Légende : b = bend (tiré d’un ton), h = hammer, p = pull-off, / = slide, ~ = vibrato.'));
-    LICKS.forEach(L=>{ const c=el('div','card');
-      c.innerHTML=`<b>${L.n}</b> <span style="color:var(--acc);font-size:12px;font-weight:700">· ${L.key}</span>`;
-      const pre=el('pre','tab'); pre.textContent=renderTab(L.seq); c.appendChild(pre);
-      const p=el('p','lead',L.why); p.style.margin='4px 0 0'; c.appendChild(p);
-      const b=el('button','btn ghost','🔊 Jouer le lick'); b.onclick=()=>playLick(L.seq); c.appendChild(b);
-      inner.appendChild(c);
-    });
-    inner.appendChild(el('div','theory',`<div class="tip">Comment s’entraîner : 1 lick par jour. Joue-le sur La7, puis essaie de le déplacer sur Ré7 et Mi7. Le but n’est pas de les réciter mais de les <b>mélanger</b> et de les casser.</div>`));
+  openOverlay('Licks, riffs & lick du jour', inner=>{
+    inner.appendChild(lickOfDayCard(false));
+    inner.appendChild(el('p','lead','Légende : b = bend (tiré d’un ton), h = hammer, p = pull-off, / = slide, ~ = vibrato. Sauf mention, tout est en La (penta), boîte 1.'));
+    inner.appendChild(el('h1','page','Les licks'));
+    LICKS.forEach(L=>inner.appendChild(lickCard(L)));
+    inner.appendChild(el('h1','page','Les riffs'));
+    inner.appendChild(el('p','lead','Les patterns des grands styles (blues, rock, metal, funk) — le geste qu’on retrouve partout. Apprends le mouvement, pas la copie d’un morceau précis.'));
+    RIFFS.forEach(L=>inner.appendChild(lickCard(L)));
+    inner.appendChild(el('div','theory',`<div class="tip">La routine : le <b>lick du jour</b> (en haut) + un riff qui te plaît. Au métronome, tempo lent → tu montes seulement quand c’est PROPRE. Le but n’est pas de réciter mais de <b>mélanger</b> et de casser.</div>`));
+  });
+}
+function openTechnique(){
+  ac(); markDay();
+  openOverlay('Technique & déliateurs', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Ces exercices ne « sonnent » pas — ils construisent ta main</h3>
+      <p>La règle d’or : <b>lentement, au métronome, chaque note nette</b>. La vitesse vient toute seule quand c’est propre — jamais l’inverse. <b>5 minutes par jour</b> suffisent à tout changer.</p>
+      <div class="tip">Un doigt par case : index = 1, majeur = 2, annulaire = 3, auriculaire = 4. Ne regarde pas ta main gauche : apprends à SENTIR les cases.</div>`));
+    TECH.forEach(L=>inner.appendChild(lickCard(L)));
+    inner.appendChild(el('div','theory',`<div class="tip">Progression : trouve le tempo où tu joues 3 fois de suite SANS faute, puis +5 BPM. Note-le dans un coin. C’est comme ça qu’on gagne en vitesse pour de vrai.</div>`));
   });
 }
 
@@ -1159,7 +1209,7 @@ function renderSuite(){
   const steps=[
     {n:'1',t:'🎸 Le manche',d:'En cours. Notes par cœur : « trouve tout » + nommer les cases.',now:true},
     {n:'2',t:'🎴 Accompagnement',d:'En cours. Anki d’accords + triades + power chords, avec la logique de construction.',now:true},
-    {n:'3',t:'🎤 Improviser',d:'Le hub complet : penta & notes à viser, de la chanson au mode (« Mi mineur → quelle gamme majeure »), le blues en 12 mesures, des licks à voler, et le phrasé.',open:openImproHub},
+    {n:'3',t:'🎤 Improviser',d:'Le hub complet : lick du jour, penta & notes à viser, de la chanson au mode, le blues en 12 mesures, licks & riffs, la technique (araignée…), et le phrasé.',open:openImproHub},
     {n:'4',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
