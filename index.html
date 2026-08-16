@@ -961,6 +961,12 @@ const RIFFS=[
  {n:'Rock (power chords)', key:'Mi5 · Sol5 · La5', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:0}], why:'Joue chaque note en POWER CHORD (la forme du module ⚡), palm mute léger. Mi5–Sol5–La5 : la marche rock la plus classique du monde.'},
  {n:'Gallop metal', key:'Mi grave · palm mute serré', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], why:'« Da-da-dum, da-da-dum » : trois Mi graves palm-mutés serrés, ponctués d’une note (Sol, La). Médiator en bas-bas-bas. Le moteur du metal.'},
  {n:'Funk (single-note groove)', key:'Mi min · joue COURT', seq:[{s:2,f:2},{s:3,f:0},{s:2,f:2},{s:2,f:0},{s:3,f:2},{s:2,f:2}], why:'Le funk, c’est le rythme et les SILENCES. Joue des notes très courtes, étouffe entre chaque (ghost notes), reste collé au groove. Moins de notes, plus de place.'},
+ {n:'Surf / western', key:'Mi min · trémolo + réverb', seq:[{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:7},{s:0,f:5},{s:0,f:3}], why:'Le son « spaghetti western » / Tarantino : trémolo (aller-retour ultra-rapide sur chaque note) et réverb à fond. Descends la corde de Mi grave, dramatique et mouillé.'},
+ {n:'Espagnol (phrygien)', key:'Mi phrygien · le ♭2', seq:[{s:0,f:0},{s:0,f:1},{s:0,f:3},{s:0,f:5},{s:0,f:3},{s:0,f:1},{s:0,f:0}], why:'La couleur flamenco/orientale : le Fa juste au-dessus du Mi (le ♭2 du mode phrygien, cf. tes fiches de modes). Allers-retours nerveux, accents secs.'},
+ {n:'Punk (tout en bas)', key:'Mi5–La5–Si5 · downstrokes', seq:[{s:0,f:0},{s:0,f:0},{s:1,f:0},{s:1,f:0},{s:0,f:0},{s:0,f:0},{s:1,f:2},{s:1,f:2}], why:'Trois power chords, TOUT en coups vers le bas du médiator, tempo rapide, aucune finesse. L’énergie avant la technique — le punk en deux minutes.'},
+ {n:'Stoner / heavy', key:'Mi blues · lourd & lent', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:6},{s:0,f:5}], why:'Lent, gras, en bas : Mi–Mi–Sol–Mi–Si♭(la blue note)–La. Grosse disto, tempo traînant. Le riff « désert » qui écrase tout.'},
+ {n:'Grunge (années 90)', key:'Mi5 + une note qui frotte', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:6},{s:0,f:5}], why:'Power chords + une note dissonante (le Si♭, la ♭5) qui « frotte ». Alterne propre/sale, doux/fort — c’est le contraste, pas la vitesse, qui fait le son 90s.'},
+ {n:'Celtique / folk', key:'Ré majeur · corde de Ré', seq:[{s:2,f:0},{s:2,f:2},{s:2,f:4},{s:2,f:5},{s:2,f:4},{s:2,f:2}], why:'Un air de gigue : Ré–Mi–Fa♯–Sol qui monte et redescend sur la corde de Ré. Joue-le rond et dansant, façon musique celtique.'},
 ];
 /* technique : déliateurs (l’araignée & co) — construits, pas « musicaux » */
 const SPIDER=[]; for(let s=0;s<6;s++)for(let f=1;f<=4;f++) SPIDER.push({s,f});
@@ -1005,7 +1011,7 @@ function openLicks(){
     inner.appendChild(el('h1','page','Les licks'));
     LICKS.forEach(L=>inner.appendChild(lickCard(L)));
     inner.appendChild(el('h1','page','Les riffs'));
-    inner.appendChild(el('p','lead','Les patterns des grands styles (blues, rock, metal, funk) — le geste qu’on retrouve partout. Apprends le mouvement, pas la copie d’un morceau précis.'));
+    inner.appendChild(el('p','lead','Un tour des grands styles — blues, rock, metal, funk, surf, flamenco, punk, stoner, grunge, celtique. Ce sont des riffs que j’ai composés pour te faire travailler LE GESTE de chaque genre (pas la copie d’un morceau précis). Apprends le mouvement : après, tu reconnais et tu rejoues n’importe quel riff du même style.'));
     RIFFS.forEach(L=>inner.appendChild(lickCard(L)));
     inner.appendChild(el('div','theory',`<div class="tip">La routine : le <b>lick du jour</b> (en haut) + un riff qui te plaît. Au métronome, tempo lent → tu montes seulement quand c’est PROPRE. Le but n’est pas de réciter mais de <b>mélanger</b> et de casser.</div>`));
   });
