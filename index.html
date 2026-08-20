@@ -289,6 +289,11 @@ function renderManche(){
   cs.appendChild(el('p','lead',`<span style="color:var(--acc);font-weight:700">${done}/6</span> cordes réussies sans faute.`)).style.margin='10px 0 0';
   m.appendChild(cs);
 
+  const cg=el('div','card');
+  cg.innerHTML='<b>🪜 La gamme majeure en positions</b><p class="lead" style="margin:6px 0 10px">Une fois les notes en place : les <b>5 formes</b> de la gamme majeure, à connaître dans l’ordre. C’est ta penta + 2 notes. Commence par la Position 1 — mobile, tu joues en majeur dans toutes les tonalités.</p>';
+  const bg=el('button','btn ghost','Voir les positions'); bg.onclick=()=>openMajorPositions(); cg.appendChild(bg);
+  m.appendChild(cg);
+
   const c3=el('div','card'); c3.innerHTML='<b>Tes records</b>';
   c3.appendChild(el('div','statgrid',
     `<div class="stat"><b>${S.quizBest||0}/10</b><small>nommer les cases</small></div>
@@ -775,6 +780,171 @@ function openModesModule(){
 }
 
 /* ================================================================
+   LES POSITIONS DE LA GAMME MAJEURE — 5 formes, « penta + 2 notes »
+   ================================================================ */
+const MAJ_INTS=[0,2,4,5,7,9,11], MAJ_PENTA_INTS=[0,2,4,7,9], ADDED_INTS=[5,11];
+const DEG_LABEL={0:'1',2:'2',4:'3',5:'4',7:'5',9:'6',11:'7'};
+const POS_OFF=[0,2,4,7,9];
+function fretOnLowE(pc){ return ((pc-4)%12+12)%12; }         /* case de la note sur Mi grave (0..11) */
+function fitLow(base){ const b=((base%12)+12)%12; return b<=9?b:9; } /* fenêtre de 4 cases qui tient dans 0..12 */
+function paintPosition(fb, root, low, full, labelNotes){
+  fb.clearDots();
+  const majPcs=pcsFrom(root,MAJ_INTS), addPcs=pcsFrom(root,ADDED_INTS), lit=[];
+  for(let s=0;s<6;s++) for(let f=low; f<=low+3 && f<=FRETS; f++){ if(f<0) continue;
+    const pc=midiAt(s,f)%12; if(majPcs.indexOf(pc)<0) continue;
+    const isAdded=addPcs.indexOf(pc)>=0; if(isAdded && !full) continue;
+    const isRoot=pc===root, deg=DEG_LABEL[((pc-root)%12+12)%12];
+    fb.dot(s,f, labelNotes?NOTES[pc]:deg, isRoot?'root':(isAdded?'pick':'on'));
+    lit.push({s,f,m:midiAt(s,f)}); }
+  return lit;
+}
+function openMajorPositions(){
+  ac(); markDay();
+  let root=7, pos=0, full=true, labelNotes=false;   /* défaut : Sol majeur (relatif Mi mineur) */
+  openOverlay('La gamme majeure en positions', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>5 formes, tout le manche</h3>
+      <p>La gamme majeure sur tout le manche, ce n’est pas 100 notes à retenir : ce sont <b>5 formes</b> (positions) qui se répètent et s’emboîtent. Tu les apprends <b>une par une</b>, dans l’ordre.</p>
+      <div class="formula">Gamme majeure = ta PENTA (5 notes) + 2 notes</div>
+      <p>Tu connais déjà les boîtes de pentatonique. Dans chaque position, la penta est là (en <b>orange</b>) — il suffit d’<b>ajouter 2 notes</b> (la <b>4</b> et la <b>7</b>, en <b>bleu</b>) pour avoir la gamme majeure complète. C’est tout.</p>
+      <div class="tip"><b>La n°1 d’abord.</b> Sa fondamentale est sur la corde de Mi grave — des notes que tu connais déjà (étape Manche). Apprends-la <b>mobile</b> : tu joues alors la gamme majeure dans <b>n’importe quelle tonalité</b>.</div>`));
+
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Ta tonalité'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;draw();}));
+    const relNote=el('p','lead',''); relNote.style.margin='2px 0 6px'; c.appendChild(relNote);
+    const psel=el('div','toolrow'); const pTags=POS_OFF.map((_,i)=>{ const t=el('div','tag'+(i===pos?' on':''),(i===0?'★ ':'')+'Position '+(i+1)); t.onclick=()=>{pos=i;pTags.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; psel.appendChild(t); return t; }); c.appendChild(psel);
+    const opts=el('div','toolrow');
+    const tFull=el('div','tag on','Gamme complète'), tPenta=el('div','tag','Penta seule'), tLab=el('div','tag','Degrés');
+    tFull.onclick=()=>{full=true;tFull.classList.add('on');tPenta.classList.remove('on');draw();};
+    tPenta.onclick=()=>{full=false;tPenta.classList.add('on');tFull.classList.remove('on');draw();};
+    tLab.onclick=()=>{labelNotes=!labelNotes;tLab.classList.toggle('on',labelNotes);tLab.textContent=labelNotes?'Notes':'Degrés';draw();};
+    opts.append(tFull,tPenta,tLab); c.appendChild(opts);
+    const fb=buildFretboard((s,f)=>pluck(midiAt(s,f))); c.appendChild(fb);
+    const info=el('div','clogic'); c.appendChild(info);
+    const play=el('button','btn ghost','🔊 Écouter la position'); c.appendChild(play);
+    inner.appendChild(c);
+
+    inner.appendChild(el('div','theory',`
+      <h3>Dans quel ordre les apprendre</h3>
+      <ol style="margin:0 0 10px 18px;color:#d8cebf;line-height:1.65">
+        <li><b>Position 1</b> par cœur, mobile → tu joues déjà en majeur partout.</li>
+        <li><b>Position 2</b> (au-dessus) et <b>Position 5</b> (en dessous) pour entourer la 1.</li>
+        <li><b>Relie-les</b> : glisse de l’une à l’autre sans t’arrêter.</li>
+        <li>Ajoute enfin <b>3 et 4</b> pour couvrir tout le manche.</li>
+        <li>Passe des <b>degrés</b> aux <b>vraies notes</b> (bouton « Notes ») : tu sais où viser.</li>
+      </ol>
+      <div class="tip">Chaque forme est <b>identique dans toutes les tonalités</b> : c’est la même main qui glisse. Ici elle s’affiche là où elle tient sur 12 cases.</div>`));
+
+    function draw(){
+      const base=fretOnLowE(root)+POS_OFF[pos], low=fitLow(base);
+      const lit=paintPosition(fb, root, low, full, labelNotes);
+      play.onclick=()=>{ ac(); lit.slice().sort((a,b)=>a.m-b.m).forEach((n,k)=>setTimeout(()=>pluck(n.m,1.0,.5),k*130)); };
+      relNote.innerHTML=`Gamme de <b>${NOTES[root]} majeur</b> · relatif mineur : <b>${NOTES[(root+9)%12]} mineur</b> (mêmes notes).`;
+      const posTxt=['Fondamentale sur la corde de <b>Mi grave</b>. LA position à connaître en premier — mobile, pose-la sur n’importe quelle tonique.',
+        'Juste au-dessus de la 1. On retrouve la fondamentale vers les cordes de Ré / Si.',
+        'Le milieu du manche. Beaucoup de fondamentales sur les cordes aiguës.',
+        'Vers le haut du manche. Prépare le retour à l’octave.',
+        'Juste en dessous de la 1 (ou en position ouverte). Boucle le système.'][pos];
+      const fullClause = full
+        ? `En <b style="color:var(--blue)">bleu</b> : les 2 notes ajoutées (la 4<sup>e</sup> ${NOTES[(root+5)%12]} et la 7<sup>e</sup> ${NOTES[(root+11)%12]}) = gamme complète.`
+        : `<b>Penta seule</b> — active « Gamme complète » pour voir les 2 notes en plus.`;
+      info.innerHTML=`<div class="deg">Position ${pos+1}${pos===0?' — commence ici':''}</div>${posTxt}<br>En <b style="color:var(--bad)">rouge</b> : la fondamentale (${NOTES[root]}). En <b style="color:var(--acc)">orange</b> : la penta. ${fullClause}`;
+    }
+    draw();
+  });
+}
+
+/* ================================================================
+   LA BOUSSOLE — dans quelle gamme je joue ? + quoi viser
+   ================================================================ */
+const DIA=[[0,'maj'],[2,'min'],[4,'min'],[5,'maj'],[7,'maj'],[9,'min'],[11,'dim']];
+function detectKeys(chords){ const res=[]; for(let K=0;K<12;K++){ const set=DIA.map(([iv,q])=>((K+iv)%12)+'|'+q); if(chords.length&&chords.every(c=>set.indexOf(c.pc+'|'+c.q)>=0)) res.push(K); } return res; }
+const TOOLS_MIN=[
+ {n:'Penta mineure', tag:'★ le plus sûr', ints:[0,3,5,7,10], tgt:[0], txt:'5 notes, zéro fausse note. Tu PEUX ne faire que ça et déjà sonner juste. Vise la fondamentale pour te poser.'},
+ {n:'Blues mineur', tag:'le grain', ints:[0,3,5,6,7,10], tgt:[0], blue:6, txt:'La penta + la blue note (♭5), seulement en passage (jamais tenue). C’est le sel du blues.'},
+ {n:'Mineur naturel', tag:'plus riche', ints:[0,2,3,5,7,8,10], tgt:[0,3,7], txt:'Les 7 notes (éolien). Plus mélancolique, plus de couleurs. Vise 1 · ♭3 · 5 — les notes de l’accord.'},
+ {n:'Dorien', tag:'mineur « cool »', ints:[0,2,3,5,7,9,10], tgt:[0,3,9], blue:9, txt:'Si le morceau sonne mineur mais pas triste (jazzy, funky) : la 6te devient majeure (bleu). C’est toute sa couleur.'},
+];
+const TOOLS_MAJ=[
+ {n:'Penta majeure', tag:'★ le plus sûr', ints:[0,2,4,7,9], tgt:[0,4], txt:'5 notes sûres. Vise la fondamentale et la tierce (3) pour sonner « chez toi ».'},
+ {n:'Gamme majeure', tag:'complète', ints:[0,2,4,5,7,9,11], tgt:[0,4,7], txt:'Les 7 notes (ionien). Vise 1 · 3 · 5. Lumineux, résolu.'},
+ {n:'Blues majeur', tag:'le grain', ints:[0,2,3,4,7,9], tgt:[0,4], blue:3, txt:'La penta majeure + la ♭3 en passage (bleu). Glisse la ♭3 vers la 3 : c’est LA couleur blues-country.'},
+ {n:'Mixolydien', tag:'si ça sonne 7 (rock/blues)', ints:[0,2,4,5,7,9,10], tgt:[0,4,10], blue:10, txt:'Sur un accord de 7 (dominante) : la 7e devient mineure (bleu). Le son « Sweet Home ».'},
+];
+function openBoussole(){
+  ac(); markDay();
+  let root=9, feel='min', tool=0; const chosen={};   /* défaut : La mineur */
+  openOverlay('Dans quelle gamme je joue ?', inner=>{
+    inner.appendChild(el('p','lead','Deux questions : quelle est ta TONIQUE (la note « maison ») ? Et : majeur ou mineur ? Réponds — je te donne ta palette et les notes à viser sur le manche.'));
+
+    inner.appendChild(el('div','theory',`
+      <h3>1. Trouver la tonique (la note « maison »)</h3>
+      <p>La <b>tonique</b>, c’est la note où le morceau <b>se repose</b>, où il pourrait <b>finir</b> sans rester en suspens. Chante « la fin » du morceau : cette note-là, c’est elle.</p>
+      <ul>
+        <li>Souvent = le <b>dernier accord</b> du morceau.</li>
+        <li>Ou l’accord qui <b>revient le plus</b>, celui qui « sonne posé ».</li>
+      </ul>
+      <h3>2. Majeur ou mineur ?</h3>
+      <p>La maison sonne <b>lumineuse / joyeuse</b> → <b>majeur</b>. <b>Sombre / triste / tendue</b> → <b>mineur</b>. Dans le doute, essaie les deux plus bas : ton oreille tranche.</p>`));
+
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🏠 Je connais ma note maison'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;draw();}));
+    const fsel=el('div','toolrow'); const fmin=el('div','tag on','mineur'), fmaj=el('div','tag','majeur');
+    fmin.onclick=()=>{feel='min';fmin.classList.add('on');fmaj.classList.remove('on');tool=0;rebuildTools();draw();};
+    fmaj.onclick=()=>{feel='maj';fmaj.classList.add('on');fmin.classList.remove('on');tool=0;rebuildTools();draw();};
+    fsel.append(fmin,fmaj); c.appendChild(fsel);
+    inner.appendChild(c);
+
+    const d=el('div','card');
+    d.innerHTML='<b>🎧 Ou : je connais les accords</b><p class="lead" style="margin:6px 0 8px">Coche les accords que tu entends — je trouve la gamme qui les contient tous.</p>';
+    const grid=el('div','toolrow'); const CH=[];
+    for(let pc=0;pc<12;pc++){ CH.push({pc,q:'maj',lbl:NOTES[pc]}); CH.push({pc,q:'min',lbl:NOTES[pc]+'m'}); }
+    CH.forEach(ch=>{ const t=el('div','tag',ch.lbl); t.onclick=()=>{ const k=ch.pc+ch.q; if(chosen[k]){delete chosen[k];t.classList.remove('on');}else{chosen[k]=ch;t.classList.add('on');} }; grid.appendChild(t); }); d.appendChild(grid);
+    const detBtn=el('button','btn','Trouver la gamme'); d.appendChild(detBtn);
+    const detOut=el('div','clogic'); detOut.style.display='none'; d.appendChild(detOut);
+    detBtn.onclick=()=>{ const chords=Object.values(chosen); if(chords.length<2){detOut.style.display='block';detOut.innerHTML='Coche au moins <b>deux</b> accords.';return;}
+      const keys=detectKeys(chords); detOut.style.display='block';
+      if(!keys.length){ detOut.innerHTML='Ces accords ne rentrent pas tous dans une seule gamme majeure — le morceau <b>emprunte</b> peut-être des accords. Prends l’accord qui sonne « maison » comme tonique (plus haut).'; return; }
+      const html=keys.map(K=>`<b>${NOTES[K]} majeur</b> / ${NOTES[(K+9)%12]} mineur`).join(' &nbsp;—&nbsp; ou &nbsp;—&nbsp; ');
+      detOut.innerHTML=`<div class="deg">Gamme trouvée</div>Ces accords vivent dans : ${html}.<br>Ta tonique = l’accord « maison ». S’il est <b>majeur</b> → <b>${NOTES[keys[0]]} majeur</b> ; s’il est <b>mineur</b> → <b>${NOTES[(keys[0]+9)%12]} mineur</b>. J’ai réglé la palette sur ${NOTES[keys[0]]} majeur — bascule en mineur si besoin.`;
+      root=keys[0]; feel='maj'; fmaj.classList.add('on'); fmin.classList.remove('on'); tool=0; rebuildTools(); draw();
+    };
+    inner.appendChild(d);
+
+    const pb=el('div','card');
+    pb.appendChild(el('b',null,'🎨 Ta palette — du plus sûr au plus coloré'));
+    pb.appendChild(el('p','lead','Tu PEUX rester sur la 1re (sûre). Si tu VEUX plus de couleur, descends la liste.'));
+    const toolChips=el('div','toolrow'); pb.appendChild(toolChips);
+    const fb=buildFretboard((s,f)=>pluck(midiAt(s,f))); pb.appendChild(fb);
+    const onlyRow=el('div','toolrow'); const tOnly=el('div','tag','Ne montrer que les notes à viser'); onlyRow.appendChild(tOnly); pb.appendChild(onlyRow);
+    let onlyTargets=false; tOnly.onclick=()=>{onlyTargets=!onlyTargets;tOnly.classList.toggle('on',onlyTargets);draw();};
+    const pinfo=el('div','clogic'); pb.appendChild(pinfo);
+    const pplay=el('button','btn ghost','🔊 Écouter'); pb.appendChild(pplay);
+    inner.appendChild(pb);
+
+    inner.appendChild(el('div','theory',`<div class="tip">Pour aller plus loin (relier une chanson à un <b>mode</b> précis, la formule parent-majeur), va dans <b>De la chanson au mode</b>. Ici, l’essentiel : trouve ta tonique, pose la penta, et <b>vise les notes bleues</b>.</div>`));
+
+    let toolEls=[];
+    const tools=()=> feel==='min'?TOOLS_MIN:TOOLS_MAJ;
+    function rebuildTools(){ toolChips.innerHTML=''; toolEls=tools().map((T,i)=>{ const t=el('div','tag'+(i===tool?' on':''),T.n); t.onclick=()=>{tool=i;toolEls.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; toolChips.appendChild(t); return t; }); }
+    function draw(){
+      const T=tools()[tool], pcs=pcsFrom(root,T.ints), tgt=T.tgt.map(i=>(root+i)%12), bluePc=T.blue!=null?(root+T.blue)%12:null;
+      fb.clearDots();
+      for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ const pc=midiAt(s,f)%12; if(pcs.indexOf(pc)<0) continue;
+        const isRoot=pc===root, isTgt=tgt.indexOf(pc)>=0, isBlue=bluePc!=null&&pc===bluePc;
+        if(onlyTargets && !isRoot && !isTgt && !isBlue) continue;
+        fb.dot(s,f,NOTES[pc], isRoot?'root':((isTgt||isBlue)?'pick':'on')); }
+      pplay.onclick=()=>playScaleUp(root,T.ints);
+      const tgtNames=tgt.map(p=>NOTES[p]).join(' · ')+(bluePc!=null?' · '+NOTES[bluePc]+' (passage)':'');
+      pinfo.innerHTML=`<div class="deg">${NOTES[root]} ${feel==='min'?'mineur':'majeur'} · ${T.n} <span style="color:var(--dim)">(${T.tag})</span></div>${T.txt}<br><b style="color:var(--bad)">Fondamentale : ${NOTES[root]}</b> (rouge). <b style="color:var(--blue)">À viser : ${tgtNames}</b> (bleu) — atterris dessus pour sonner juste.`;
+    }
+    rebuildTools(); draw();
+  });
+}
+
+/* ================================================================
    MODULE POWER CHORDS
    ================================================================ */
 function openPowerModule(){
@@ -860,9 +1030,10 @@ function powerQuiz(){
 function openImproHub(){
   markDay();
   openOverlay('Improviser', inner=>{
-    inner.appendChild(el('p','lead','Le vrai terrain de jeu. Commence par le lick du jour, puis pioche : la penta et les notes à viser, relier une chanson à un mode, le blues, des licks & riffs, la technique, et le phrasé.'));
+    inner.appendChild(el('p','lead','Le vrai terrain de jeu. Perdu sur un morceau ? Commence par la Boussole. Sinon : le lick du jour, la penta, les modes, le blues, des licks & riffs, la technique, le phrasé.'));
     inner.appendChild(lickOfDayCard(true));
     const items=[
+      ['🧭','Dans quelle gamme je joue ? (+ quoi viser)','Trouve ta tonique (depuis les accords ou l’oreille), puis ta palette — penta, blues, modes — et les notes à viser sur le manche.',openBoussole],
       ['🎯','La penta & les notes à viser','Les 5 notes, les positions, et surtout QUOI viser (ta 3ce majeure, la blue note).',openPentaModule],
       ['🎼','De la chanson au mode','« Ma chanson est en Mi mineur → quelle gamme majeure, quelle position, pour quel mode ? » La formule, sur le manche.',openSongMode],
       ['🥁','Le blues en 12 mesures','La grille, et la note qui fait « pro » sur chaque accord.',openBlues12],
@@ -1215,8 +1386,9 @@ function renderSuite(){
   const steps=[
     {n:'1',t:'🎸 Le manche',d:'En cours. Notes par cœur : « trouve tout » + nommer les cases.',now:true},
     {n:'2',t:'🎴 Accompagnement',d:'En cours. Anki d’accords + triades + power chords, avec la logique de construction.',now:true},
-    {n:'3',t:'🎤 Improviser',d:'Le hub complet : lick du jour, penta & notes à viser, de la chanson au mode, le blues en 12 mesures, licks & riffs, la technique (araignée…), et le phrasé.',open:openImproHub},
-    {n:'4',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
+    {n:'3',t:'🪜 La gamme majeure en positions',d:'Les 5 formes à connaître, dans l’ordre. Ta penta + 2 notes. Commence par la Position 1, mobile — tu joues alors en majeur partout.',open:openMajorPositions},
+    {n:'4',t:'🎤 Improviser',d:'Le hub complet : la Boussole (dans quelle gamme je joue ?), lick du jour, penta & notes à viser, de la chanson au mode, le blues, licks & riffs, technique, phrasé.',open:openImproHub},
+    {n:'5',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
     if(a.open){ s.style.cursor='pointer'; s.onclick=a.open; } m.appendChild(s); });
