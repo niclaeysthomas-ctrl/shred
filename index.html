@@ -1227,6 +1227,221 @@ function openPhrasing(){
   });
 }
 
+/* ================================================================
+   LE MINI-COURS DU JOUR — une technique/jour, de la base au shred
+   ================================================================ */
+const MINI=[
+ {n:'Le hammer-on', ic:'🔨', niv:'base',
+  notation:'Écrit «&nbsp;<b>5h7</b>&nbsp;» : joue la case 5, puis <b>FRAPPE</b> la case 7 avec un autre doigt <b>sans repincer</b>. Le son de la 7 vient uniquement du choc du doigt.',
+  interet:'Lier deux notes sans réattaquer → un son fluide, «&nbsp;coulé&nbsp;», et de la vitesse gratuite (une attaque pour deux notes). La base du legato et du solo rapide.',
+  bien:'Frappe <b>fort et net</b>, juste derrière la barrette, avec le bout du doigt. Garde le doigt de la 5 bien en place. Les autres doigts déjà en l’air, prêts à tomber.',
+  mistake:'Frapper trop mou ou trop loin de la frette → la note «&nbsp;meurt&nbsp;». Frappe sec et près de la barrette.',
+  exos:[
+   {n:'1 · Le geste', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5},{s:3,f:7,t:'h'}], how:'Corde de Sol. Une seule attaque au médiator sur le 5, le 7 sonne par le hammer. Cherche 2 notes de MÊME volume.'},
+   {n:'2 · Dans la penta', seq:[{s:5,f:5},{s:5,f:8,t:'h'},{s:4,f:5},{s:4,f:8,t:'h'},{s:3,f:5},{s:3,f:7,t:'h'}], how:'Monte la penta de La : sur chaque corde, attaque la basse, frappe la haute.'},
+   {n:'3 · Double hammer', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:9,t:'h'}], how:'5h7h9 : deux hammers d’affilée sur UNE attaque. Le 9 doit sonner aussi fort que le 5.'}]},
+ {n:'Le pull-off', ic:'👇', niv:'base',
+  notation:'Écrit «&nbsp;<b>7p5</b>&nbsp;» : joue la 7, puis <b>TIRE</b> le doigt vers le bas (comme si tu pinçais la corde) pour faire sonner la 5. Le doigt de la 5 est posé d’avance.',
+  interet:'Le miroir du hammer, pour <b>descendre</b> en fluide. Hammer + pull = legato = phrases rapides sans fatiguer la main droite.',
+  bien:'Ne <b>lève</b> pas le doigt tout droit : <b>tire-le vers le sol</b> pour «&nbsp;lancer&nbsp;» la corde. Pose la note d’arrivée AVANT de tirer.',
+  mistake:'Lever le doigt sans l’accrocher vers le bas → aucun son. Il faut ce petit pincement.',
+  exos:[
+   {n:'1 · Le geste', seq:[{s:3,f:7},{s:3,f:5,t:'p'},{s:3,f:7},{s:3,f:5,t:'p'}], how:'Doigt de la 5 posé d’avance. Attaque le 7, tire vers le bas → le 5 sonne seul.'},
+   {n:'2 · Descendre la penta', seq:[{s:2,f:8},{s:2,f:5,t:'p'},{s:3,f:7},{s:3,f:5,t:'p'},{s:4,f:7},{s:4,f:5,t:'p'}], how:'La penta de La qui redescend, tout en pull-off. Une attaque par corde.'},
+   {n:'3 · La cascade', seq:[{s:3,f:9},{s:3,f:7,t:'p'},{s:3,f:5,t:'p'}], how:'9p7p5 : double pull sur une attaque. Le son «&nbsp;cascade&nbsp;» du blues-rock.'}]},
+ {n:'Le slide (le glissé)', ic:'🎢', niv:'base',
+  notation:'Écrit «&nbsp;<b>5/7</b>&nbsp;» : joue la 5 et <b>GLISSE</b> le doigt jusqu’à la 7 sans relâcher la pression. Une seule attaque.',
+  interet:'Relie des notes et surtout des <b>positions</b> avec du liant. C’est comme ça qu’on voyage sur le manche en solo sans «&nbsp;couper&nbsp;».',
+  bien:'Garde la pression <b>constante</b> pendant le glissé, vise la case d’arrivée. Pour relier deux boîtes : glisse sur une note commune.',
+  mistake:'Relâcher la pression en route → le son se coupe. Reste appuyé du départ à l’arrivée.',
+  exos:[
+   {n:'1 · Le geste', seq:[{s:2,f:5},{s:2,f:7,t:'/'}], how:'Attaque le 5, glisse jusqu’au 7. Le 7 doit rester net après le glissé.'},
+   {n:'2 · Au milieu d’une phrase', seq:[{s:5,f:5},{s:3,f:5},{s:3,f:7,t:'/'},{s:2,f:5}], how:'Un slide en plein milieu change la couleur et lie la phrase.'},
+   {n:'3 · Relier 2 positions', seq:[{s:0,f:5},{s:0,f:8,t:'/'},{s:0,f:12}], how:'Sur la corde de Mi grave, glisse pour monter de boîte en boîte : le secret pour couvrir tout le manche.'}]},
+ {n:'Le palm mute (l’étouffé)', ic:'✋', niv:'base',
+  notation:'Noté «&nbsp;<b>P.M.</b>&nbsp;» : pose le tranchant de la main droite (côté auriculaire) sur les cordes tout <b>près du chevalet</b>. Le son devient sourd, percussif : «&nbsp;tchak&nbsp;».',
+  interet:'Le moteur du rock et du metal : contrôle, groove, agressivité maîtrisée. Sans lui, la disto devient une bouillie.',
+  bien:'Le tranchant JUSTE sur le chevalet (pas vers le manche, sinon tout meurt). Ajuste de quelques millimètres jusqu’au «&nbsp;tchak&nbsp;» qui garde une hauteur.',
+  mistake:'Main trop vers le manche → notes complètement mortes. Trop en arrière → aucun étouffement. Le point est précis.',
+  exos:[
+   {n:'1 · Le chug', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:0}], how:'Mi grave à vide, palm mute, tempo régulier. Cherche le «&nbsp;tchak-tchak&nbsp;» qui garde une note.'},
+   {n:'2 · Le gallop', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], how:'«&nbsp;Da-da-dum&nbsp;» : trois Mi serrés palm-mutés, ponctués d’une note. Le moteur du metal.'}]},
+ {n:'Le bend (le tiré)', ic:'🎯', niv:'inter',
+  notation:'Écrit «&nbsp;<b>7b</b>&nbsp;» : joue la 7 et <b>POUSSE</b> la corde pour monter la hauteur. Un «&nbsp;bend d’un ton&nbsp;» = tu montes jusqu’au son de <b>2 cases</b> plus haut.',
+  interet:'C’est la <b>voix</b> de la guitare : ça pleure, ça chante. Un bend juste te fait sonner humain. Le cœur du blues et du rock.',
+  bien:'Pousse avec <b>2-3 doigts ensemble</b>, tourne le poignet comme une clé, pouce par-dessus le manche. <b>Vérifie la justesse</b> : le bend doit atteindre EXACTEMENT la note cible.',
+  mistake:'Bender «&nbsp;à peu près&nbsp;». Un bend faux sonne pire qu’une fausse note. Compare toujours à la vraie note.',
+  exos:[
+   {n:'1 · Le bend juste (d’un ton)', seq:[{s:3,f:9},{s:3,f:7,t:'b'}], how:'Joue d’abord la case 9 (ta cible). Puis bende la case 7 d’un TON entier pour retrouver EXACTEMENT ce son. Ton oreille juge.'},
+   {n:'2 · Bend + relâche', seq:[{s:3,f:7,t:'b'},{s:3,f:7},{s:3,f:5}], how:'Bende, tiens, puis relâche jusqu’à la note d’origine, redescends sur le 5. Contrôle toute la descente.'},
+   {n:'3 · Le B.B. King', seq:[{s:4,f:8,t:'b'},{s:5,f:5,t:'~'}], how:'Bende le 8 (corde de Si) d’un ton, puis chante le La aigu avec un vibrato. Deux notes, toute l’émotion.'}]},
+ {n:'Le vibrato', ic:'〰️', niv:'inter',
+  notation:'Écrit «&nbsp;<b>7~</b>&nbsp;» : tiens la note et fais-la «&nbsp;onduler&nbsp;» en montant/descendant très légèrement et <b>régulièrement</b> la hauteur.',
+  interet:'Ce qui sépare un humain d’un logiciel. Un beau vibrato transforme UNE note tenue en un moment de musique. La signature de chaque grand guitariste.',
+  bien:'Comme un mini-bend répété, <b>régulier comme un battement</b>. Vient du <b>poignet</b>, pas des doigts. Commence LENT et large, garde le tempo constant.',
+  mistake:'Le vibrato «&nbsp;nerveux&nbsp;», rapide et irrégulier (le vibrato de la peur). Lent et régulier d’abord.',
+  exos:[
+   {n:'1 · La note qui chante', seq:[{s:2,f:8,t:'~'}], how:'Tiens le Sol (case 8 corde de Si) et fais-le onduler, lent et régulier. Compte : ondule, 2, 3, 4.'},
+   {n:'2 · Finis tes phrases dessus', seq:[{s:3,f:7},{s:3,f:5},{s:5,f:5,t:'~'}], how:'Une petite phrase, puis pose-toi sur le La (mi aigu case 5) avec vibrato : c’est là que ça sonne «&nbsp;fini&nbsp;», posé.'}]},
+ {n:'L’aller-retour (alternate picking)', ic:'↔️', niv:'inter',
+  notation:'Médiator : <b>⬇</b> vers le bas, <b>⬆</b> vers le haut, en <b>alternance stricte</b>, quoi qu’il arrive — même en changeant de corde.',
+  interet:'La base de TOUTE la vitesse à la main droite. Deux fois moins de mouvement → deux fois plus rapide, à terme.',
+  bien:'Petits mouvements, médiator <b>peu enfoncé</b>, avant-bras relâché. Le down-up ne s’arrête jamais, même sur les silences (tu continues «&nbsp;dans le vide&nbsp;»).',
+  mistake:'«&nbsp;Recommencer&nbsp;» par un coup vers le bas après chaque pause. Reste en alternance mentale non-stop.',
+  exos:[
+   {n:'1 · Régularité, 1 corde', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Down-up-down-up strict. Vise le métronome, pas la vitesse. Chaque note IDENTIQUE.'},
+   {n:'2 · Le changement de corde', seq:[{s:1,f:5},{s:1,f:7},{s:0,f:5},{s:0,f:7}], how:'Garder l’alternance en changeant de corde : c’est LÀ que ça coince. Très lent.'}]},
+ {n:'Les cordes sautées (string skipping)', ic:'⛷️', niv:'inter',
+  notation:'Tu <b>sautes</b> une corde (ou plus) entre deux notes. La main droite vise loin, sans toucher la corde du milieu.',
+  interet:'Ouvre des sons plus larges (arpèges, grands intervalles) que la gamme note-à-note. Et une précision main droite qui tient à toute vitesse.',
+  bien:'<b>Étouffe</b> la corde sautée avec la paume/les doigts. Vise net, lent d’abord — l’oreille entend chaque accroc.',
+  exos:[
+   {n:'1 · Saute une corde', seq:[{s:0,f:5},{s:2,f:5},{s:1,f:5},{s:3,f:5}], how:'Mi grave → Ré (saut du La), puis La → Sol. Vise juste, sans frôler la corde du milieu.'},
+   {n:'2 · Arpège large', seq:[{s:5,f:5},{s:3,f:5},{s:5,f:8},{s:3,f:7}], how:'Des sauts pour un son «&nbsp;qui plane&nbsp;», plus ouvert qu’une gamme.'}]},
+ {n:'Le trille', ic:'🐎', niv:'inter',
+  notation:'Écrit «&nbsp;<b>5h7p5h7p…</b>&nbsp;» très rapide : un hammer/pull-off <b>en boucle</b> entre deux notes, le plus vite possible.',
+  interet:'Une texture «&nbsp;qui vibre&nbsp;», un ornement — et un excellent muscleur de main gauche (endurance + force des doigts faibles).',
+  bien:'Une seule attaque, puis h/p en boucle <b>régulière</b>. Travaille surtout les paires faibles (annulaire-auriculaire).',
+  exos:[
+   {n:'1 · Index ↔ annulaire', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'5h7p5… régulier, une attaque. Monte la vitesse peu à peu.'},
+   {n:'2 · Les doigts faibles', seq:[{s:3,f:7},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'}], how:'7↔9 avec annulaire↔auriculaire. Dur, indispensable. 30 s suffisent à fatiguer — c’est bon signe.'}]},
+ {n:'Le legato (tout lié)', ic:'🌊', niv:'avancé',
+  notation:'Un enchaînement de hammers et pull-offs : <b>une seule attaque</b> au médiator pour toute une série de notes.',
+  interet:'Le son fluide, sans attaque, des solos rapides (Satriani, Vai en legato). Économise la main droite → tu joues LONGTEMPS et VITE.',
+  bien:'Toute la force vient de la <b>main gauche</b> : frappe/tire fort et net. Cherche l’<b>égalité de volume</b> entre la note attaquée et les autres.',
+  exos:[
+   {n:'1 · Le rouleau', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'},{s:3,f:9,t:'h'},{s:3,f:5,t:'p'}], how:'5h7p5h7h9p5 sur UNE attaque. Le graal : tout au même volume.'},
+   {n:'2 · Legato penta', seq:[{s:4,f:5},{s:4,f:8,t:'h'},{s:3,f:5},{s:3,f:7,t:'h'},{s:2,f:5},{s:2,f:8,t:'h'}], how:'Monte la penta en legato, une attaque par corde. Fluide comme de l’eau.'}]},
+ {n:'Les séquences (jouer en motifs)', ic:'🔢', niv:'avancé',
+  notation:'Au lieu de monter la gamme note à note (1-2-3-4-5…), tu la joues par petits <b>groupes qui se décalent</b> : «&nbsp;1-2-3, 2-3-4, 3-4-5…&nbsp;» ou par 4.',
+  interet:'C’EST le secret du son «&nbsp;rapide et pro&nbsp;». Les traits véloces sont presque toujours des séquences, pas des notes au hasard. L’oreille adore le motif qui se répète en montant.',
+  bien:'Choisis UN motif, garde-le <b>identique</b> en montant la gamme. Lentement au métronome — la vitesse vient parce que la main répète le MÊME geste.',
+  exos:[
+   {n:'1 · La penta par 3', seq:[{s:5,f:5},{s:5,f:8},{s:4,f:5},{s:5,f:8},{s:4,f:5},{s:4,f:7}], how:'Groupes de 3 qui se chevauchent, penta de La boîte 1. Répète le geste en descendant les cordes.'},
+   {n:'2 · La mitraillette', seq:[{s:5,f:8},{s:5,f:5},{s:4,f:8},{s:5,f:5},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:4,f:5}], how:'Le motif «&nbsp;4 notes qui reculent&nbsp;» : rapide à l’oreille, régulier sous les doigts.'}]},
+ {n:'Le sweep picking (le balayé)', ic:'🧹', niv:'shred',
+  notation:'Le médiator <b>balaie</b> plusieurs cordes d’un seul mouvement continu (⬇ pour monter, ⬆ pour descendre), <b>une note par corde</b>, main gauche qui roule.',
+  interet:'Le son «&nbsp;cascade&nbsp;» ultra-rapide des arpèges (Malmsteen, metal néo-classique). Beaucoup de notes pour très peu de mouvement.',
+  bien:'Ce n’est PAS un gratté rapide : c’est <b>un seul geste lent et fluide</b>. La main gauche «&nbsp;déroule&nbsp;» (un doigt se lève dès que le suivant tombe) pour ne jamais laisser deux notes sonner ensemble. L’étouffement = 90 % du travail.',
+  mistake:'Laisser les notes sonner comme un accord plaqué. Chaque note doit s’arrêter quand la suivante arrive.',
+  exos:[
+   {n:'1 · Balayage 3 cordes (La mineur)', seq:[{s:4,f:5},{s:3,f:5},{s:2,f:7}], how:'Mi-Do-La (arpège de La min) en un seul balayage ⬆. TRÈS lent, note par note d’abord, chaque note étouffée avant la suivante.'},
+   {n:'2 · Aller-retour du balayage', seq:[{s:2,f:7},{s:3,f:5},{s:4,f:5},{s:3,f:5},{s:2,f:7}], how:'Monte (⬇ balayé) puis redescends (⬆). Le mouvement doit rester continu, pas saccadé.'}]},
+ {n:'Le tapping', ic:'👆', niv:'shred',
+  notation:'Écrit «&nbsp;<b>12t</b>&nbsp;» : tu <b>frappes</b> la case avec un doigt de la main <b>droite</b> (comme un hammer), puis tu tires — et tu enchaînes avec la main gauche.',
+  interet:'Le son «&nbsp;impossible&nbsp;» de EVH («&nbsp;Eruption&nbsp;»), du metal : des écarts énormes et une vitesse folle sans effort de la main gauche.',
+  bien:'Tape net et <b>tire légèrement vers le bas</b> en sortant (le tap fait AUSSI un pull-off) pour lancer la corde suivante. Étouffe les cordes inutiles, sinon ça sonne sale.',
+  mistake:'Taper sans tirer en sortant → la note de la main gauche ne sonne pas.',
+  exos:[
+   {n:'1 · Le motif de base', seq:[{s:3,f:12,t:'t'},{s:3,f:5,t:'p'},{s:3,f:9,t:'h'}], how:'Tape la case 12 (main droite), tire vers le 5, frappe le 9 (main gauche). En boucle : 12-5-9, 12-5-9.'},
+   {n:'2 · Triolets tapés', seq:[{s:2,f:12,t:'t'},{s:2,f:5,t:'p'},{s:2,f:8,t:'h'},{s:2,f:12,t:'t'},{s:2,f:5,t:'p'},{s:2,f:8,t:'h'}], how:'Sur la corde de Si, en triolets réguliers : c’est déjà un plan «&nbsp;shred&nbsp;». Lentement !'}]},
+ {n:'Le pinch harmonic (l’harmonique pincée)', ic:'🐝', niv:'shred',
+  notation:'Noté «&nbsp;<b>P.H.</b>&nbsp;» : en attaquant (souvent une note bendée, en disto), le <b>pouce</b> de la main droite effleure la corde juste après le médiator → un «&nbsp;squeal&nbsp;», un cri aigu.',
+  interet:'Le «&nbsp;couac&nbsp;» criard de Zakk Wylde, Dimebag, du hard rock et du metal. De l’attitude pure sur une seule note.',
+  bien:'Tiens le médiator <b>très court</b>, attaque et laisse le côté du pouce toucher la corde IMMÉDIATEMENT après. Le point «&nbsp;magique&nbsp;» change selon la case — cherche-le. Un bend + vibrato derrière = le cri complet.',
+  mistake:'Sans <b>gain/disto</b>, ça ne sort quasiment pas. Il faut du gain et le bon point d’attaque.',
+  exos:[
+   {n:'1 · Trouve le squeal', seq:[{s:2,f:7,t:'b'}], how:'Sur le La (corde de Ré, case 7), attaque en pinçant du pouce, puis bende. Déplace ton point d’attaque de 1-2 mm jusqu’à ce que ça CRIE.'}]},
+];
+const MINI_LEGEND='Légende : h = hammer, p = pull-off, b = bend (d’un ton), / = slide, ~ = vibrato, t = tap.';
+function miniToday(){ return MINI[dayNum()%MINI.length]; }
+function nivPill(niv){ return `<span style="display:inline-block;font-size:10px;font-weight:800;color:var(--acc);border:1px solid var(--acc);border-radius:10px;padding:2px 8px;margin-bottom:8px">${niv}</span>`; }
+function exoCard(e){ const c=el('div','card'); c.style.background='var(--bg3)';
+  c.innerHTML=`<b style="font-size:14px">${e.n}</b>`;
+  const pre=el('pre','tab'); pre.textContent=renderTab(e.seq); c.appendChild(pre);
+  if(e.how){ const h=el('p','lead','🖐 '+e.how); h.style.margin='2px 0 0'; c.appendChild(h); }
+  const b=el('button','btn ghost','🔊 Jouer'); b.onclick=()=>playLick(e.seq); c.appendChild(b);
+  return c;
+}
+function openMiniLesson(L){ ac(); markDay();
+  openOverlay(L.ic+' '+L.n, inner=>{
+    inner.appendChild(el('div','theory',`${nivPill(L.niv)}
+      <h3>La notation</h3><p>${L.notation}</p>
+      <h3>À quoi ça sert</h3><p>${L.interet}</p>
+      <h3>Comment bien le faire</h3><p>${L.bien}</p>
+      ${L.mistake?`<div class="tip">⚠️ <b>Erreur classique :</b> ${L.mistake}</div>`:''}`));
+    inner.appendChild(el('h1','page','Les exos'));
+    inner.appendChild(el('p','lead','Du plus simple au plus dur. Lentement, au métronome, chaque note nette — la vitesse suit toute seule.'));
+    L.exos.forEach(e=>inner.appendChild(exoCard(e)));
+    inner.appendChild(el('div','theory',`<div class="tip">${MINI_LEGEND}</div>`));
+  });
+}
+function openMiniCourse(){ ac(); markDay();
+  const T=miniToday();
+  openOverlay('Le mini-cours du jour', inner=>{
+    const c=el('div','card'); c.style.borderColor='var(--acc)';
+    c.innerHTML=`<b>🎓 Aujourd’hui</b> <span style="color:var(--acc);font-size:12px;font-weight:700">· ${T.ic} ${T.n}</span><p class="lead" style="margin:6px 0 10px">${T.interet}</p>`;
+    const b=el('button','btn',`Ouvrir : ${T.n}`); b.onclick=()=>openMiniLesson(T); c.appendChild(b); inner.appendChild(c);
+    inner.appendChild(el('p','lead','Une technique par jour, de la base jusqu’au shred : notation, intérêt, comment bien la faire, et 2-3 exos. Fais-en une par jour → tu les as toutes en deux semaines.'));
+    inner.appendChild(el('h1','page','Toutes les techniques'));
+    MINI.forEach(L=>{ const isT=L===T; const cc=el('div','catcard'); if(isT) cc.style.borderColor='var(--acc)';
+      cc.innerHTML=`<div class="ico">${L.ic}</div><div class="t"><b>${L.n}${isT?' <span style="color:var(--acc)">· aujourd’hui</span>':''}</b><small>${L.niv} · ${L.exos.length} exos</small></div><div class="pc">›</div>`;
+      cc.onclick=()=>openMiniLesson(L); inner.appendChild(cc); });
+  });
+}
+
+/* ================================================================
+   JOUER VITE — la méthode des pros + exos en progression
+   ================================================================ */
+const SPEED=[
+ {n:'1 · Le métronome, ton juge', key:'régularité avant vitesse', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Aller-retour strict sur une corde, au clic. Trouve le tempo où c’est PROPRE 3 fois de suite.', why:'La règle des pros : jamais plus vite que propre. +5 BPM seulement quand c’est net. Note ton BPM quelque part — c’est ta vraie progression.'},
+ {n:'2 · La rafale (burst)', key:'tromper la crispation', seq:[{s:5,f:5},{s:5,f:8},{s:4,f:5},{s:4,f:7}], how:'Joue ces 4 notes TRÈS vite d’un coup, puis stoppe et respire. Recommence. La vitesse par petites explosions.', why:'Ton cerveau apprend le geste rapide sans avoir le temps de se crisper. LE truc pour débloquer un plafond de vitesse.'},
+ {n:'3 · La synchro des 2 mains', key:'le vrai plafond', seq:SPIDER, how:'L’araignée, très lentement : chaque note de la main gauche PILE avec le médiator. Ne regarde pas ta main.', why:'Le mur de vitesse n’est ni la main droite ni la gauche : c’est leur SYNCHRO. C’est ça qu’on muscle ici.'},
+ {n:'4 · La séquence (le son « rapide »)', key:'motifs qui se décalent', seq:[{s:5,f:8},{s:5,f:5},{s:4,f:8},{s:5,f:5},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:4,f:5}], how:'La mitraillette : un motif de 4 notes qui recule. Garde le MÊME geste en descendant les cordes.', why:'Les traits rapides = des séquences répétées, pas des notes au hasard. La main répète, donc elle accélère.'},
+ {n:'5 · Le legato (vitesse sans médiator)', key:'la main gauche fait tout', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'Une attaque, tout le reste en hammer/pull. Cherche l’égalité de volume.', why:'Quand la main droite plafonne, le legato te donne de la vitesse «&nbsp;gratuite&nbsp;». Le son fluide du shred.'},
+ {n:'6 · La gamme au tempo', key:'position 1, montée-descente', seq:[{s:0,f:5},{s:0,f:7},{s:0,f:8},{s:1,f:5},{s:1,f:7},{s:1,f:8}], how:'Monte/descends une position de gamme au métronome, propre, puis +5 BPM. (3 notes par corde = idéal pour la vitesse.)', why:'La gamme au tempo = la matière première de l’impro rapide. Position par cœur → doigts en pilote automatique.'},
+];
+function openSpeed(){ ac(); markDay();
+  openOverlay('Jouer vite (la méthode des pros)', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>La vérité sur la vitesse</h3>
+      <p>Jouer vite, ce n’est pas de la FORCE : c’est du <b>relâchement</b> et de l’<b>économie de mouvement</b>. Les pros bougent MOINS que toi, pas plus fort.</p>
+      <div class="formula">Vitesse = relâchement + petits mouvements + synchro des 2 mains</div>
+      <h3>La méthode qui marche vraiment</h3>
+      <ul>
+        <li><b>Relâche</b> : épaule et avant-bras souples, médiator peu enfoncé, doigts gauches PRÈS des cordes.</li>
+        <li><b>Le métronome, toujours</b> : le tempo où c’est propre <b>3 fois de suite</b> → <b>+5 BPM</b> → note-le. Jamais plus vite que propre.</li>
+        <li><b>Les rafales</b> : joue vite par salves de 4-6 notes, puis stoppe. Tu apprends le geste rapide sans te crisper.</li>
+        <li><b>Le chunking</b> : découpe en groupes de 3-4 notes qui se chevauchent, pas note à note.</li>
+      </ul>`));
+    inner.appendChild(el('p','lead','Les exos, dans l’ordre. Chacun = un métronome, un tempo propre, +5 BPM quand c’est net.'));
+    SPEED.forEach(L=>inner.appendChild(lickCard(L)));
+    inner.appendChild(el('div','theory',`<div class="tip">Les déliateurs purs (l’araignée & co) sont dans <b>Technique &amp; déliateurs</b> (hub Improviser). Ici, on transforme la technique en <b>vitesse utile</b>.</div>`));
+  });
+}
+
+/* ================================================================
+   IMPROVISER VITE COMME UN PRO — progression
+   ================================================================ */
+const FASTIMPRO=[
+ {n:'Étape 1 · 5 notes, sois musical', how:'Sur un backing La mineur (cherche «&nbsp;Am jam backing track&nbsp;»), UNE position, 5 notes max, 2 minutes. Silence, motifs, vibrato.', why:'Avant la vitesse : la MUSIQUE. Peu de notes, bien placées. Si tu n’es pas musical à 5 notes, tu ne le seras pas à 50. (cf. Bien phraser)'},
+ {n:'Étape 2 · Le vocabulaire', how:'Apprends 3 licks PAR CŒUR (commence par le lick du jour) jusqu’à les jouer les yeux fermés, puis change-en UNE chose à chaque fois.', why:'Les pros enchaînent des licks CONNUS, pas des notes cherchées en direct. Ton stock de phrases = ta vitesse et ton aisance.'},
+ {n:'Étape 3 · Les séquences au tempo', seq:[{s:5,f:5},{s:5,f:8},{s:4,f:5},{s:5,f:8},{s:4,f:5},{s:4,f:7}], how:'Joue la penta en motifs (par 3, par 4) sur le backing, de plus en plus vite au métronome.', why:'C’est ça qui SONNE rapide et pro : le motif qui monte, pas la note au hasard.'},
+ {n:'Étape 4 · Vise la tierce au changement', how:'Sur chaque changement d’accord, atterris sur sa TIERCE. D’abord très lentement, puis au tempo.', why:'«&nbsp;Jouer les changements&nbsp;» : ton solo suit les accords au lieu de rester plat. (cf. La Boussole & Le blues en 12 mesures)'},
+ {n:'Étape 5 · Relie les positions', seq:[{s:0,f:5},{s:0,f:8,t:'/'},{s:0,f:12}], how:'Glisse d’une boîte à la suivante pour balayer tout le manche sans t’arrêter. Monte en solo, redescends.', why:'Les solos qui «&nbsp;voyagent&nbsp;» = des positions reliées par slides et notes communes. (cf. La gamme majeure en positions)'},
+ {n:'Étape 6 · Appel-réponse rapide', how:'Une RAFALE (l’appel), un blanc, une réponse plus calme. Alterne vite / lent, fort / doux.', why:'La vitesse n’a d’impact QUE par contraste avec le silence et les notes lentes. Une rafale non-stop lasse en 10 secondes.'},
+ {n:'Étape 7 · Le solo d’une minute', how:'Sur un vamp La mineur : phrase lente → motif répété → UNE rafale rapide → résolution sur le La avec vibrato. Enregistre-toi et réécoute.', why:'Le vrai jeu : raconter une histoire (calme → tension → explosion → repos). C’est exactement ça, jouer comme un pro.'},
+];
+function fastCard(st){ const c=el('div','card');
+  c.innerHTML=`<b>${st.n}</b>`;
+  if(st.seq){ const pre=el('pre','tab'); pre.textContent=renderTab(st.seq); c.appendChild(pre); }
+  const h=el('p','lead','🎯 '+st.how); h.style.margin='6px 0 0'; c.appendChild(h);
+  const w=el('p','lead',st.why); w.style.margin='4px 0 0'; c.appendChild(w);
+  if(st.seq){ const b=el('button','btn ghost','🔊 Jouer'); b.onclick=()=>playLick(st.seq); c.appendChild(b); }
+  return c;
+}
+function openFastImpro(){ ac(); markDay();
+  openOverlay('Improviser vite comme un pro', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Les pros n’improvisent pas «&nbsp;au hasard&nbsp;»</h3>
+      <p>Le trait rapide qui te bluffe n’est pas de la magie : c’est un <b>vocabulaire</b> de licks et de séquences <b>connus par cœur</b>, posés sur les <b>bonnes notes</b>, avec du <b>phrasé</b>. On assemble des blocs qu’on maîtrise — on ne cherche pas les notes en direct.</p>
+      <div class="formula">Impro rapide = vocabulaire + notes cibles + phrasé<br>(pas des doigts au hasard)</div>
+      <p>La progression, étape par étape. Ne saute pas : chacune prépare la suivante.</p>`));
+    FASTIMPRO.forEach(st=>inner.appendChild(fastCard(st)));
+    inner.appendChild(el('div','theory',`<div class="tip">Tes outils pour ces étapes : <b>La Boussole</b> (tes notes à viser), <b>La gamme majeure en positions</b> (relier le manche), <b>Bien phraser</b> (le contraste). Reviens-y dès qu’une étape coince.</div>`));
+  });
+}
+
 function renderCartes(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','Accords & cartes'));
@@ -1383,16 +1598,26 @@ function renderSuite(){
   const m=document.getElementById('main'); m.innerHTML='';
   m.appendChild(el('h1','page','La suite'));
   m.appendChild(el('p','lead','On construit dans l’ordre. Chaque étape s’appuie sur la précédente.'));
+
+  const T=miniToday();
+  const dc=el('div','card'); dc.style.borderColor='var(--acc)';
+  dc.innerHTML=`<b>🎓 Le cours du jour</b> <span style="color:var(--acc);font-size:12px;font-weight:700">· ${T.ic} ${T.n}</span><p class="lead" style="margin:6px 0 10px">${T.interet}</p>`;
+  const db=el('button','btn','Faire le mini-cours du jour'); db.onclick=()=>openMiniLesson(T); dc.appendChild(db);
+  m.appendChild(dc);
+
   const steps=[
     {n:'1',t:'🎸 Le manche',d:'En cours. Notes par cœur : « trouve tout » + nommer les cases.',now:true},
     {n:'2',t:'🎴 Accompagnement',d:'En cours. Anki d’accords + triades + power chords, avec la logique de construction.',now:true},
     {n:'3',t:'🪜 La gamme majeure en positions',d:'Les 5 formes à connaître, dans l’ordre. Ta penta + 2 notes. Commence par la Position 1, mobile — tu joues alors en majeur partout.',open:openMajorPositions},
     {n:'4',t:'🎤 Improviser',d:'Le hub complet : la Boussole (dans quelle gamme je joue ?), lick du jour, penta & notes à viser, de la chanson au mode, le blues, licks & riffs, technique, phrasé.',open:openImproHub},
     {n:'5',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
+    {n:'6',t:'🎓 Le mini-cours du jour',d:'Une technique par jour, de la base au shred (hammer, bend, legato, tapping, sweep…) : notation, intérêt, comment bien la faire, 2-3 exos. Aujourd’hui : '+miniToday().n+'.',open:openMiniCourse},
+    {n:'7',t:'⚡ Jouer vite (comme les pros)',d:'La méthode qui marche vraiment : relâchement, métronome, rafales, séquences — des exos en progression pour gagner en vitesse pour de vrai.',open:openSpeed},
+    {n:'8',t:'🎸 Improviser vite comme un pro',d:'Transformer la vitesse en musique : vocabulaire de licks, notes cibles, séquences au tempo, relier les positions, le solo d’une minute.',open:openFastImpro},
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
     if(a.open){ s.style.cursor='pointer'; s.onclick=a.open; } m.appendChild(s); });
-  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">Impossible d’improviser sans savoir où sont les notes. Le manche d’abord — c’est le seul raccourci qui existe. Mais l’impro et les modes sont là quand tu veux t’y projeter.</p>'));
+  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">1→5, on construit les fondations : le manche, les accords, les positions, l’impro, les modes. Les étapes <b>6-8</b> (mini-cours, vitesse, impro rapide) se travaillent <b>en parallèle, un peu chaque jour</b> — commence par le cours du jour, tout en haut.</p>'));
 }
 
 /* ---------------- overlay + nav ---------------- */
