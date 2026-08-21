@@ -124,10 +124,12 @@
   <header><div class="logo">SH<span>RED</span></div><div class="badge" id="badge">🎸</div></header>
   <main id="main"></main>
   <nav><div class="in">
-    <button data-tab="manche" class="on"><span class="i">🎸</span>Manche</button>
+    <button data-tab="jour" class="on"><span class="i">☀️</span>Jour</button>
+    <button data-tab="manche"><span class="i">🎸</span>Manche</button>
     <button data-tab="cartes"><span class="i">🎴</span>Accords</button>
     <button data-tab="theorie"><span class="i">📖</span>Théorie</button>
     <button data-tab="suite"><span class="i">✨</span>Suite</button>
+    <button data-tab="profil"><span class="i">📈</span>Profil</button>
   </div></nav>
 </div>
 <div class="overlay" id="overlay"><div class="inner" id="overlayInner"></div></div>
@@ -146,7 +148,7 @@ const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
 const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, triads:{}, tNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  findBest:{}, quizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true};
+  findBest:{}, quizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
@@ -1038,7 +1040,7 @@ function openImproHub(){
       ['🎼','De la chanson au mode','« Ma chanson est en Mi mineur → quelle gamme majeure, quelle position, pour quel mode ? » La formule, sur le manche.',openSongMode],
       ['🥁','Le blues en 12 mesures','La grille, et la note qui fait « pro » sur chaque accord.',openBlues12],
       ['🎸','Licks, riffs & lick du jour','Des phrases toutes faites (blues, rock) + des riffs de style (metal, funk…), en tablature + au son.',openLicks],
-      ['🕷️','Technique & déliateurs','L’araignée, l’aller-retour, le legato… les exos qui construisent ta main : vitesse, indépendance, précision.',openTechnique],
+      ['🕷️','Technique & déliateurs','L’araignée, l’alternance des doigts, le legato… les exos qui construisent ta main : vitesse, indépendance, précision.',openTechnique],
       ['🗣️','Bien phraser (le secret)','Le silence, les motifs, l’appel-réponse, la tension qui se résout. Le mindset du soliste.',openPhrasing],
     ];
     items.forEach(it=>{ const c=el('div','catcard',`<div class="ico">${it[0]}</div><div class="t"><b>${it[1]}</b><small>${it[2]}</small></div><div class="pc">›</div>`); c.onclick=it[3]; inner.appendChild(c); });
@@ -1130,11 +1132,11 @@ const LICKS=[
 const RIFFS=[
  {n:'Shuffle blues (en La)', key:'boogie · corde de La & Ré', seq:[{s:1,f:0},{s:2,f:2},{s:2,f:4},{s:2,f:2},{s:1,f:0},{s:2,f:2},{s:2,f:4},{s:2,f:2}], why:'La pompe du blues : la basse monte 1–5–6–5 (La–Mi–Fa♯–Mi). Joue-la en swing (ternaire, « ta-tam ta-tam »). Toute la boogie et le rock’n’roll sont là-dessus.'},
  {n:'Rock (power chords)', key:'Mi5 · Sol5 · La5', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:0}], why:'Joue chaque note en POWER CHORD (la forme du module ⚡), palm mute léger. Mi5–Sol5–La5 : la marche rock la plus classique du monde.'},
- {n:'Gallop metal', key:'Mi grave · palm mute serré', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], why:'« Da-da-dum, da-da-dum » : trois Mi graves palm-mutés serrés, ponctués d’une note (Sol, La). Médiator en bas-bas-bas. Le moteur du metal.'},
+ {n:'Gallop metal', key:'Mi grave · palm mute serré', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], why:'« Da-da-dum, da-da-dum » : trois Mi graves palm-mutés serrés, ponctués d’une note (Sol, La). Au pouce, coups serrés vers le bas (butée). Le moteur du metal.'},
  {n:'Funk (single-note groove)', key:'Mi min · joue COURT', seq:[{s:2,f:2},{s:3,f:0},{s:2,f:2},{s:2,f:0},{s:3,f:2},{s:2,f:2}], why:'Le funk, c’est le rythme et les SILENCES. Joue des notes très courtes, étouffe entre chaque (ghost notes), reste collé au groove. Moins de notes, plus de place.'},
- {n:'Surf / western', key:'Mi min · trémolo + réverb', seq:[{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:7},{s:0,f:5},{s:0,f:3}], why:'Le son « spaghetti western » / Tarantino : trémolo (aller-retour ultra-rapide sur chaque note) et réverb à fond. Descends la corde de Mi grave, dramatique et mouillé.'},
+ {n:'Surf / western', key:'Mi min · trémolo + réverb', seq:[{s:0,f:0},{s:0,f:3},{s:0,f:5},{s:0,f:7},{s:0,f:5},{s:0,f:3}], why:'Le son « spaghetti western » / Tarantino : trémolo (i-m-i-m ultra-rapide sur chaque note) et réverb à fond. Descends la corde de Mi grave, dramatique et mouillé.'},
  {n:'Espagnol (phrygien)', key:'Mi phrygien · le ♭2', seq:[{s:0,f:0},{s:0,f:1},{s:0,f:3},{s:0,f:5},{s:0,f:3},{s:0,f:1},{s:0,f:0}], why:'La couleur flamenco/orientale : le Fa juste au-dessus du Mi (le ♭2 du mode phrygien, cf. tes fiches de modes). Allers-retours nerveux, accents secs.'},
- {n:'Punk (tout en bas)', key:'Mi5–La5–Si5 · downstrokes', seq:[{s:0,f:0},{s:0,f:0},{s:1,f:0},{s:1,f:0},{s:0,f:0},{s:0,f:0},{s:1,f:2},{s:1,f:2}], why:'Trois power chords, TOUT en coups vers le bas du médiator, tempo rapide, aucune finesse. L’énergie avant la technique — le punk en deux minutes.'},
+ {n:'Punk (tout en bas)', key:'Mi5–La5–Si5 · downstrokes', seq:[{s:0,f:0},{s:0,f:0},{s:1,f:0},{s:1,f:0},{s:0,f:0},{s:0,f:0},{s:1,f:2},{s:1,f:2}], why:'Trois power chords, TOUT au pouce en coups secs vers le bas (butée), tempo rapide, aucune finesse. L’énergie avant la technique — le punk en deux minutes.'},
  {n:'Stoner / heavy', key:'Mi blues · lourd & lent', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:6},{s:0,f:5}], why:'Lent, gras, en bas : Mi–Mi–Sol–Mi–Si♭(la blue note)–La. Grosse disto, tempo traînant. Le riff « désert » qui écrase tout.'},
  {n:'Grunge (années 90)', key:'Mi5 + une note qui frotte', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:6},{s:0,f:5}], why:'Power chords + une note dissonante (le Si♭, la ♭5) qui « frotte ». Alterne propre/sale, doux/fort — c’est le contraste, pas la vitesse, qui fait le son 90s.'},
  {n:'Celtique / folk', key:'Ré majeur · corde de Ré', seq:[{s:2,f:0},{s:2,f:2},{s:2,f:4},{s:2,f:5},{s:2,f:4},{s:2,f:2}], why:'Un air de gigue : Ré–Mi–Fa♯–Sol qui monte et redescend sur la corde de Ré. Joue-le rond et dansant, façon musique celtique.'},
@@ -1145,8 +1147,8 @@ const SPIDER_X=[]; for(let a=0;a<5;a++){ SPIDER_X.push({s:a,f:1},{s:a+1,f:2},{s:
 const TECH=[
  {n:'🕷️ L’araignée', key:'déliateur chromatique', seq:SPIDER, how:'Un doigt par case (1-2-3-4). Monte corde par corde du Mi grave au Mi aigu, puis redescends. Chaque note claire avant de passer à la suivante.', why:'LE déliateur : indépendance des 4 doigts + synchro main gauche/droite. 5 min par jour et ta main change en deux semaines.'},
  {n:'🕸️ L’araignée croisée', key:'le vrai « spider »', seq:SPIDER_X, how:'Tu traverses les cordes en gardant chaque doigt sur SA case (1 et 3 sur une corde, 2 et 4 sur la voisine). Ne regarde pas ta main.', why:'Force les doigts faibles (annulaire, auriculaire) et t’apprend à changer de corde proprement — le point qui bloque tout le monde.'},
- {n:'↔️ Aller-retour', key:'médiator régulier', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Bas-haut-bas-haut au médiator, STRICT. Sur une seule corde d’abord. Vise la régularité (comme un métronome), pas la vitesse.', why:'La base de toute la vitesse à droite. Un aller-retour régulier = des gammes et des licks rapides plus tard.'},
- {n:'🌊 Legato (marteaux & tirés)', key:'la main gauche fait le son', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'},{s:3,f:8,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'Frappe (hammer) et arrache (pull-off) SANS repincer : une seule attaque au médiator, tout le reste vient des doigts gauches. Cherche l’égalité de volume.', why:'Le son fluide, « coulé », du blues-rock et du solo. Muscle aussi ta main gauche.'},
+ {n:'↔️ Alternance des doigts (i-m)', key:'index-majeur régulier', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'i-m-i-m STRICT (index puis majeur), jamais deux fois le même doigt. Sur une seule corde d’abord. Vise la régularité (comme un métronome), pas la vitesse.', why:'La base de toute la vitesse à droite aux doigts. Une alternance i-m régulière = des gammes et des licks rapides plus tard.'},
+ {n:'🌊 Legato (marteaux & tirés)', key:'la main gauche fait le son', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'},{s:3,f:8,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'Frappe (hammer) et arrache (pull-off) SANS repincer : une seule attaque du doigt, tout le reste vient de la main gauche. Cherche l’égalité de volume.', why:'Le son fluide, « coulé », du blues-rock et du solo. Muscle aussi ta main gauche.'},
  {n:'⛷️ Cordes sautées', key:'précision main droite', seq:[{s:0,f:5},{s:2,f:5},{s:1,f:5},{s:3,f:5},{s:2,f:5},{s:4,f:5}], how:'Saute une corde à chaque note. Vise juste, sans accrocher la corde du milieu. Lent et net.', why:'Précision de la main droite : tu vises la bonne corde à tous les coups. Ouvre les sons plus larges (arpèges).'},
  {n:'🖐️ L’étirement', key:'gagner en allonge', seq:[{s:0,f:1},{s:0,f:5},{s:1,f:2},{s:1,f:6},{s:2,f:3},{s:2,f:7}], how:'Écarte index (case basse) et auriculaire (case haute) sur des cases éloignées. DOUCEMENT, jamais dans la douleur — on gagne en amplitude par petites touches.', why:'De la souplesse dans la main = des accords et des écarts plus confortables. À faire échauffé.'},
 ];
@@ -1159,12 +1161,13 @@ function renderTab(seq){
 function playLick(seq){ ac(); seq.forEach((st,i)=>setTimeout(()=>{ pluck(midiAt(st.s,st.f)+(st.t==='b'?2:0),1.3,.5); },i*340)); }
 const dayNum=()=>Math.floor(Date.now()/864e5);
 function lickOfDay(){ return LICKS[dayNum()%LICKS.length]; }
-function lickCard(L){ const c=el('div','card');
+function lickCard(L, withBpm){ const c=el('div','card');
   c.innerHTML=`<b>${L.n}</b>${L.key?` <span style="color:var(--acc);font-size:12px;font-weight:700">· ${L.key}</span>`:''}`;
   const pre=el('pre','tab'); pre.textContent=renderTab(L.seq); c.appendChild(pre);
   if(L.how){ const h=el('p','lead','🖐 '+L.how); h.style.margin='4px 0 0'; c.appendChild(h); }
   const p=el('p','lead',L.why); p.style.margin='4px 0 0'; c.appendChild(p);
   const b=el('button','btn ghost','🔊 Jouer'); b.onclick=()=>playLick(L.seq); c.appendChild(b);
+  if(withBpm) c.appendChild(bpmLog('tech·'+L.n, 80));
   return c;
 }
 function lickOfDayCard(withOpen){ const L=lickOfDay(); const c=el('div','card'); c.style.borderColor='var(--acc)';
@@ -1193,8 +1196,9 @@ function openTechnique(){
     inner.appendChild(el('div','theory',`
       <h3>Ces exercices ne « sonnent » pas — ils construisent ta main</h3>
       <p>La règle d’or : <b>lentement, au métronome, chaque note nette</b>. La vitesse vient toute seule quand c’est propre — jamais l’inverse. <b>5 minutes par jour</b> suffisent à tout changer.</p>
-      <div class="tip">Un doigt par case : index = 1, majeur = 2, annulaire = 3, auriculaire = 4. Ne regarde pas ta main gauche : apprends à SENTIR les cases.</div>`));
-    TECH.forEach(L=>inner.appendChild(lickCard(L)));
+      <div class="tip"><b>Main gauche</b> — un doigt par case : index = 1, majeur = 2, annulaire = 3, auriculaire = 4. Ne regarde pas ta main : apprends à SENTIR les cases.<br><b>Main droite (aux doigts, sans médiator)</b> : le pouce sur les cordes graves, index (i) et majeur (m) qui <b>alternent</b> (i-m-i-m) sur les aiguës. Jamais deux notes de suite avec le même doigt.</div>`));
+    { const mb=el('button','btn ghost','🥁 Ouvrir le métronome'); mb.onclick=()=>openMetronome(); inner.appendChild(mb); }
+    TECH.forEach(L=>inner.appendChild(lickCard(L,true)));
     inner.appendChild(el('div','theory',`<div class="tip">Progression : trouve le tempo où tu joues 3 fois de suite SANS faute, puis +5 BPM. Note-le dans un coin. C’est comme ça qu’on gagne en vitesse pour de vrai.</div>`));
   });
 }
@@ -1237,7 +1241,7 @@ const MINI=[
   bien:'Frappe <b>fort et net</b>, juste derrière la barrette, avec le bout du doigt. Garde le doigt de la 5 bien en place. Les autres doigts déjà en l’air, prêts à tomber.',
   mistake:'Frapper trop mou ou trop loin de la frette → la note «&nbsp;meurt&nbsp;». Frappe sec et près de la barrette.',
   exos:[
-   {n:'1 · Le geste', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5},{s:3,f:7,t:'h'}], how:'Corde de Sol. Une seule attaque au médiator sur le 5, le 7 sonne par le hammer. Cherche 2 notes de MÊME volume.'},
+   {n:'1 · Le geste', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5},{s:3,f:7,t:'h'}], how:'Corde de Sol. Une seule attaque (un doigt) sur le 5, le 7 sonne par le hammer. Cherche 2 notes de MÊME volume.'},
    {n:'2 · Dans la penta', seq:[{s:5,f:5},{s:5,f:8,t:'h'},{s:4,f:5},{s:4,f:8,t:'h'},{s:3,f:5},{s:3,f:7,t:'h'}], how:'Monte la penta de La : sur chaque corde, attaque la basse, frappe la haute.'},
    {n:'3 · Double hammer', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:9,t:'h'}], how:'5h7h9 : deux hammers d’affilée sur UNE attaque. Le 9 doit sonner aussi fort que le 5.'}]},
  {n:'Le pull-off', ic:'👇', niv:'base',
@@ -1264,8 +1268,8 @@ const MINI=[
   bien:'Le tranchant JUSTE sur le chevalet (pas vers le manche, sinon tout meurt). Ajuste de quelques millimètres jusqu’au «&nbsp;tchak&nbsp;» qui garde une hauteur.',
   mistake:'Main trop vers le manche → notes complètement mortes. Trop en arrière → aucun étouffement. Le point est précis.',
   exos:[
-   {n:'1 · Le chug', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:0}], how:'Mi grave à vide, palm mute, tempo régulier. Cherche le «&nbsp;tchak-tchak&nbsp;» qui garde une note.'},
-   {n:'2 · Le gallop', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], how:'«&nbsp;Da-da-dum&nbsp;» : trois Mi serrés palm-mutés, ponctués d’une note. Le moteur du metal.'}]},
+   {n:'1 · Le chug', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:0}], how:'Mi grave à vide, attaque au <b>pouce</b>, palm mute, tempo régulier. Cherche le «&nbsp;tchak-tchak&nbsp;» qui garde une note.'},
+   {n:'2 · Le gallop', seq:[{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:3},{s:0,f:0},{s:0,f:0},{s:0,f:0},{s:0,f:5}], how:'«&nbsp;Da-da-dum&nbsp;» au <b>pouce</b> : trois Mi serrés palm-mutés, ponctués d’une note. Le moteur du metal.'}]},
  {n:'Le bend (le tiré)', ic:'🎯', niv:'inter',
   notation:'Écrit «&nbsp;<b>7b</b>&nbsp;» : joue la 7 et <b>POUSSE</b> la corde pour monter la hauteur. Un «&nbsp;bend d’un ton&nbsp;» = tu montes jusqu’au son de <b>2 cases</b> plus haut.',
   interet:'C’est la <b>voix</b> de la guitare : ça pleure, ça chante. Un bend juste te fait sonner humain. Le cœur du blues et du rock.',
@@ -1283,14 +1287,14 @@ const MINI=[
   exos:[
    {n:'1 · La note qui chante', seq:[{s:2,f:8,t:'~'}], how:'Tiens le Sol (case 8 corde de Si) et fais-le onduler, lent et régulier. Compte : ondule, 2, 3, 4.'},
    {n:'2 · Finis tes phrases dessus', seq:[{s:3,f:7},{s:3,f:5},{s:5,f:5,t:'~'}], how:'Une petite phrase, puis pose-toi sur le La (mi aigu case 5) avec vibrato : c’est là que ça sonne «&nbsp;fini&nbsp;», posé.'}]},
- {n:'L’aller-retour (alternate picking)', ic:'↔️', niv:'inter',
-  notation:'Médiator : <b>⬇</b> vers le bas, <b>⬆</b> vers le haut, en <b>alternance stricte</b>, quoi qu’il arrive — même en changeant de corde.',
-  interet:'La base de TOUTE la vitesse à la main droite. Deux fois moins de mouvement → deux fois plus rapide, à terme.',
-  bien:'Petits mouvements, médiator <b>peu enfoncé</b>, avant-bras relâché. Le down-up ne s’arrête jamais, même sur les silences (tu continues «&nbsp;dans le vide&nbsp;»).',
-  mistake:'«&nbsp;Recommencer&nbsp;» par un coup vers le bas après chaque pause. Reste en alternance mentale non-stop.',
+ {n:'L’alternance des doigts (i-m)', ic:'↔️', niv:'inter',
+  notation:'Aux doigts : alterne <b>index (i)</b> et <b>majeur (m)</b>, <b>i-m-i-m</b>, sans jamais jouer deux notes de suite avec le même doigt.',
+  interet:'La base de TOUTE la vitesse à la main droite quand on joue aux doigts. Deux doigts qui se relaient → tu enchaînes vite sans fatiguer.',
+  bien:'Attaque <b>chair + ongle</b>, doigts détendus et PRÈS des cordes, pouce posé sur une corde grave comme point d’appui. L’alternance i-m ne s’arrête jamais.',
+  mistake:'Répéter le même doigt (i-i) ou repartir toujours de l’index après une pause. Impose-toi <b>i-m-i-m strict</b>.',
   exos:[
-   {n:'1 · Régularité, 1 corde', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Down-up-down-up strict. Vise le métronome, pas la vitesse. Chaque note IDENTIQUE.'},
-   {n:'2 · Le changement de corde', seq:[{s:1,f:5},{s:1,f:7},{s:0,f:5},{s:0,f:7}], how:'Garder l’alternance en changeant de corde : c’est LÀ que ça coince. Très lent.'}]},
+   {n:'1 · Régularité, 1 corde', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'i-m-i-m strict (index puis majeur). Vise le métronome, pas la vitesse. Chaque note IDENTIQUE en volume.'},
+   {n:'2 · Le changement de corde', seq:[{s:1,f:5},{s:1,f:7},{s:0,f:5},{s:0,f:7}], how:'Garder l’alternance i-m en changeant de corde : c’est LÀ que ça coince. Très lent.'}]},
  {n:'Les cordes sautées (string skipping)', ic:'⛷️', niv:'inter',
   notation:'Tu <b>sautes</b> une corde (ou plus) entre deux notes. La main droite vise loin, sans toucher la corde du milieu.',
   interet:'Ouvre des sons plus larges (arpèges, grands intervalles) que la gamme note-à-note. Et une précision main droite qui tient à toute vitesse.',
@@ -1306,7 +1310,7 @@ const MINI=[
    {n:'1 · Index ↔ annulaire', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'5h7p5… régulier, une attaque. Monte la vitesse peu à peu.'},
    {n:'2 · Les doigts faibles', seq:[{s:3,f:7},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'}], how:'7↔9 avec annulaire↔auriculaire. Dur, indispensable. 30 s suffisent à fatiguer — c’est bon signe.'}]},
  {n:'Le legato (tout lié)', ic:'🌊', niv:'avancé',
-  notation:'Un enchaînement de hammers et pull-offs : <b>une seule attaque</b> au médiator pour toute une série de notes.',
+  notation:'Un enchaînement de hammers et pull-offs : <b>une seule attaque</b> du doigt pour toute une série de notes.',
   interet:'Le son fluide, sans attaque, des solos rapides (Satriani, Vai en legato). Économise la main droite → tu joues LONGTEMPS et VITE.',
   bien:'Toute la force vient de la <b>main gauche</b> : frappe/tire fort et net. Cherche l’<b>égalité de volume</b> entre la note attaquée et les autres.',
   exos:[
@@ -1320,13 +1324,13 @@ const MINI=[
    {n:'1 · La penta par 3', seq:[{s:5,f:5},{s:5,f:8},{s:4,f:5},{s:5,f:8},{s:4,f:5},{s:4,f:7}], how:'Groupes de 3 qui se chevauchent, penta de La boîte 1. Répète le geste en descendant les cordes.'},
    {n:'2 · La mitraillette', seq:[{s:5,f:8},{s:5,f:5},{s:4,f:8},{s:5,f:5},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:4,f:5}], how:'Le motif «&nbsp;4 notes qui reculent&nbsp;» : rapide à l’oreille, régulier sous les doigts.'}]},
  {n:'Le sweep picking (le balayé)', ic:'🧹', niv:'shred',
-  notation:'Le médiator <b>balaie</b> plusieurs cordes d’un seul mouvement continu (⬇ pour monter, ⬆ pour descendre), <b>une note par corde</b>, main gauche qui roule.',
+  notation:'Aux doigts : tu «&nbsp;racles&nbsp;» plusieurs cordes d’un seul geste continu — le <b>pouce</b> vers les aigus, l’<b>index</b> qui remonte vers les graves — <b>une note par corde</b>, main gauche qui roule. (Un onglet de pouce rend ça bien plus net.)',
   interet:'Le son «&nbsp;cascade&nbsp;» ultra-rapide des arpèges (Malmsteen, metal néo-classique). Beaucoup de notes pour très peu de mouvement.',
   bien:'Ce n’est PAS un gratté rapide : c’est <b>un seul geste lent et fluide</b>. La main gauche «&nbsp;déroule&nbsp;» (un doigt se lève dès que le suivant tombe) pour ne jamais laisser deux notes sonner ensemble. L’étouffement = 90 % du travail.',
   mistake:'Laisser les notes sonner comme un accord plaqué. Chaque note doit s’arrêter quand la suivante arrive.',
   exos:[
-   {n:'1 · Balayage 3 cordes (La mineur)', seq:[{s:4,f:5},{s:3,f:5},{s:2,f:7}], how:'Mi-Do-La (arpège de La min) en un seul balayage ⬆. TRÈS lent, note par note d’abord, chaque note étouffée avant la suivante.'},
-   {n:'2 · Aller-retour du balayage', seq:[{s:2,f:7},{s:3,f:5},{s:4,f:5},{s:3,f:5},{s:2,f:7}], how:'Monte (⬇ balayé) puis redescends (⬆). Le mouvement doit rester continu, pas saccadé.'}]},
+   {n:'1 · Balayage 3 cordes (La mineur)', seq:[{s:4,f:5},{s:3,f:5},{s:2,f:7}], how:'Mi-Do-La (arpège de La min) d’un seul geste, l’<b>index</b> qui racle des aigus vers les graves. TRÈS lent, note par note d’abord, chaque note étouffée avant la suivante.'},
+   {n:'2 · Aller et retour', seq:[{s:2,f:7},{s:3,f:5},{s:4,f:5},{s:3,f:5},{s:2,f:7}], how:'Descends au <b>pouce</b> (vers les aigus) puis remonte à l’<b>index</b>. Le mouvement doit rester continu, pas saccadé.'}]},
  {n:'Le tapping', ic:'👆', niv:'shred',
   notation:'Écrit «&nbsp;<b>12t</b>&nbsp;» : tu <b>frappes</b> la case avec un doigt de la main <b>droite</b> (comme un hammer), puis tu tires — et tu enchaînes avec la main gauche.',
   interet:'Le son «&nbsp;impossible&nbsp;» de EVH («&nbsp;Eruption&nbsp;»), du metal : des écarts énormes et une vitesse folle sans effort de la main gauche.',
@@ -1336,21 +1340,22 @@ const MINI=[
    {n:'1 · Le motif de base', seq:[{s:3,f:12,t:'t'},{s:3,f:5,t:'p'},{s:3,f:9,t:'h'}], how:'Tape la case 12 (main droite), tire vers le 5, frappe le 9 (main gauche). En boucle : 12-5-9, 12-5-9.'},
    {n:'2 · Triolets tapés', seq:[{s:2,f:12,t:'t'},{s:2,f:5,t:'p'},{s:2,f:8,t:'h'},{s:2,f:12,t:'t'},{s:2,f:5,t:'p'},{s:2,f:8,t:'h'}], how:'Sur la corde de Si, en triolets réguliers : c’est déjà un plan «&nbsp;shred&nbsp;». Lentement !'}]},
  {n:'Le pinch harmonic (l’harmonique pincée)', ic:'🐝', niv:'shred',
-  notation:'Noté «&nbsp;<b>P.H.</b>&nbsp;» : en attaquant (souvent une note bendée, en disto), le <b>pouce</b> de la main droite effleure la corde juste après le médiator → un «&nbsp;squeal&nbsp;», un cri aigu.',
+  notation:'Noté «&nbsp;<b>P.H.</b>&nbsp;» : en attaquant (souvent une note bendée, en disto), tu laisses le <b>côté du pouce / l’ongle</b> effleurer la corde juste après l’attaque → un «&nbsp;squeal&nbsp;», un cri aigu.',
   interet:'Le «&nbsp;couac&nbsp;» criard de Zakk Wylde, Dimebag, du hard rock et du metal. De l’attitude pure sur une seule note.',
-  bien:'Tiens le médiator <b>très court</b>, attaque et laisse le côté du pouce toucher la corde IMMÉDIATEMENT après. Le point «&nbsp;magique&nbsp;» change selon la case — cherche-le. Un bend + vibrato derrière = le cri complet.',
+  bien:'Aux doigts, c’est le <b>pouce</b> qui pince : attaque avec la chair, puis laisse l’<b>ongle / le côté du pouce</b> toucher la corde IMMÉDIATEMENT après. Un <b>onglet de pouce</b> (thumbpick) aide énormément. Le point «&nbsp;magique&nbsp;» change selon la case — cherche-le. Bend + vibrato derrière = le cri complet.',
   mistake:'Sans <b>gain/disto</b>, ça ne sort quasiment pas. Il faut du gain et le bon point d’attaque.',
   exos:[
    {n:'1 · Trouve le squeal', seq:[{s:2,f:7,t:'b'}], how:'Sur le La (corde de Ré, case 7), attaque en pinçant du pouce, puis bende. Déplace ton point d’attaque de 1-2 mm jusqu’à ce que ça CRIE.'}]},
 ];
-const MINI_LEGEND='Légende : h = hammer, p = pull-off, b = bend (d’un ton), / = slide, ~ = vibrato, t = tap.';
+const MINI_LEGEND='Légende — main gauche : h = hammer, p = pull-off, b = bend (d’un ton), / = slide, ~ = vibrato, t = tap. Main droite (jeu aux doigts, sans médiator) : pouce · i = index · m = majeur.';
 function miniToday(){ return MINI[dayNum()%MINI.length]; }
 function nivPill(niv){ return `<span style="display:inline-block;font-size:10px;font-weight:800;color:var(--acc);border:1px solid var(--acc);border-radius:10px;padding:2px 8px;margin-bottom:8px">${niv}</span>`; }
-function exoCard(e){ const c=el('div','card'); c.style.background='var(--bg3)';
+function exoCard(e, idp){ const c=el('div','card'); c.style.background='var(--bg3)';
   c.innerHTML=`<b style="font-size:14px">${e.n}</b>`;
   const pre=el('pre','tab'); pre.textContent=renderTab(e.seq); c.appendChild(pre);
   if(e.how){ const h=el('p','lead','🖐 '+e.how); h.style.margin='2px 0 0'; c.appendChild(h); }
   const b=el('button','btn ghost','🔊 Jouer'); b.onclick=()=>playLick(e.seq); c.appendChild(b);
+  c.appendChild(bpmLog((idp||'exo')+'·'+e.n, 60));
   return c;
 }
 function openMiniLesson(L){ ac(); markDay();
@@ -1362,7 +1367,7 @@ function openMiniLesson(L){ ac(); markDay();
       ${L.mistake?`<div class="tip">⚠️ <b>Erreur classique :</b> ${L.mistake}</div>`:''}`));
     inner.appendChild(el('h1','page','Les exos'));
     inner.appendChild(el('p','lead','Du plus simple au plus dur. Lentement, au métronome, chaque note nette — la vitesse suit toute seule.'));
-    L.exos.forEach(e=>inner.appendChild(exoCard(e)));
+    L.exos.forEach(e=>inner.appendChild(exoCard(e, L.n)));
     inner.appendChild(el('div','theory',`<div class="tip">${MINI_LEGEND}</div>`));
   });
 }
@@ -1384,11 +1389,11 @@ function openMiniCourse(){ ac(); markDay();
    JOUER VITE — la méthode des pros + exos en progression
    ================================================================ */
 const SPEED=[
- {n:'1 · Le métronome, ton juge', key:'régularité avant vitesse', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Aller-retour strict sur une corde, au clic. Trouve le tempo où c’est PROPRE 3 fois de suite.', why:'La règle des pros : jamais plus vite que propre. +5 BPM seulement quand c’est net. Note ton BPM quelque part — c’est ta vraie progression.'},
+ {n:'1 · Le métronome, ton juge', key:'régularité avant vitesse', seq:[{s:0,f:5},{s:0,f:6},{s:0,f:7},{s:0,f:8},{s:0,f:8},{s:0,f:7},{s:0,f:6},{s:0,f:5}], how:'Alternance i-m stricte sur une corde, au clic. Trouve le tempo où c’est PROPRE 3 fois de suite.', why:'La règle des pros : jamais plus vite que propre. +5 BPM seulement quand c’est net. Le log de BPM ci-dessous garde ton record — c’est ta vraie progression.'},
  {n:'2 · La rafale (burst)', key:'tromper la crispation', seq:[{s:5,f:5},{s:5,f:8},{s:4,f:5},{s:4,f:7}], how:'Joue ces 4 notes TRÈS vite d’un coup, puis stoppe et respire. Recommence. La vitesse par petites explosions.', why:'Ton cerveau apprend le geste rapide sans avoir le temps de se crisper. LE truc pour débloquer un plafond de vitesse.'},
- {n:'3 · La synchro des 2 mains', key:'le vrai plafond', seq:SPIDER, how:'L’araignée, très lentement : chaque note de la main gauche PILE avec le médiator. Ne regarde pas ta main.', why:'Le mur de vitesse n’est ni la main droite ni la gauche : c’est leur SYNCHRO. C’est ça qu’on muscle ici.'},
+ {n:'3 · La synchro des 2 mains', key:'le vrai plafond', seq:SPIDER, how:'L’araignée, très lentement : chaque note de la main gauche PILE avec le doigt qui attaque (i-m). Ne regarde pas ta main.', why:'Le mur de vitesse n’est ni la main droite ni la gauche : c’est leur SYNCHRO. C’est ça qu’on muscle ici.'},
  {n:'4 · La séquence (le son « rapide »)', key:'motifs qui se décalent', seq:[{s:5,f:8},{s:5,f:5},{s:4,f:8},{s:5,f:5},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:4,f:5}], how:'La mitraillette : un motif de 4 notes qui recule. Garde le MÊME geste en descendant les cordes.', why:'Les traits rapides = des séquences répétées, pas des notes au hasard. La main répète, donc elle accélère.'},
- {n:'5 · Le legato (vitesse sans médiator)', key:'la main gauche fait tout', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'Une attaque, tout le reste en hammer/pull. Cherche l’égalité de volume.', why:'Quand la main droite plafonne, le legato te donne de la vitesse «&nbsp;gratuite&nbsp;». Le son fluide du shred.'},
+ {n:'5 · Le legato (vitesse sans réattaquer)', key:'la main gauche fait tout', seq:[{s:3,f:5},{s:3,f:7,t:'h'},{s:3,f:9,t:'h'},{s:3,f:7,t:'p'},{s:3,f:5,t:'p'},{s:3,f:7,t:'h'}], how:'Une seule attaque, tout le reste en hammer/pull. Cherche l’égalité de volume.', why:'Quand la main droite plafonne, le legato te donne de la vitesse «&nbsp;gratuite&nbsp;». Le son fluide du shred.'},
  {n:'6 · La gamme au tempo', key:'position 1, montée-descente', seq:[{s:0,f:5},{s:0,f:7},{s:0,f:8},{s:1,f:5},{s:1,f:7},{s:1,f:8}], how:'Monte/descends une position de gamme au métronome, propre, puis +5 BPM. (3 notes par corde = idéal pour la vitesse.)', why:'La gamme au tempo = la matière première de l’impro rapide. Position par cœur → doigts en pilote automatique.'},
 ];
 function openSpeed(){ ac(); markDay();
@@ -1399,13 +1404,14 @@ function openSpeed(){ ac(); markDay();
       <div class="formula">Vitesse = relâchement + petits mouvements + synchro des 2 mains</div>
       <h3>La méthode qui marche vraiment</h3>
       <ul>
-        <li><b>Relâche</b> : épaule et avant-bras souples, médiator peu enfoncé, doigts gauches PRÈS des cordes.</li>
+        <li><b>Relâche</b> : épaule et avant-bras souples, doigts (droite ET gauche) détendus et PRÈS des cordes.</li>
         <li><b>Le métronome, toujours</b> : le tempo où c’est propre <b>3 fois de suite</b> → <b>+5 BPM</b> → note-le. Jamais plus vite que propre.</li>
         <li><b>Les rafales</b> : joue vite par salves de 4-6 notes, puis stoppe. Tu apprends le geste rapide sans te crisper.</li>
         <li><b>Le chunking</b> : découpe en groupes de 3-4 notes qui se chevauchent, pas note à note.</li>
       </ul>`));
-    inner.appendChild(el('p','lead','Les exos, dans l’ordre. Chacun = un métronome, un tempo propre, +5 BPM quand c’est net.'));
-    SPEED.forEach(L=>inner.appendChild(lickCard(L)));
+    inner.appendChild(metronomeCard());
+    inner.appendChild(el('p','lead','Les exos, dans l’ordre. Chacun = un métronome, un tempo propre, +5 BPM quand c’est net. Le bandeau 🥁 garde ton record.'));
+    SPEED.forEach(L=>inner.appendChild(lickCard(L,true)));
     inner.appendChild(el('div','theory',`<div class="tip">Les déliateurs purs (l’araignée & co) sont dans <b>Technique &amp; déliateurs</b> (hub Improviser). Ici, on transforme la technique en <b>vitesse utile</b>.</div>`));
   });
 }
@@ -1440,6 +1446,62 @@ function openFastImpro(){ ac(); markDay();
     FASTIMPRO.forEach(st=>inner.appendChild(fastCard(st)));
     inner.appendChild(el('div','theory',`<div class="tip">Tes outils pour ces étapes : <b>La Boussole</b> (tes notes à viser), <b>La gamme majeure en positions</b> (relier le manche), <b>Bien phraser</b> (le contraste). Reviens-y dès qu’une étape coince.</div>`));
   });
+}
+
+/* ================================================================
+   MÉTRONOME (WebAudio) + LOG DE BPM par exercice
+   ================================================================ */
+const metro={on:false,bpm:90,beats:4,cur:0,next:0,timer:null,onBeat:null};
+function metroClick(time,accent){ const ctx=ac(), o=ctx.createOscillator(), g=ctx.createGain();
+  o.frequency.value=accent?1600:1000; o.type='square';
+  g.gain.setValueAtTime(0.0001,time); g.gain.exponentialRampToValueAtTime(accent?.6:.4,time+0.001); g.gain.exponentialRampToValueAtTime(0.0001,time+0.05);
+  o.connect(g); g.connect(ctx.destination); o.start(time); o.stop(time+0.06); }
+function metroSchedule(){ const ctx=ac(); while(metro.next<ctx.currentTime+0.12){ const beat=metro.cur%metro.beats;
+  metroClick(metro.next,beat===0); const dt=Math.max(0,(metro.next-ctx.currentTime)*1000);
+  setTimeout(()=>{ if(metro.on&&metro.onBeat)metro.onBeat(beat); },dt);
+  metro.cur++; metro.next+=60/metro.bpm; } }
+function metroStart(){ if(metro.on)return; ac(); metro.on=true; metro.cur=0; metro.next=ac().currentTime+0.06; metro.timer=setInterval(metroSchedule,25); }
+function metroStop(){ metro.on=false; if(metro.timer){clearInterval(metro.timer); metro.timer=null;} }
+function metroSetBpm(b){ metro.bpm=Math.max(30,Math.min(300,Math.round(b))); }
+function metronomeCard(){
+  const c=el('div','card'); c.innerHTML='<b>🥁 Métronome</b>';
+  const bpmN=el('div'); bpmN.style.cssText='font-size:46px;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0 0';
+  const sub=el('div'); sub.style.cssText='text-align:center;color:var(--dim);font-size:12px;font-weight:700;margin-bottom:6px'; sub.textContent='BPM';
+  const dots=el('div'); dots.style.cssText='display:flex;gap:10px;justify-content:center;margin:6px 0 12px';
+  c.append(bpmN,sub,dots);
+  let dotEls=[];
+  function buildDots(){ dots.innerHTML=''; dotEls=[]; for(let i=0;i<metro.beats;i++){ const d=el('div'); d.style.cssText='width:16px;height:16px;border-radius:50%;background:var(--bg3);border:1px solid var(--line);transition:background .04s'; dots.appendChild(d); dotEls.push(d);} }
+  const slider=el('input'); slider.type='range'; slider.min='40'; slider.max='240'; slider.step='1'; slider.value=metro.bpm; slider.style.cssText='width:100%;margin:2px 0 12px;accent-color:var(--acc)';
+  const rowT=el('div','toolrow'); rowT.style.justifyContent='center';
+  const m5=el('div','tag','−5'), m1=el('div','tag','−1'), p1=el('div','tag','+1'), p5=el('div','tag','+5'); rowT.append(m5,m1,p1,p5);
+  const bRow=el('div','row3'); const startB=el('button','btn','▶ Démarrer'), tapB=el('button','btn ghost','👆 Tap'), beatB=el('button','btn ghost',metro.beats+'/4'); bRow.append(startB,tapB,beatB);
+  c.append(slider,rowT,bRow);
+  function paint(){ bpmN.textContent=metro.bpm; slider.value=metro.bpm; }
+  function setB(b){ metroSetBpm(b); paint(); }
+  m5.onclick=()=>setB(metro.bpm-5); m1.onclick=()=>setB(metro.bpm-1); p1.onclick=()=>setB(metro.bpm+1); p5.onclick=()=>setB(metro.bpm+5);
+  slider.oninput=()=>setB(+slider.value);
+  metro.onBeat=(i)=>{ dotEls.forEach((d,k)=>{ d.style.background = k===i?(i===0?'var(--bad)':'var(--acc)'):'var(--bg3)'; }); };
+  startB.onclick=()=>{ if(metro.on){ metroStop(); startB.textContent='▶ Démarrer'; dotEls.forEach(d=>d.style.background='var(--bg3)'); } else { buildDots(); metro.onBeat=(i)=>{ dotEls.forEach((d,k)=>{ d.style.background=k===i?(i===0?'var(--bad)':'var(--acc)'):'var(--bg3)'; }); }; metroStart(); startB.textContent='⏹ Stop'; } };
+  let taps=[]; tapB.onclick=()=>{ const now=performance.now(); if(taps.length&&now-taps[taps.length-1]>2500) taps=[]; taps.push(now); if(taps.length>=2){ const iv=(taps[taps.length-1]-taps[0])/(taps.length-1); setB(60000/iv); } if(taps.length>6) taps.shift(); };
+  beatB.onclick=()=>{ metro.beats=metro.beats===4?3:metro.beats===3?2:metro.beats===2?6:4; beatB.textContent=metro.beats+'/4'; buildDots(); };
+  buildDots(); paint(); return c;
+}
+function openMetronome(){ ac(); markDay(); openOverlay('Métronome', inner=>{
+  inner.appendChild(el('p','lead','Le juge de toute la technique. Le protocole des pros : trouve le tempo où c’est PROPRE 3 fois de suite, monte de +5, recommence.'));
+  inner.appendChild(metronomeCard());
+  inner.appendChild(el('div','theory',`<div class="tip">Sur chaque exo (mini-cours, technique, vitesse), le bandeau <b>🥁 log BPM</b> garde ton record. C’est ton vrai chiffre de progression — pas «&nbsp;je crois que je vais plus vite&nbsp;».</div>`));
+}); }
+function bpmLog(id, base){ base=base||70;
+  const wrap=el('div'); wrap.style.cssText='background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap';
+  let cur=(S.bpm&&S.bpm[id])||base;
+  const lab=el('div'); lab.style.cssText='font-size:12px;font-weight:700;flex:1;min-width:130px;color:var(--dim)';
+  const minus=el('div','tag','−5'), plus=el('div','tag','+5'), playB=el('div','tag','▶ métro'), okb=el('div','tag on','✓ propre');
+  function paint(){ const rec=S.bpm&&S.bpm[id]; lab.innerHTML=`🥁 <b style="color:var(--txt)">${cur}</b> BPM${rec?` · record <b style="color:var(--acc)">${rec}</b>`:''}`; }
+  minus.onclick=()=>{ cur=Math.max(30,cur-5); if(metro.on)metroSetBpm(cur); paint(); };
+  plus.onclick=()=>{ cur=Math.min(300,cur+5); if(metro.on)metroSetBpm(cur); paint(); };
+  playB.onclick=()=>{ if(metro.on){ metroStop(); playB.textContent='▶ métro'; playB.classList.remove('on'); } else { metro.onBeat=null; metroSetBpm(cur); metroStart(); playB.textContent='⏹ stop'; playB.classList.add('on'); } };
+  okb.onclick=()=>{ if(!S.bpm)S.bpm={}; const prev=S.bpm[id]||0; if(cur>prev){ S.bpm[id]=cur; S.xp+=3; save(); toast('🏆 '+cur+' BPM — nouveau record !'); } else toast('Ton record tient : '+prev+' BPM'); paint(); };
+  wrap.append(lab,minus,playB,plus,okb); paint(); return wrap;
 }
 
 function renderCartes(){
@@ -1620,14 +1682,100 @@ function renderSuite(){
   m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">1→5, on construit les fondations : le manche, les accords, les positions, l’impro, les modes. Les étapes <b>6-8</b> (mini-cours, vitesse, impro rapide) se travaillent <b>en parallèle, un peu chaque jour</b> — commence par le cours du jour, tout en haut.</p>'));
 }
 
+/* ================================================================
+   AUJOURD’HUI — la séance guidée du jour
+   ================================================================ */
+function sessToday(){ const t=today(); if(!S.sess||S.sess.date!==t){ S.sess={date:t,done:[]}; save(); } return S.sess; }
+function sessDone(id){ return sessToday().done.indexOf(id)>=0; }
+function sessMark(id){ const s=sessToday(); if(s.done.indexOf(id)<0){ s.done.push(id); S.xp+=5; save(); } }
+function renderJour(){
+  const m=document.getElementById('main'); m.innerHTML=''; markDay(); sessToday();
+  m.appendChild(el('h1','page','Aujourd’hui'));
+  const T=miniToday(), dueCards=cDueTotal()+tDue().length, rec=sprintRecommend();
+  const blocks=[
+    {id:'cours', ic:'🎓', t:'Le mini-cours du jour', d:T.n, open:()=>openMiniLesson(T)},
+    {id:'sprint', ic:'⏱', t:'Le sprint des cordes', d:'Corde de '+STR_NAME[rec]+' — trouve chaque note, vite.', open:()=>openStringSprint()},
+    {id:'cartes', ic:'🔁', t:'Tes cartes du jour', d:dueCards?(dueCards+' carte(s) à réviser'):'Rien de dû — prends de l’avance.', open:()=>goTab('cartes')},
+    {id:'impro', ic:'🎤', t:'Un pas vers l’impro rapide', d:'Le hub : lick du jour, Boussole, séquences.', open:()=>openImproHub()},
+  ];
+  const doneN=blocks.filter(b=>sessDone(b.id)).length;
+  const head=el('div','card'); head.style.borderColor='var(--acc)';
+  head.innerHTML=`<b>Ta séance du jour</b> <span style="float:right;color:var(--acc);font-weight:800">${doneN}/${blocks.length}</span><p class="lead" style="margin:6px 0 0">${doneN===blocks.length?'💪 Séance bouclée. Respect. Reviens demain — c’est la régularité qui fait le niveau.':'Une consigne à la fois : ouvre, fais, coche. 15-20 min suffisent.'}${S.streak?` <b style="color:var(--acc)">· 🔥 ${S.streak} j</b>`:''}</p>`;
+  m.appendChild(head);
+  blocks.forEach(b=>{ const done=sessDone(b.id);
+    const c=el('div','catcard'); if(done)c.style.opacity='.62';
+    c.innerHTML=`<div class="ico">${b.ic}</div><div class="t"><b>${done?'✓ ':''}${b.t}</b><small>${b.d}</small></div>`;
+    const wrap=el('div'); wrap.style.cssText='display:flex;gap:6px;flex-shrink:0';
+    const go=el('div','tag on','ouvrir'); go.onclick=(ev)=>{ ev.stopPropagation(); b.open(); };
+    const chk=el('div','tag', done?'✓':'fait ?'); chk.onclick=(ev)=>{ ev.stopPropagation(); sessMark(b.id); render(); };
+    wrap.append(go,chk); c.appendChild(wrap); c.onclick=b.open; m.appendChild(c); });
+  const qt=el('div','card'); qt.innerHTML='<b>Outils rapides</b>';
+  const row=el('div','row3'); row.style.marginTop='10px';
+  const bm=el('button','btn ghost','🥁 Métronome'); bm.onclick=()=>openMetronome();
+  const bb=el('button','btn ghost','🧭 Boussole'); bb.onclick=()=>openBoussole();
+  const bp=el('button','btn ghost','📈 Profil'); bp.onclick=()=>goTab('profil');
+  row.append(bm,bb,bp); qt.appendChild(row); m.appendChild(qt);
+}
+
+/* ================================================================
+   PROFIL — le progrès rendu visible
+   ================================================================ */
+function guitarLevel(xp){
+  const L=[[0,'Débutant'],[60,'Apprenti'],[160,'Rythmicien'],[350,'Soliste en herbe'],[650,'Improvisateur'],[1100,'Lead guitarist'],[1800,'Shredder'],[3000,'Maître du manche']];
+  let cur=L[0], next=null;
+  for(let i=0;i<L.length;i++){ if(xp>=L[i][0]){ cur=L[i]; next=L[i+1]||null; } }
+  return {name:cur[1], min:cur[0], next};
+}
+function renderProfil(){
+  const m=document.getElementById('main'); m.innerHTML='';
+  m.appendChild(el('h1','page','Profil'));
+  const xp=S.xp||0, lvl=guitarLevel(xp);
+  const lc=el('div','card'); lc.style.borderColor='var(--acc)';
+  let prog=100, ptxt='niveau max atteint 🏆';
+  if(lvl.next){ const span=lvl.next[0]-lvl.min; prog=Math.round((xp-lvl.min)/span*100); ptxt=`${lvl.next[0]-xp} XP → ${lvl.next[1]}`; }
+  lc.innerHTML=`<b style="font-size:18px">${lvl.name}</b> <span style="float:right;color:var(--acc);font-weight:800">${xp} XP</span>
+    <div style="background:var(--bg3);border-radius:10px;height:10px;margin:12px 0 4px;overflow:hidden"><div style="height:100%;width:${prog}%;background:var(--acc)"></div></div>
+    <small style="color:var(--dim)">${ptxt} · 🔥 ${S.streak||0} jour${(S.streak||0)>1?'s':''} de suite</small>`;
+  m.appendChild(lc);
+  const bpmVals=Object.values(S.bpm||{}), bestBpm=bpmVals.length?Math.max.apply(null,bpmVals):0;
+  const cleanStrings=[0,1,2,3,4,5].filter(k=>{const b=sprintBest(k);return b&&b.clean;}).length;
+  const rc=el('div','card'); rc.innerHTML='<b>Tes records</b>';
+  rc.appendChild(el('div','statgrid',
+    `<div class="stat"><b>${bestBpm||'—'}</b><small>meilleur BPM</small></div>
+     <div class="stat"><b>${cleanStrings}/6</b><small>cordes ✓</small></div>
+     <div class="stat"><b>${S.quizBest||0}/10</b><small>nommer cases</small></div>
+     <div class="stat"><b>${bestFind()}</b><small>trouve tout</small></div>
+     <div class="stat"><b>${S.powBest||0}/8</b><small>power chords</small></div>
+     <div class="stat"><b>${bpmVals.length}</b><small>exos chronés</small></div>`));
+  m.appendChild(rc);
+  const triK=tKnown(), triT=TRIADS.length; let chK=0, chT=0; CHORD_CATS.forEach(k=>{ chK+=cKnown(k.id); chT+=chordsIn(k.id).length; });
+  function bar(label,val,tot){ const p=tot?Math.round(val/tot*100):0; return `<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>${label}</span><span style="color:var(--acc)">${val}/${tot}</span></div><div style="background:var(--bg3);border-radius:8px;height:8px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${p}%;background:var(--acc)"></div></div></div>`; }
+  const mc=el('div','card'); mc.innerHTML='<b>Ta maîtrise</b>'+bar('Triades (leurs notes)',triK,triT)+bar('Formes d’accords',chK,chT)+bar('Cordes du manche',cleanStrings,6);
+  m.appendChild(mc);
+  const nb=el('div','card'); nb.style.borderColor='var(--acc2)';
+  const dueC=cDueTotal(), dueT=tDue().length; let battle;
+  if(dueT>0) battle={t:'Réviser tes triades',d:dueT+' triade(s) dues — rafraîchis avant d’oublier.',go:()=>goTab('cartes')};
+  else if(dueC>0) battle={t:'Réviser tes accords',d:dueC+' accord(s) dus.',go:()=>goTab('cartes')};
+  else if(cleanStrings<6) battle={t:'Le sprint des cordes',d:'Il te reste des cordes à passer sans faute.',go:()=>openStringSprint()};
+  else if((S.quizBest||0)<8) battle={t:'Nommer les cases',d:'Tu es à '+(S.quizBest||0)+'/10 — vise 8+.',go:()=>openNameQuiz()};
+  else if(bpmVals.length===0) battle={t:'Un exo au métronome',d:'Chronomètre-toi : pose ton premier record de BPM.',go:()=>openSpeed()};
+  else battle={t:'Improviser vite comme un pro',d:'Les fondations sont là. Va jouer.',go:()=>openFastImpro()};
+  nb.innerHTML=`<b>⚔️ Ton prochain combat</b><p class="lead" style="margin:6px 0 10px">${battle.t} — ${battle.d}</p>`;
+  const gb=el('button','btn','Y aller'); gb.onclick=battle.go; nb.appendChild(gb);
+  m.appendChild(nb);
+}
+
 /* ---------------- overlay + nav ---------------- */
 const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
 function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
-function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } render(); }
-let tab='manche';
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; render(); });
+function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } metroStop(); render(); }
+let tab='jour';
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; metroStop(); render(); });
+function goTab(t){ tab=t; document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.tab===t)); metroStop(); render(); }
+document.getElementById('badge').onclick=()=>goTab('profil');
 function render(){ const due=cDueTotal()+tDue().length; document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
-  if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='theorie')renderTheorie(); else renderSuite(); }
+  document.getElementById('badge').style.cursor='pointer';
+  if(tab==='jour')renderJour(); else if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='theorie')renderTheorie(); else if(tab==='profil')renderProfil(); else renderSuite(); }
 render();
 if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
