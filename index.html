@@ -1449,6 +1449,62 @@ function openFastImpro(){ ac(); markDay();
 }
 
 /* ================================================================
+   ÉCRIRE UNE CHANSON — pensé rock dynamique (grunge / alt)
+   ================================================================ */
+function openSongwriting(){ ac(); markDay();
+  openOverlay('Écrire une chanson', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Une chanson = des blocs simples + une émotion</h3>
+      <p>Écrire une chanson, ce n’est pas être savant : c’est <b>assembler des blocs</b> et transmettre une <b>émotion</b>. Ton terrain — le rock dynamique (Nirvana, Audioslave, Deftones) — mise tout sur le <b>contraste</b> et la <b>sincérité</b>, pas sur la complexité. Cobain écrivait des tubes avec 4 accords.</p>
+      <div class="formula">Intro (riff) · Couplet · Refrain · Couplet · Refrain · Pont · Refrain</div>
+      <p>Ça, c’est le squelette de 90 % du rock. Le <b>refrain revient</b> : c’est le cœur, le moment qu’on retient.</p>`));
+
+    inner.appendChild(el('div','theory',`
+      <h3>1. Par où commencer : deux portes</h3>
+      <ul>
+        <li><b>Le riff</b> — la chanson naît d’une phrase de guitare (Nirvana, Deftones). Un riff qui te fait quelque chose ? C’est ta fondation, construis autour.</li>
+        <li><b>La suite d’accords</b> — 4 accords qui tournent et posent une ambiance (façon « Like a Stone »). Le chant viendra dessus.</li>
+      </ul>
+      <p>Choisis-en <b>une</b>, l’autre suit. Le plus dur, c’est de commencer — pas de finir.</p>`));
+
+    const c=el('div','card'); c.appendChild(el('b',null,'▶ Des suites d’accords à voler'));
+    c.appendChild(el('p','lead','Écoute-les tourner (lecture auto), puis remplace-les par les tiennes.'));
+    const b1=el('button','btn ghost','Mélodique (mineure) — Am · F · C · G'); b1.onclick=()=>openProgression({n:'Suite rock mélodique',ch:['Am','F','C','G'],tip:'Le mineur émouvant, mid-tempo (ambiance « Like a Stone »). Arpège-la au couplet, gratte-la fort au refrain.'});
+    const b2=el('button','btn ghost','Grunge (tendue) — Em · C · G · D'); b2.onclick=()=>openProgression({n:'Suite grunge',ch:['Em','C','G','D'],tip:'Sombre et carrée. Couplet en accords tenus/clean, refrain en power chords saturés : le contraste fait tout.'});
+    c.append(b1,b2); inner.appendChild(c);
+
+    inner.appendChild(el('div','theory',`
+      <h3>⭐ 2. Le contraste doux / fort — LA formule de ton style</h3>
+      <p>C’est l’ADN de ta musique. <b>Couplet retenu</b> (son clean, arpèges ou palm mute léger, on laisse de la place) → <b>refrain qui EXPLOSE</b> (disto, power chords, plus haut, plus fort). C’est la formule Pixies → Nirvana, et le cœur de Deftones : la <b>beauté ET la violence</b> dans la même chanson.</p>
+      <div class="tip">Le raccourci : garde souvent les <b>mêmes accords</b> au couplet et au refrain — change seulement l’<b>intensité</b> et la <b>texture</b> (clean → saturé, arpège → power chords). L’explosion se ressent sans changer de terrain.</div>
+      <p>Pour le poids (Deftones, Nirvana « Heart-Shaped Box ») : accorde ta corde de Mi grave en <b>Ré (drop D)</b> — power chords à un doigt, son plus lourd.</p>`));
+
+    inner.appendChild(el('div','theory',`
+      <h3>3. Le refrain (le hook)</h3>
+      <p>Le <b>sommet</b> : le plus mémorable, le plus fort émotionnellement. Rends-le plus <b>gros</b> (power chords, chant plus haut) et fais-y tomber ta <b>phrase-titre</b>. Test : si dans 3 jours tu ne fredonnes qu’<b>une</b> partie de ta chanson, ça doit être le refrain.</p>
+      <h3>4. La mélodie de chant</h3>
+      <p>Elle vit <b>au-dessus</b> des accords. Vise les <b>notes de l’accord</b> et la <b>pentatonique</b> de ta tonalité (→ La Boussole). <b>Laisse respirer</b> (des trous), et <b>répète</b> : une bonne mélodie se fredonne <b>sans les paroles</b>.</p>
+      <h3>5. Les paroles</h3>
+      <p>Pars d’une <b>émotion</b> ou d’une image concrète, pas d’un concept. Le <b>couplet raconte</b>, le <b>refrain assène</b> le cœur. N’explique pas tout : le flou évocateur (Cobain) laisse l’auditeur <b>projeter</b> sa propre histoire — c’est une force.</p>
+      <h3>6. Tempo &amp; groove</h3>
+      <p>Choisis l’énergie : <b>mid-tempo lourd</b> (Deftones, Soundgarden) ou <b>nerveux</b> (punk / Nirvana up-tempo). La batterie porte l’énergie ; ta guitare et elle doivent <b>respirer ensemble</b>.</p>`));
+
+    inner.appendChild(el('div','theory',`
+      <h3>🎯 Écris-en une cette semaine</h3>
+      <ol style="margin:0 0 10px 18px;color:#d8cebf;line-height:1.7">
+        <li>Choisis une <b>émotion</b> (ou un titre) + une <b>tonalité mineure</b> (Mi ou La mineur = idéal guitare). → <b>La Boussole</b>.</li>
+        <li>Trouve <b>4 accords</b> qui tournent (ou <b>1 riff</b>) = ton <b>couplet</b>.</li>
+        <li>Fais un <b>refrain qui contraste</b> (plus fort, power chords).</li>
+        <li><b>Fredonne</b> une mélodie par-dessus (notes d’accord + penta).</li>
+        <li>Trouve <b>une ligne</b> pour le refrain (la phrase-titre).</li>
+        <li><b>Arrange</b> : intro (riff) – couplet – refrain – couplet – refrain – pont – refrain.</li>
+        <li><b>Enregistre-la</b> au téléphone. <b>Fini vaut mieux que parfait.</b></li>
+      </ol>
+      <div class="tip">Tes outils : <b>La Boussole</b> (ta tonalité + tes notes), <b>les positions</b> (pour un riff), <b>les power chords</b> (le mur du refrain), <b>Bien phraser</b> (la mélodie).</div>`));
+  });
+}
+
+/* ================================================================
    MÉTRONOME (WebAudio) + LOG DE BPM par exercice
    ================================================================ */
 const metro={on:false,bpm:90,beats:4,cur:0,next:0,timer:null,onBeat:null};
@@ -1492,16 +1548,24 @@ function openMetronome(){ ac(); markDay(); openOverlay('Métronome', inner=>{
   inner.appendChild(el('div','theory',`<div class="tip">Sur chaque exo (mini-cours, technique, vitesse), le bandeau <b>🥁 log BPM</b> garde ton record. C’est ton vrai chiffre de progression — pas «&nbsp;je crois que je vais plus vite&nbsp;».</div>`));
 }); }
 function bpmLog(id, base){ base=base||70;
-  const wrap=el('div'); wrap.style.cssText='background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap';
-  let cur=(S.bpm&&S.bpm[id])||base;
-  const lab=el('div'); lab.style.cssText='font-size:12px;font-weight:700;flex:1;min-width:130px;color:var(--dim)';
-  const minus=el('div','tag','−5'), plus=el('div','tag','+5'), playB=el('div','tag','▶ métro'), okb=el('div','tag on','✓ propre');
-  function paint(){ const rec=S.bpm&&S.bpm[id]; lab.innerHTML=`🥁 <b style="color:var(--txt)">${cur}</b> BPM${rec?` · record <b style="color:var(--acc)">${rec}</b>`:''}`; }
-  minus.onclick=()=>{ cur=Math.max(30,cur-5); if(metro.on)metroSetBpm(cur); paint(); };
-  plus.onclick=()=>{ cur=Math.min(300,cur+5); if(metro.on)metroSetBpm(cur); paint(); };
-  playB.onclick=()=>{ if(metro.on){ metroStop(); playB.textContent='▶ métro'; playB.classList.remove('on'); } else { metro.onBeat=null; metroSetBpm(cur); metroStart(); playB.textContent='⏹ stop'; playB.classList.add('on'); } };
+  const wrap=el('div'); wrap.style.cssText='background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-top:8px';
+  let cur=(S.bpm&&S.bpm[id])||base, live=false;
+  const r1=el('div'); r1.style.cssText='display:flex;align-items:center;gap:7px;flex-wrap:wrap';
+  const pulse=el('div'); pulse.style.cssText='width:13px;height:13px;border-radius:50%;background:var(--bg3);border:1px solid var(--line);flex-shrink:0;transition:background .04s';
+  const bpmN=el('div'); bpmN.style.cssText='font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;min-width:66px';
+  const minus=el('div','tag','−5'), plus=el('div','tag','+5'), playB=el('div','tag on','▶ métro'), okb=el('div','tag','✓ propre');
+  r1.append(pulse,bpmN,minus,plus,playB,okb); wrap.appendChild(r1);
+  const rec=el('div'); rec.style.cssText='font-size:11px;color:var(--dim);font-weight:700;margin-top:6px'; wrap.appendChild(rec);
+  function paint(){ bpmN.innerHTML='🥁 '+cur; const r=S.bpm&&S.bpm[id]; rec.innerHTML=r?`Record : <b style="color:var(--acc)">${r} BPM</b> — monte quand c’est propre 3× de suite.`:'Lance le métronome, joue dessus, puis « ✓ propre » à ton tempo net.'; }
+  function stop(){ live=false; playB.textContent='▶ métro'; playB.classList.add('on'); pulse.style.background='var(--bg3)'; }
+  minus.onclick=()=>{ cur=Math.max(30,cur-5); if(live)metroSetBpm(cur); paint(); };
+  plus.onclick=()=>{ cur=Math.min(300,cur+5); if(live)metroSetBpm(cur); paint(); };
+  playB.onclick=()=>{ if(live){ metroStop(); stop(); }
+    else { metroStop(); live=true; playB.textContent='⏹ stop'; playB.classList.remove('on');
+      metro.beats=4; metro.onBeat=(i)=>{ pulse.style.background=i===0?'var(--bad)':'var(--acc)'; setTimeout(()=>{ pulse.style.background='var(--bg3)'; },95); };
+      metroSetBpm(cur); metroStart(); } };
   okb.onclick=()=>{ if(!S.bpm)S.bpm={}; const prev=S.bpm[id]||0; if(cur>prev){ S.bpm[id]=cur; S.xp+=3; save(); toast('🏆 '+cur+' BPM — nouveau record !'); } else toast('Ton record tient : '+prev+' BPM'); paint(); };
-  wrap.append(lab,minus,playB,plus,okb); paint(); return wrap;
+  paint(); return wrap;
 }
 
 function renderCartes(){
@@ -1676,10 +1740,22 @@ function renderSuite(){
     {n:'6',t:'🎓 Le mini-cours du jour',d:'Une technique par jour, de la base au shred (hammer, bend, legato, tapping, sweep…) : notation, intérêt, comment bien la faire, 2-3 exos. Aujourd’hui : '+miniToday().n+'.',open:openMiniCourse},
     {n:'7',t:'⚡ Jouer vite (comme les pros)',d:'La méthode qui marche vraiment : relâchement, métronome, rafales, séquences — des exos en progression pour gagner en vitesse pour de vrai.',open:openSpeed},
     {n:'8',t:'🎸 Improviser vite comme un pro',d:'Transformer la vitesse en musique : vocabulaire de licks, notes cibles, séquences au tempo, relier les positions, le solo d’une minute.',open:openFastImpro},
+    {n:'9',t:'🎼 Écrire une chanson',d:'La structure couplet-refrain, le contraste doux/fort (l’ADN de ton rock), le riff, le refrain, la mélodie, les paroles — et la méthode pour en écrire une cette semaine.',open:openSongwriting},
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
     if(a.open){ s.style.cursor='pointer'; s.onclick=a.open; } m.appendChild(s); });
-  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">1→5, on construit les fondations : le manche, les accords, les positions, l’impro, les modes. Les étapes <b>6-8</b> (mini-cours, vitesse, impro rapide) se travaillent <b>en parallèle, un peu chaque jour</b> — commence par le cours du jour, tout en haut.</p>'));
+  const soon=el('div','card');
+  soon.innerHTML='<b>🔮 Plus tard dans le parcours</b><p class="lead" style="margin:6px 0 10px">Les prochaines briques de connaissances &amp; de technique — je les construirai avec toi quand tu y seras.</p>';
+  [['🎚️','Le son','ampli, disto, réverb, delay — façonner ta tonalité (les textures Deftones)'],
+   ['🎸','Les accordages alternatifs','drop D, drop C — le poids et les power chords à un doigt'],
+   ['🎙️','S’enregistrer & faire une démo','poser tes idées, t’écouter, garder une trace'],
+   ['👂','Relever à l’oreille','retrouver un riff / une chanson sans tablature'],
+   ['🥁','Jouer en groupe','rester serré avec une batterie, tenir le tempo, le « pocket »']]
+   .forEach(a=>{ const r=el('div','catcard'); r.style.opacity='.7';
+     r.innerHTML=`<div class="ico">${a[0]}</div><div class="t"><b>${a[1]}</b><small>${a[2]}</small></div><div class="pc" style="color:var(--dim)">bientôt</div>`;
+     soon.appendChild(r); });
+  m.appendChild(soon);
+  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">1→5, on construit les fondations : le manche, les accords, les positions, l’impro, les modes. Les étapes <b>6-9</b> (mini-cours, vitesse, impro rapide, écrire une chanson) se travaillent <b>en parallèle, un peu chaque jour</b> — commence par le cours du jour, tout en haut.</p>'));
 }
 
 /* ================================================================
