@@ -148,7 +148,7 @@ const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
 const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, triads:{}, tNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  findBest:{}, quizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}};
+  findBest:{}, quizBest:0, cagedQuizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
@@ -174,14 +174,17 @@ function pluck(midi,dur=1.3,vel=.5){
 function strum(ch){ ac(); const ms=[]; for(let s=0;s<6;s++){ if(ch.frets[s]>=0) ms.push(OPEN[s]+ch.frets[s]); } ms.forEach((m,i)=>setTimeout(()=>pluck(m,1.5,.42),i*42)); }
 
 /* ---------------- fretboard ---------------- */
-function buildFretboard(onTap){
+function buildFretboard(onTap,nf){
+  nf=nf||FRETS;
   const wrap=el('div','fbwrap'), fb=el('div','fb'), cells={};
-  for(let s=5;s>=0;s--){ const row=el('div','frow');
-    for(let f=0;f<=FRETS;f++){ const c=el('div','fcell'+(f===0?' nut':'')); c.appendChild(el('div','sl')); c.dataset.s=s; c.dataset.f=f; c.onclick=()=>onTap&&onTap(s,f,c); row.appendChild(c); cells[s+':'+f]=c; }
+  const gtc='38px repeat('+nf+',minmax(34px,1fr))', mw=Math.max(520,38+nf*40)+'px';
+  fb.style.minWidth=mw;
+  for(let s=5;s>=0;s--){ const row=el('div','frow'); row.style.gridTemplateColumns=gtc;
+    for(let f=0;f<=nf;f++){ const c=el('div','fcell'+(f===0?' nut':'')); c.appendChild(el('div','sl')); c.dataset.s=s; c.dataset.f=f; c.onclick=()=>onTap&&onTap(s,f,c); row.appendChild(c); cells[s+':'+f]=c; }
     fb.appendChild(row); }
   wrap.appendChild(fb);
-  const nums=el('div','fnums'), marks={3:1,5:1,7:1,9:1,12:2};
-  for(let f=0;f<=FRETS;f++) nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f));
+  const nums=el('div','fnums'), marks={3:1,5:1,7:1,9:1,12:2,15:1}; nums.style.gridTemplateColumns=gtc; nums.style.minWidth=mw;
+  for(let f=0;f<=nf;f++) nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f));
   wrap.appendChild(nums);
   wrap.clearDots=()=>{ Object.values(cells).forEach(c=>{ const d=c.querySelector('.fdot'); if(d)d.remove(); }); };
   wrap.dot=(s,f,label,cls)=>{ const c=cells[s+':'+f]; if(!c)return; let d=c.querySelector('.fdot'); if(!d){ d=el('div','fdot'); c.appendChild(d);} d.className='fdot '+(cls||''); d.textContent=label==null?'':label; return d; };
@@ -295,6 +298,11 @@ function renderManche(){
   cg.innerHTML='<b>🪜 La gamme majeure en positions</b><p class="lead" style="margin:6px 0 10px">Une fois les notes en place : les <b>5 formes</b> de la gamme majeure, à connaître dans l’ordre. C’est ta penta + 2 notes. Commence par la Position 1 — mobile, tu joues en majeur dans toutes les tonalités.</p>';
   const bg=el('button','btn ghost','Voir les positions'); bg.onclick=()=>openMajorPositions(); cg.appendChild(bg);
   m.appendChild(cg);
+
+  const cc=el('div','card');
+  cc.innerHTML='<b>🗺️ Le système CAGED</b><p class="lead" style="margin:6px 0 10px">La clé du manche : <b>5 formes d’accord</b> (C-A-G-E-D) qui, déplacées, jouent n’importe quel accord dans <b>5 positions</b> — et qui portent tes boîtes de penta. Explication + 3 exos, dont « connecte le manche ».</p>';
+  const bcc=el('button','btn ghost','Ouvrir CAGED'); bcc.onclick=()=>openCAGED(); cc.appendChild(bcc);
+  m.appendChild(cc);
 
   const c3=el('div','card'); c3.innerHTML='<b>Tes records</b>';
   c3.appendChild(el('div','statgrid',
@@ -854,6 +862,208 @@ function openMajorPositions(){
       info.innerHTML=`<div class="deg">Position ${pos+1}${pos===0?' — commence ici':''}</div>${posTxt}<br>En <b style="color:var(--bad)">rouge</b> : la fondamentale (${NOTES[root]}). En <b style="color:var(--acc)">orange</b> : la penta. ${fullClause}`;
     }
     draw();
+  });
+}
+
+/* ================================================================
+   LE SYSTÈME CAGED — 5 formes d’accord, tout le manche
+   ================================================================ */
+const CAGED_ORDER=['C','A','G','E','D'];
+/* décalage de chaque forme par rapport à la fondamentale sur Mi grave (réf. Do majeur) */
+const CAGED_REL={C:-8,A:-5,G:-3,E:0,D:2};
+const IVNAME={0:'R',4:'3',7:'5'};
+/* forme normalisée : case la plus grave = 0. s : 0=Mi grave … 5=Mi aigu. iv : 0=fond., 4=tierce, 7=quinte */
+const CAGED_SHAPES={
+  C:{span:3, openName:'Do', notes:[{s:1,nf:3,iv:0},{s:2,nf:2,iv:4},{s:3,nf:0,iv:7},{s:4,nf:1,iv:0},{s:5,nf:0,iv:4}],
+     roots:'La &amp; Si',
+     hint:'La forme du <b>Do ouvert</b>, déplacée. Fondamentales sur les cordes de <b>La</b> et de <b>Si</b>. La plus « en biais » — pénible en barré complet, mais un repère en or et de superbes voicings aigus.'},
+  A:{span:2, openName:'La', notes:[{s:1,nf:0,iv:0},{s:2,nf:2,iv:7},{s:3,nf:2,iv:0},{s:4,nf:2,iv:4},{s:5,nf:0,iv:7}],
+     roots:'La',
+     hint:'La forme du <b>La ouvert</b> en barré. Fondamentale sur la corde de <b>La</b> — c’est le petit barré à 3 doigts que tu fais déjà pour un Si ou un Do « barré 5<sup>e</sup> case ».'},
+  G:{span:3, openName:'Sol', notes:[{s:0,nf:3,iv:0},{s:1,nf:2,iv:4},{s:2,nf:0,iv:7},{s:3,nf:0,iv:0},{s:4,nf:0,iv:4},{s:5,nf:3,iv:0}],
+     roots:'Mi grave, Sol &amp; Mi aigu',
+     hint:'La forme du <b>Sol ouvert</b>. <b>Trois</b> fondamentales (Mi grave, Sol, Mi aigu) — la plus large, presque jamais jouée en entier en barré, mais imbattable pour repérer les fondamentales sur tout le manche.'},
+  E:{span:2, openName:'Mi', notes:[{s:0,nf:0,iv:0},{s:1,nf:2,iv:7},{s:2,nf:2,iv:0},{s:3,nf:1,iv:4},{s:4,nf:0,iv:7},{s:5,nf:0,iv:0}],
+     roots:'Mi grave &amp; Ré',
+     hint:'La forme <b>REINE</b> : le <b>Mi ouvert</b> en barré. Fondamentale sur la corde de <b>Mi grave</b> — celle que tu connais déjà par cœur (étape Manche). C’est le barré « Fa » que tout le monde apprend en premier.'},
+  D:{span:3, openName:'Ré', notes:[{s:2,nf:0,iv:0},{s:3,nf:2,iv:7},{s:4,nf:3,iv:0},{s:5,nf:2,iv:4}],
+     roots:'Ré &amp; Si',
+     hint:'La forme du <b>Ré ouvert</b>. Fondamentales sur les cordes de <b>Ré</b> et de <b>Si</b> — un petit triangle sur les 3 cordes aiguës, parfait pour les accords brillants en haut du manche.'},
+};
+const CAGED_NF=15;
+function cagedBaseOffsets(sh,K){ const base=fretOnLowE(K)+CAGED_REL[sh]; return [base-12,base,base+12,base+24]; }
+function cagedBestOffset(sh,K){ const span=CAGED_SHAPES[sh].span; let best=null,bp=1e9;
+  cagedBaseOffsets(sh,K).forEach(o=>{ const lo=o,hi=o+span; const pen=(lo>=0&&hi<=CAGED_NF)?lo:1000+Math.max(0,-lo)+Math.max(0,hi-CAGED_NF); if(pen<bp){bp=pen;best=o;} });
+  return best;
+}
+function cagedNotesAt(sh,o){ return CAGED_SHAPES[sh].notes.map(n=>({s:n.s,f:n.nf+o,iv:n.iv})); }
+function cagedFrets(sh,o){ const fr=[-1,-1,-1,-1,-1,-1]; CAGED_SHAPES[sh].notes.forEach(n=>fr[n.s]=n.nf+o); return fr; }
+function cagedOrdered(K){ return CAGED_ORDER.map(sh=>({sh,o:cagedBestOffset(sh,K)})).sort((a,b)=>a.o-b.o); }
+
+function openCAGED(){
+  ac(); markDay();
+  let root=7, sel='G', mode='one', labelNotes=false;   /* défaut : Sol majeur — les 5 formes tiennent en 0-12 */
+  openOverlay('Le système CAGED', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Une clé pour tout le manche</h3>
+      <p>Tu connais <b>5 accords ouverts</b> : <b>C, A, G, E, D</b> (Do, La, Sol, Mi, Ré). Le système CAGED dit une chose énorme : ces <b>5 formes</b>, déplacées le long du manche, suffisent à jouer <b>n’importe quel accord majeur dans 5 endroits différents</b>. Cinq formes = tout le manche cartographié.</p>
+      <div class="formula">C → A → G → E → D → (C) …<br>toujours dans cet ordre, en montant</div>
+      <p>Ce n’est pas un tour de magie : les formes <b>s’emboîtent</b>. La fondamentale de l’une est dans la suivante. Bout à bout, elles pavent le manche et se répètent tous les 12 cases (à l’octave).</p>
+      <div class="tip"><b>Pourquoi ça change tout :</b> tu ne « cherches » plus un accord — tu sais où sont ses 5 maisons. Et ces mêmes 5 cases contiennent tes <b>boîtes de penta</b> et tes <b>positions de gamme</b> (étape précédente) : la forme d’accord est le <b>squelette</b>, la gamme est la chair autour. Pour toi qui joues aux doigts et qui aimes le contraste doux/fort (Deftones, Audioslave) : arpège la forme en couplet, écrase-la en accord plein au refrain — même position, deux intensités.</p>`));
+
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Ta tonalité'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;draw();}));
+    const modeRow=el('div','toolrow');
+    const mOne=el('div','tag on','Une forme'), mAll=el('div','tag','Les 5 d’un coup');
+    mOne.onclick=()=>{mode='one';mOne.classList.add('on');mAll.classList.remove('on');draw();};
+    mAll.onclick=()=>{mode='all';mAll.classList.add('on');mOne.classList.remove('on');draw();};
+    modeRow.append(mOne,mAll); c.appendChild(modeRow);
+    const shapeRow=el('div','toolrow');
+    const shapeTags=CAGED_ORDER.map(sh=>{ const t=el('div','tag'+(sh===sel?' on':''),'Forme '+sh);
+      t.onclick=()=>{sel=sh;shapeTags.forEach(x=>x.classList.remove('on'));t.classList.add('on');draw();}; shapeRow.appendChild(t); return t; });
+    c.appendChild(shapeRow);
+    const optRow=el('div','toolrow');
+    const tLab=el('div','tag','Notes'); tLab.onclick=()=>{labelNotes=!labelNotes;tLab.classList.toggle('on',labelNotes);draw();};
+    optRow.appendChild(tLab); c.appendChild(optRow);
+    const fb=buildFretboard((s,f)=>pluck(midiAt(s,f)),CAGED_NF); c.appendChild(fb);
+    const info=el('div','clogic'); c.appendChild(info);
+    const btnRow=el('div','row3'); btnRow.style.marginTop='10px';
+    const bChord=el('button','btn ghost','🔊 Accord'), bArp=el('button','btn ghost','🎵 Arpège');
+    btnRow.append(bChord,bArp); c.appendChild(btnRow);
+    inner.appendChild(c);
+
+    inner.appendChild(el('div','theory',`
+      <h3>Comment l’apprendre (sans se noyer)</h3>
+      <ol style="margin:0 0 10px 18px;color:#d8cebf;line-height:1.65">
+        <li>Commence par la forme <b>E</b> et la forme <b>A</b> : ce sont tes deux barrés de tous les jours, fondamentale sur Mi grave et sur La. 90 % du répertoire tient là.</li>
+        <li>Pour une tonalité, <b>récite l’ordre</b> C-A-G-E-D en montant, et repère où tombe chaque fondamentale (rouge).</li>
+        <li>Fais l’exo <b>« Connecte le manche »</b> : traverse les 5 formes d’une seule tonalité, de la nut vers l’aigu.</li>
+        <li>Ensuite seulement, ajoute G, C, D — plus acrobatiques, mais 3 super repères de fondamentales.</li>
+        <li>Relie CAGED à ta gamme : chaque forme est entourée de sa position de penta / gamme majeure. L’accord te dit <b>où viser</b> (1-3-5) pendant un solo.</li>
+      </ol>
+      <div class="tip">Astuce mémoire : le <b>nom</b> de la forme n’est pas la tonalité ! La « forme C » jouée case 3 donne un <b>Ré</b>, pas un Do. Le nom dit juste <b>quel dessin</b> ta main fait.</div>`));
+
+    const ex=el('div','card');
+    ex.innerHTML='<b>🎯 Les exercices</b><p class="lead" style="margin:6px 0 10px">On ancre. Reconnaître le dessin, savoir où sont les fondamentales, puis relier les 5 en vrai.</p>';
+    const e1=el('button','btn','🔗 Connecte le manche (le vrai but)'); e1.onclick=openCagedConnect; ex.appendChild(e1);
+    const e2=el('button','btn ghost','🔎 Reconnais la forme'); e2.onclick=openCagedQuiz; ex.appendChild(e2);
+    const e3=el('button','btn ghost','🔴 Place les fondamentales'); e3.onclick=openCagedRoots; ex.appendChild(e3);
+    if(S.cagedQuizBest) ex.appendChild(el('p','lead',`Record « reconnais la forme » : <b style="color:var(--acc)">${S.cagedQuizBest}/8</b>.`)).style.margin='10px 0 0';
+    inner.appendChild(ex);
+
+    function draw(){
+      fb.clearDots();
+      const lab=n=> labelNotes?NOTES[midiAt(n.s,n.f)%12]:IVNAME[n.iv];
+      if(mode==='all'){
+        cagedOrdered(root).forEach(({sh,o})=>{ cagedNotesAt(sh,o).forEach(n=>{ if(n.f>=0&&n.f<=CAGED_NF) fb.dot(n.s,n.f, lab(n), n.iv===0?'root':(sh===sel?'pick':'on')); }); });
+        const seq=cagedOrdered(root).map(x=>x.sh).join(' → ');
+        info.innerHTML=`<div class="deg">${NOTES[root]} majeur — les 5 formes</div>De la nut vers l’aigu : <b>${seq}</b>. En <b style="color:var(--bad)">rouge</b> : toutes les fondamentales (${NOTES[root]}). En <b style="color:var(--blue)">bleu</b> : la forme <b>${sel}</b> mise en évidence dans l’ensemble — vois comme elle se colle à ses voisines.`;
+        bChord.onclick=()=>{ const o=cagedBestOffset(sel,root); strum({frets:cagedFrets(sel,o)}); };
+        bArp.onclick=()=>{ const o=cagedBestOffset(sel,root); playCagedArp(sel,o); };
+      } else {
+        const o=cagedBestOffset(sel,root); const notes=cagedNotesAt(sel,o);
+        notes.forEach(n=>{ if(n.f>=0&&n.f<=CAGED_NF) fb.dot(n.s,n.f, lab(n), n.iv===0?'root':'on'); });
+        const sh=CAGED_SHAPES[sel], lo=Math.min.apply(null,notes.map(n=>n.f)), hi=Math.max.apply(null,notes.map(n=>n.f));
+        info.innerHTML=`<div class="deg">Forme ${sel} · ${NOTES[root]} majeur${o===0?' (position ouverte)':''}</div>${sh.hint}<br>Ici : cases <b>${lo}–${hi}</b>. Fondamentales (<b style="color:var(--bad)">rouge</b>) sur ${sh.roots}. En <b style="color:var(--acc)">orange</b> : tierce (3) et quinte (5). Bascule « Notes » pour voir les vraies notes.`;
+        bChord.onclick=()=>strum({frets:cagedFrets(sel,o)});
+        bArp.onclick=()=>playCagedArp(sel,o);
+      }
+    }
+    draw();
+  });
+}
+function playCagedArp(sh,o){ ac(); const ms=cagedNotesAt(sh,o).map(n=>midiAt(n.s,n.f)).sort((a,b)=>a-b); ms.forEach((m,k)=>setTimeout(()=>pluck(m,1.1,.5),k*160)); }
+
+/* ---- exo : connecte le manche (traverser les 5 formes d’une tonalité) ---- */
+function openCagedConnect(){
+  ac(); markDay();
+  let root=7, i=0;
+  openOverlay('Connecte le manche', inner=>{
+    inner.appendChild(el('p','lead','Une seule tonalité, tout le manche. On traverse les 5 formes dans l’ordre, de la plus grave à la plus aiguë. Joue chaque forme, écoute-la, puis glisse vers la suivante — elles se touchent, c’est là que ta main passe.'));
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Tonalité'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;i=0;draw();}));
+    const fb=buildFretboard((s,f)=>pluck(midiAt(s,f)),CAGED_NF); c.appendChild(fb);
+    const info=el('div','clogic'); c.appendChild(info);
+    const row=el('div','row3'); row.style.marginTop='10px';
+    const bC=el('button','btn ghost','🔊 Accord'), bA=el('button','btn ghost','🎵 Arpège'), bN=el('button','btn','Suivante →');
+    row.append(bC,bA,bN); c.appendChild(row); inner.appendChild(c);
+    function draw(){
+      const seq=cagedOrdered(root); i=((i%5)+5)%5; const cur=seq[i], nxt=seq[(i+1)%5];
+      fb.clearDots();
+      cagedNotesAt(nxt.sh,nxt.o).forEach(n=>{ if(n.f>=0&&n.f<=CAGED_NF) fb.dot(n.s,n.f,'','pick'); });
+      cagedNotesAt(cur.sh,cur.o).forEach(n=>{ if(n.f>=0&&n.f<=CAGED_NF) fb.dot(n.s,n.f,IVNAME[n.iv], n.iv===0?'root':'on'); });
+      info.innerHTML=`<div class="deg">Forme ${cur.sh} · ${i+1}/5 · ${NOTES[root]} majeur</div>${CAGED_SHAPES[cur.sh].hint}<br><b style="color:var(--blue)">En bleu : la forme suivante (${nxt.sh})</b> — elles se chevauchent. Glisse d’une à l’autre sans lever la main.`;
+      bC.onclick=()=>strum({frets:cagedFrets(cur.sh,cur.o)});
+      bA.onclick=()=>playCagedArp(cur.sh,cur.o);
+      bN.textContent = i<4?'Suivante →':'↻ Reprendre en bas';
+      bN.onclick=()=>{ const wasLast=i===4; i=(i+1)%5; if(wasLast){ S.xp+=6; save(); toast('Manche traversé · +6 XP 🎸'); } draw(); };
+    }
+    draw();
+  });
+}
+
+/* ---- exo : reconnais la forme (quiz) ---- */
+function openCagedQuiz(){
+  ac(); markDay();
+  const N=8; let i=0, good=0, cur=null;
+  openOverlay('Reconnais la forme', inner=>{
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const qh=el('div','qhead'); inner.appendChild(qh);
+    const fb=buildFretboard(null,CAGED_NF); inner.appendChild(fb);
+    const opts=el('div','opts'); inner.appendChild(opts);
+    const foot=el('div'); inner.appendChild(foot);
+    function step(){
+      if(i>=N) return finish();
+      cur=CAGED_ORDER[Math.floor(Math.random()*5)];
+      const K=Math.floor(Math.random()*12), o=cagedBestOffset(cur,K);
+      prog.innerHTML=`Forme <b>${i+1}</b>/${N} · ✓ ${good}`;
+      qh.innerHTML=`<div class="q" style="font-size:19px">Quelle forme CAGED ?</div><div class="sub">Lis le dessin (fondamentales en rouge). Ce n’est pas la tonalité qui compte — c’est la <b>forme</b>.</div>`;
+      fb.clearDots(); cagedNotesAt(cur,o).forEach(n=>{ if(n.f>=0&&n.f<=CAGED_NF) fb.dot(n.s,n.f,IVNAME[n.iv], n.iv===0?'root':'on'); });
+      opts.innerHTML=''; foot.innerHTML='';
+      CAGED_ORDER.forEach(x=>{ const b=el('button','opt',x); b.onclick=()=>ans(x,b); opts.appendChild(b); });
+    }
+    function ans(x,b){ opts.querySelectorAll('.opt').forEach(o=>o.style.pointerEvents='none');
+      if(x===cur){ b.classList.add('right'); good++; } else { b.classList.add('wrong'); opts.querySelectorAll('.opt').forEach(o=>{ if(o.textContent===cur) o.classList.add('right'); }); }
+      const nx=el('button','btn', i+1<N?'Suivante →':'Terminer'); nx.onclick=()=>{ i++; step(); }; foot.appendChild(nx);
+    }
+    function finish(){ S.xp+=good*2; if((S.cagedQuizBest||0)<good) S.cagedQuizBest=good; save();
+      qh.innerHTML=`<div class="q">${good}/${N}</div><div class="sub">${good>=6?'Tu lis les formes au premier coup d’œil. Passe à « Connecte le manche ».':'Reviens jouer avec les 5 formes, puis retente — vise le dessin, pas les notes.'}</div>`;
+      fb.clearDots(); opts.innerHTML=''; foot.innerHTML='';
+      const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl);
+    }
+    step();
+  });
+}
+
+/* ---- exo : place les fondamentales ---- */
+function openCagedRoots(){
+  ac(); markDay();
+  const sh=CAGED_ORDER[Math.floor(Math.random()*5)], K=Math.floor(Math.random()*12), o=cagedBestOffset(sh,K);
+  const notes=cagedNotesAt(sh,o), roots=notes.filter(n=>n.iv===0), picked=new Set();
+  openOverlay('Place les fondamentales', inner=>{
+    const qh=el('div','qhead',`<div class="q" style="font-size:18px">Forme ${sh} · ${NOTES[K]} majeur</div><div class="sub">Voici la forme. Touche <b>uniquement ses fondamentales</b> (${NOTES[K]}). Il y en a <b>${roots.length}</b>.</div>`); inner.appendChild(qh);
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const fb=buildFretboard((s,f)=>{ if(fb._done)return; if(!notes.some(n=>n.s===s&&n.f===f))return; const key=s+':'+f;
+      if(picked.has(key)) picked.delete(key); else { picked.add(key); pluck(midiAt(s,f)); }
+      paint(); prog.innerHTML=`Sélectionnées : <b>${picked.size}</b>/${roots.length}`;
+    },CAGED_NF); inner.appendChild(fb);
+    function paint(){ fb.clearDots(); notes.forEach(n=>{ const key=n.s+':'+n.f; fb.dot(n.s,n.f, picked.has(key)?'●':'', picked.has(key)?'pick':'on'); }); }
+    paint(); prog.innerHTML=`Sélectionnées : <b>0</b>/${roots.length}`;
+    const foot=el('div'); inner.appendChild(foot);
+    const val=el('button','btn','✓ Valider'); foot.appendChild(val);
+    val.onclick=()=>{ fb._done=true; fb.clearDots(); let ok=0,wrong=0;
+      notes.forEach(n=>{ const key=n.s+':'+n.f, isRoot=n.iv===0, sel=picked.has(key);
+        if(isRoot&&sel){ fb.dot(n.s,n.f,'R','ok'); ok++; }
+        else if(isRoot&&!sel){ fb.dot(n.s,n.f,'R','miss'); }
+        else if(!isRoot&&sel){ fb.dot(n.s,n.f,IVNAME[n.iv],'no'); wrong++; }
+        else fb.dot(n.s,n.f,IVNAME[n.iv],'on'); });
+      qh.innerHTML=`<div class="q">${ok}/${roots.length}</div><div class="sub">${ok===roots.length&&!wrong?'Parfait — tu sais où vivent tes fondamentales sur cette forme.':(wrong?'En rouge : ce ne sont pas des fondamentales (c’est la 3 ou la 5). ':'')+'Pointillé bleu : fondamentale ratée.'}</div>`;
+      S.xp+=ok; save(); foot.innerHTML='';
+      const again=el('button','btn ghost','↻ Une autre forme'); again.onclick=()=>{ closeOverlay(); openCagedRoots(); }; foot.appendChild(again);
+      const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl);
+    };
   });
 }
 
@@ -1735,12 +1945,13 @@ function renderSuite(){
     {n:'1',t:'🎸 Le manche',d:'En cours. Notes par cœur : « trouve tout » + nommer les cases.',now:true},
     {n:'2',t:'🎴 Accompagnement',d:'En cours. Anki d’accords + triades + power chords, avec la logique de construction.',now:true},
     {n:'3',t:'🪜 La gamme majeure en positions',d:'Les 5 formes à connaître, dans l’ordre. Ta penta + 2 notes. Commence par la Position 1, mobile — tu joues alors en majeur partout.',open:openMajorPositions},
-    {n:'4',t:'🎤 Improviser',d:'Le hub complet : la Boussole (dans quelle gamme je joue ?), lick du jour, penta & notes à viser, de la chanson au mode, le blues, licks & riffs, technique, phrasé.',open:openImproHub},
-    {n:'5',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
-    {n:'6',t:'🎓 Le mini-cours du jour',d:'Une technique par jour, de la base au shred (hammer, bend, legato, tapping, sweep…) : notation, intérêt, comment bien la faire, 2-3 exos. Aujourd’hui : '+miniToday().n+'.',open:openMiniCourse},
-    {n:'7',t:'⚡ Jouer vite (comme les pros)',d:'La méthode qui marche vraiment : relâchement, métronome, rafales, séquences — des exos en progression pour gagner en vitesse pour de vrai.',open:openSpeed},
-    {n:'8',t:'🎸 Improviser vite comme un pro',d:'Transformer la vitesse en musique : vocabulaire de licks, notes cibles, séquences au tempo, relier les positions, le solo d’une minute.',open:openFastImpro},
-    {n:'9',t:'🎼 Écrire une chanson',d:'La structure couplet-refrain, le contraste doux/fort (l’ADN de ton rock), le riff, le refrain, la mélodie, les paroles — et la méthode pour en écrire une cette semaine.',open:openSongwriting},
+    {n:'4',t:'🗺️ Le système CAGED',d:'La carte qui relie accords et gammes : 5 formes (C-A-G-E-D) déplacées jouent tout accord dans 5 positions, et portent tes boîtes de penta. Explication + « connecte le manche » + 2 exos.',open:openCAGED},
+    {n:'5',t:'🎤 Improviser',d:'Le hub complet : la Boussole (dans quelle gamme je joue ?), lick du jour, penta & notes à viser, de la chanson au mode, le blues, licks & riffs, technique, phrasé.',open:openImproHub},
+    {n:'6',t:'🌈 Les modes, par ordre',d:'Les 7 couleurs de Ionien à Locrien : la note qui colore chacune, sur quel accord, entendue et vue sur le manche.',open:openModesModule},
+    {n:'7',t:'🎓 Le mini-cours du jour',d:'Une technique par jour, de la base au shred (hammer, bend, legato, tapping, sweep…) : notation, intérêt, comment bien la faire, 2-3 exos. Aujourd’hui : '+miniToday().n+'.',open:openMiniCourse},
+    {n:'8',t:'⚡ Jouer vite (comme les pros)',d:'La méthode qui marche vraiment : relâchement, métronome, rafales, séquences — des exos en progression pour gagner en vitesse pour de vrai.',open:openSpeed},
+    {n:'9',t:'🎸 Improviser vite comme un pro',d:'Transformer la vitesse en musique : vocabulaire de licks, notes cibles, séquences au tempo, relier les positions, le solo d’une minute.',open:openFastImpro},
+    {n:'10',t:'🎼 Écrire une chanson',d:'La structure couplet-refrain, le contraste doux/fort (l’ADN de ton rock), le riff, le refrain, la mélodie, les paroles — et la méthode pour en écrire une cette semaine.',open:openSongwriting},
   ];
   steps.forEach(a=>{ const s=el('div','step'+(a.now?' now':'')); s.innerHTML=`<div class="n">${a.n}</div><div style="flex:1"><b>${a.t}${a.open?' <span style="color:var(--acc)">›</span>':''}</b><small>${a.d}</small>${a.open?'<small style="color:var(--acc);font-weight:700;margin-top:4px">Disponible — touche pour ouvrir</small>':''}</div>`;
     if(a.open){ s.style.cursor='pointer'; s.onclick=a.open; } m.appendChild(s); });
@@ -1755,7 +1966,7 @@ function renderSuite(){
      r.innerHTML=`<div class="ico">${a[0]}</div><div class="t"><b>${a[1]}</b><small>${a[2]}</small></div><div class="pc" style="color:var(--dim)">bientôt</div>`;
      soon.appendChild(r); });
   m.appendChild(soon);
-  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">1→5, on construit les fondations : le manche, les accords, les positions, l’impro, les modes. Les étapes <b>6-9</b> (mini-cours, vitesse, impro rapide, écrire une chanson) se travaillent <b>en parallèle, un peu chaque jour</b> — commence par le cours du jour, tout en haut.</p>'));
+  m.appendChild(el('div','card','<b>Pourquoi cet ordre ?</b><p class="lead" style="margin:6px 0 0">1→6, on construit les fondations : le manche, les accords, les positions, la carte CAGED, l’impro, les modes. Les étapes <b>7-10</b> (mini-cours, vitesse, impro rapide, écrire une chanson) se travaillent <b>en parallèle, un peu chaque jour</b> — commence par le cours du jour, tout en haut.</p>'));
 }
 
 /* ================================================================
