@@ -148,7 +148,7 @@ const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
 const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, triads:{}, tNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  findBest:{}, quizBest:0, cagedQuizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}};
+  findBest:{}, chordFindBest:{}, quizBest:0, cagedQuizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
@@ -287,6 +287,12 @@ function renderManche(){
   const b2=el('button','btn ghost','🎯 Nommer 10 cases au hasard'); b2.onclick=()=>openNameQuiz(); c2.appendChild(b2);
   m.appendChild(c2);
 
+  const cch=el('div','card');
+  cch.innerHTML='<b>🎸 Toutes les notes d’un accord</b><p class="lead" style="margin:6px 0 10px">Le cran au-dessus de « trouve tout » : l’app te donne un accord (<b>Fa majeur = Fa · La · Do</b>). Touche <b>toutes</b> les cases qui contiennent <b>une de ses 3 notes</b>, partout sur le manche. Tu bosses les notes ET la construction de l’accord d’un coup.</p>';
+  const bch=el('button','btn','Lancer « les notes de l’accord »'); bch.onclick=()=>openFindChord(); cch.appendChild(bch);
+  const cb=Object.values(S.chordFindBest||{}); if(cb.length) cch.appendChild(el('p','lead',`Meilleur : <span style="color:var(--acc);font-weight:700">${Math.max.apply(null,cb.map(x=>x.pct))}%</span>.`)).style.margin='10px 0 0';
+  m.appendChild(cch);
+
   const cs=el('div','card');
   cs.innerHTML='<b>⏱ Le sprint des cordes</b><p class="lead" style="margin:6px 0 10px">Corde par corde (Mi grave d’abord). Je nomme une note, tu la touches le plus vite possible sur cette corde. Le chrono te pousse à ne plus réfléchir.</p>';
   const bs=el('button','btn','Lancer le sprint'); bs.onclick=()=>openStringSprint(); cs.appendChild(bs);
@@ -340,6 +346,54 @@ function openFindAll(){
       S.xp+=found; save();
       foot.innerHTML='';
       const again=el('button','btn ghost','↻ Une autre note'); again.onclick=()=>{ closeOverlay(); openFindAll(); }; foot.appendChild(again);
+      const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl);
+    };
+  });
+}
+/* ---------------- toutes les notes d’un accord ---------------- */
+function posOfSet(pcs){ const out=[]; for(let s=0;s<6;s++)for(let f=0;f<=FRETS;f++){ if(pcs.indexOf(midiAt(s,f)%12)>=0) out.push([s,f]); } return out; }
+function randNatRoot(){ return NAT[Math.floor(Math.random()*NAT.length)]; }
+function openFindChord(root,quality){
+  ac(); markDay();
+  if(root==null) root=5;             /* défaut : Fa majeur (son exemple) */
+  quality=quality||'maj';
+  const third=(root+(quality==='maj'?4:3))%12, fifth=(root+7)%12, pcs=[root,third,fifth];
+  const cname=NOTES[root]+(quality==='maj'?' majeur':' mineur');
+  const notesTxt=pcs.map(p=>NOTES[p]).join(' · ');
+  const target=posOfSet(pcs), picked=new Set();
+  openOverlay('Les notes de l’accord', inner=>{
+    /* sélecteur : fondamentale (naturelles) + maj/min + hasard */
+    const selR=el('div','toolrow'); NAT.forEach(pc=>{ const t=el('div','tag'+(pc===root?' on':''),NOTES[pc]); t.onclick=()=>openFindChord(pc,quality); selR.appendChild(t); }); inner.appendChild(selR);
+    const selQ=el('div','toolrow');
+    const tM=el('div','tag'+(quality==='maj'?' on':''),'majeur'), tm=el('div','tag'+(quality==='min'?' on':''),'mineur'), tR=el('div','tag','🎲 au hasard');
+    tM.onclick=()=>openFindChord(root,'maj'); tm.onclick=()=>openFindChord(root,'min'); tR.onclick=()=>openFindChord(randNatRoot(),Math.random()<.5?'maj':'min');
+    selQ.append(tM,tm,tR); inner.appendChild(selQ);
+
+    const qh=el('div','qhead',`<div class="q">${cname}</div><div class="sub">Touche TOUTES les cases dont la note est <b>${notesTxt}</b> (cordes à vide comprises). <b>${target.length}</b> à trouver.</div>`); inner.appendChild(qh);
+    const hear=el('button','btn ghost','🔊 Entendre l’accord'); hear.onclick=()=>playScaleUp(root, quality==='maj'?[0,4,7]:[0,3,7]); inner.appendChild(hear);
+    const prog=el('div','fb-progress'); inner.appendChild(prog);
+    const fb=buildFretboard((s,f,cell)=>{ if(fb._done)return; const key=s+':'+f;
+      if(picked.has(key)){ picked.delete(key); const d=cell.querySelector('.fdot'); if(d)d.remove(); }
+      else { picked.add(key); pluck(midiAt(s,f)); fb.dot(s,f,'','pick'); }
+      prog.innerHTML=`Sélectionnées : <b>${picked.size}</b>`;
+    }); inner.appendChild(fb);
+    prog.innerHTML='Sélectionnées : <b>0</b>';
+    const foot=el('div'); inner.appendChild(foot);
+    const val=el('button','btn','✓ Valider'); foot.appendChild(val);
+    val.onclick=()=>{
+      fb._done=true; fb.clearDots();
+      const tset=new Set(target.map(p=>p[0]+':'+p[1])), cnt={}; pcs.forEach(p=>cnt[p]={found:0,total:0});
+      let found=0;
+      target.forEach(([s,f])=>{ const key=s+':'+f, pc=midiAt(s,f)%12; cnt[pc].total++;
+        if(picked.has(key)){ found++; cnt[pc].found++; fb.dot(s,f,NOTES[pc],'ok'); } else fb.dot(s,f,NOTES[pc],'miss'); });
+      let wrong=0; picked.forEach(k=>{ if(!tset.has(k)){ wrong++; const [s,f]=k.split(':').map(Number); fb.dot(s,f,noteAt(s,f),'no'); } });
+      const pct=Math.round(found/target.length*100);
+      const breakdown=pcs.map(p=>`${NOTES[p]} <b>${cnt[p].found}/${cnt[p].total}</b>`).join(' · ');
+      qh.innerHTML=`<div class="q">${found}/${target.length}</div><div class="sub">${breakdown}${wrong?` · <b style="color:var(--bad)">${wrong} en trop</b>`:''}<br>${pct===100?'Parfait — tout l’accord, partout sur le manche.':pct>=70?'Bien. Les manquantes sont en pointillé bleu.':'Regarde les pointillés bleus : les notes de l’accord que tu as ratées.'}</div>`;
+      const b=(S.chordFindBest||{})[cname]||{pct:0}; if(pct>b.pct){ if(!S.chordFindBest)S.chordFindBest={}; S.chordFindBest[cname]={pct}; }
+      S.xp+=found; save();
+      foot.innerHTML='';
+      const again=el('button','btn ghost','↻ Un autre accord'); again.onclick=()=>openFindChord(randNatRoot(),Math.random()<.5?'maj':'min'); foot.appendChild(again);
       const cl=el('button','btn','Fermer'); cl.onclick=closeOverlay; foot.appendChild(cl);
     };
   });
