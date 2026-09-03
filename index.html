@@ -51,6 +51,35 @@
   .toolrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
   .tag{padding:8px 13px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);font-size:13px;font-weight:700;cursor:pointer}
   .tag.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
+  /* --- LA BOÎTE : fenêtre de 5 cases, pensée pour le pouce --- */
+  .boxwrap{margin:10px 0 2px}
+  .boxgrid{display:grid;grid-template-columns:26px repeat(5,1fr);background:linear-gradient(180deg,#2a2018,#1c150f);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .bname{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--dim);background:#191309;border-right:2px solid #b9a074}
+  .bcell{position:relative;height:46px;border-right:1px solid #4a3826;border-bottom:1px solid #241a12;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .bcell.nut{box-shadow:inset 3px 0 0 #b9a074}
+  .bcell .bsl{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--str);opacity:.42;transform:translateY(-1px)}
+  .bcell.good{background:rgba(107,207,122,.22)}.bcell.bad{background:rgba(255,107,92,.22)}
+  .bdot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;z-index:2;background:var(--bg3);color:var(--txt);border:1px solid var(--line)}
+  .bdot.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
+  .bdot.root{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .bdot.okd{background:var(--ok);color:#04220c;border-color:var(--ok)}
+  .bdot.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .bdot.miss{background:transparent;color:var(--blue);border:2px dashed var(--blue)}
+  .bdot.ask{background:transparent;color:var(--acc);border:2px dashed var(--acc);font-size:17px}
+  .boxnums{display:grid;grid-template-columns:26px repeat(5,1fr);margin-top:4px}
+  .boxnums div{text-align:center;font-size:11px;color:var(--dim);font-weight:700}
+  .boxnums div.mk,.boxnums div.mk2{color:var(--acc)}
+  .bxbar{background:var(--bg3);border-radius:10px;height:9px;margin:10px 0 2px;overflow:hidden}
+  .bxbar i{display:block;height:100%;background:var(--acc)}
+  .pips{display:flex;gap:4px;margin-top:5px}
+  .pips i{width:16px;height:5px;border-radius:3px;background:var(--bg3);border:1px solid var(--line)}
+  .pips i.on{background:var(--acc);border-color:var(--acc)}
+  /* --- l'arcade --- */
+  .duelhud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 10px}
+  .duelhud .dh{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:8px 2px;text-align:center}
+  .duelhud .dh b{display:block;font-size:19px;font-weight:900}
+  .duelhud .dh small{color:var(--dim);font-size:10px}
+  .g12 .cell.now{background:var(--acc);color:#1a1200;border-color:var(--acc)}
   /* string sprint */
   .sstrip{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));background:linear-gradient(180deg,#2a2018,#1c150f);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:8px 0 2px}
   .scell{position:relative;height:60px;border-right:1px solid #4a3826;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -109,8 +138,8 @@
   .step.now .n{background:var(--acc);color:#1a1200}.step b{font-size:15px}.step small{color:var(--dim);font-size:13px;line-height:1.5;display:block;margin-top:2px}
   nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,11,9,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:40}
   nav .in{max-width:560px;margin:0 auto;display:flex}
-  nav button{flex:1;background:none;border:none;color:var(--dim);padding:10px 0 max(10px,env(safe-area-inset-bottom));font-size:11px;font-weight:700;cursor:pointer}
-  nav button .i{display:block;font-size:20px;margin-bottom:2px}nav button.on{color:var(--acc)}
+  nav button{flex:1;background:none;border:none;color:var(--dim);padding:10px 0 max(10px,env(safe-area-inset-bottom));font-size:10px;font-weight:700;cursor:pointer;letter-spacing:-.2px}
+  nav button .i{display:block;font-size:19px;margin-bottom:2px}nav button.on{color:var(--acc)}
   .overlay{position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;display:none}.overlay.open{display:block}
   .overlay .inner{max-width:560px;margin:0 auto;padding:16px 16px 40px}
   .topbar{display:flex;align-items:center;gap:12px;margin-bottom:8px;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:5}
@@ -127,6 +156,7 @@
     <button data-tab="jour" class="on"><span class="i">☀️</span>Jour</button>
     <button data-tab="manche"><span class="i">🎸</span>Manche</button>
     <button data-tab="cartes"><span class="i">🎴</span>Accords</button>
+    <button data-tab="gammes"><span class="i">🗺</span>Gammes</button>
     <button data-tab="theorie"><span class="i">📖</span>Théorie</button>
     <button data-tab="suite"><span class="i">✨</span>Suite</button>
     <button data-tab="profil"><span class="i">📈</span>Profil</button>
@@ -160,7 +190,7 @@ function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.
 /* ---------------- audio : corde pincée (Karplus-Strong) ---------------- */
 let AC=null;
 function ac(){ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; }
-function pluck(midi,dur=1.3,vel=.5){
+function pluck(midi,dur=1.3,vel=.5,when=0){
   const ctx=ac(), sr=ctx.sampleRate, f=440*Math.pow(2,(midi-69)/12);
   const N=Math.max(2,Math.round(sr/f)), len=Math.floor(sr*dur);
   const buf=ctx.createBuffer(1,len,sr), d=buf.getChannelData(0), y=new Float32Array(len);
@@ -169,7 +199,7 @@ function pluck(midi,dur=1.3,vel=.5){
   for(let i=0;i<len;i++){ const env=Math.min(1,i/220)*(1-i/len); d[i]=y[i]*vel*env; }
   const src=ctx.createBufferSource(); src.buffer=buf;
   const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.min(sr/2,f*7+1800);
-  const g=ctx.createGain(); g.gain.value=1; src.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start();
+  const g=ctx.createGain(); g.gain.value=1; src.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start(when?ctx.currentTime+when:0);
 }
 function strum(ch){ ac(); const ms=[]; for(let s=0;s<6;s++){ if(ch.frets[s]>=0) ms.push(OPEN[s]+ch.frets[s]); } ms.forEach((m,i)=>setTimeout(()=>pluck(m,1.5,.42),i*42)); }
 
@@ -1299,6 +1329,9 @@ function openImproHub(){
     inner.appendChild(el('p','lead','Le vrai terrain de jeu. Perdu sur un morceau ? Commence par la Boussole. Sinon : le lick du jour, la penta, les modes, le blues, des licks & riffs, la technique, le phrasé.'));
     inner.appendChild(lickOfDayCard(true));
     const items=[
+      ['🗺','La Conquête des gammes','Les 5 boîtes de la penta, une par une, 5 paliers chacune — et elles redescendent si tu les laisses filer. Pensé pour le téléphone.',openConquete],
+      ['🎯','Le Duel — 60 s, combo, 3 vies','L’arcade : l’app te jette une boîte et une tonalité, tu touches le degré demandé au réflexe.',openDuel],
+      ['🎧','Le Juke-box — jouer sur des vrais morceaux','30 morceaux rangés par gamme, la grille jouée en boucle par l’app, et LA note à viser. Lonely Day, Deftones, Nirvana, le blues…',openJukebox],
       ['🧭','Dans quelle gamme je joue ? (+ quoi viser)','Trouve ta tonique (depuis les accords ou l’oreille), puis ta palette — penta, blues, modes — et les notes à viser sur le manche.',openBoussole],
       ['🎯','La penta & les notes à viser','Les 5 notes, les positions, et surtout QUOI viser (ta 3ce majeure, la blue note).',openPentaModule],
       ['🎼','De la chanson au mode','« Ma chanson est en Mi mineur → quelle gamme majeure, quelle position, pour quel mode ? » La formule, sur le manche.',openSongMode],
@@ -2024,6 +2057,715 @@ function renderSuite(){
 }
 
 /* ================================================================
+   LA CONQUÊTE — les 5 boîtes de la penta, une par une, gamifiées
+   Pensé POUR LE TÉLÉPHONE : plus de manche entier à faire défiler,
+   une FENÊTRE de 5 cases (6 cordes × 5 cases) qui tient sous le pouce.
+   Chaque boîte franchit 5 paliers ; le passage « par cœur » →
+   « scellée » exige DEUX jours différents (le sommeil fait le travail),
+   puis la boîte revient en révision espacée et REDESCEND d’un palier
+   si l’entretien est raté. Même moteur que le Grand Œuvre du Piano
+   Dojo — c’est ce qui marche : sans ternissement, l’app croit que tu
+   sais des choses que tu as oubliées.
+   ================================================================ */
+const PENTA_M=[0,3,5,7,10];
+const DEG_PENTA={0:'1',3:'♭3',5:'4',7:'5',10:'♭7'};
+const DEG_LONG={0:'la fondamentale',3:'la ♭3 (tierce mineure)',5:'la 4te',7:'la 5te',10:'la ♭7'};
+/* Les 5 boîtes : décalages de cases par rapport à la fondamentale sur la
+   corde de Mi grave. Index 0 = Mi grave … 5 = Mi aigu. (Vérifié sur La
+   mineur, fondamentale case 5 : la boîte 1 tombe bien sur 5-8.) */
+const BOXES=[
+ {n:'Boîte 1', off:0, sh:[[0,3],[0,2],[0,2],[0,2],[0,3],[0,3]],
+  tip:'LA boîte. Fondamentale sous l’index sur le Mi grave. 90 % des solos rock sortent d’ici — apprends-la jusqu’à la jouer les yeux fermés.'},
+ {n:'Boîte 2', off:2, sh:[[3,5],[2,5],[2,5],[2,4],[3,5],[3,5]],
+  tip:'Juste au-dessus de la 1. C’est la boîte des grands bends : la corde de Sol y donne le ♭7 → la fondamentale.'},
+ {n:'Boîte 3', off:4, sh:[[5,7],[5,7],[5,7],[4,7],[5,8],[5,7]],
+  tip:'La plus « carrée » : deux doigts qui glissent. Attention à la corde de Sol, décalée d’une case (l’écart classique).'},
+ {n:'Boîte 4', off:7, sh:[[7,10],[7,10],[7,9],[7,9],[8,10],[7,10]],
+  tip:'La fondamentale revient sur la corde de Ré. Boîte très « chantante » : c’est là que les phrases de B.B. King vivent.'},
+ {n:'Boîte 5', off:9, sh:[[10,12],[10,12],[9,12],[9,12],[10,12],[10,12]],
+  tip:'Elle boucle le système : au-dessus d’elle, la boîte 1 recommence 12 cases plus haut. Une fois celle-ci sue, tu as TOUT le manche.'}
+];
+const BX_RANK=['—','Reconnue','Montée','À l’aveugle','Par cœur','Scellée ✅'];
+const BX_MODE=['guide','order','blind','targets','chrono'];
+const BX_MODEN=['Reconnaître','Monter & descendre','À l’aveugle','Les cibles','Le chrono'];
+const BX_INTERVALS=[1,3,7,16,35,60];
+const BX_CHRONO=30;      /* secondes à battre au dernier palier */
+
+/* fenêtre de 5 cases d’une boîte, ramenée dans la partie jouable du manche */
+function boxLow(root,bi){ const r=((root-4)%12+12)%12; let low=r+BOXES[bi].off;
+  if(low+4>15) low-=12; if(low<0) low+=12; return low; }
+/* les 12 notes de la boîte, triées du grave à l’aigu */
+function boxCells(root,bi){ const r=((root-4)%12+12)%12, low=boxLow(root,bi), out=[];
+  /* la fondamentale de référence peut être 12 cases plus bas : on recale */
+  const base = (low - BOXES[bi].off);
+  BOXES[bi].sh.forEach((pair,s)=>pair.forEach(o=>{ const f=base+o;
+    out.push({s,f,m:midiAt(s,f),pc:midiAt(s,f)%12,deg:DEG_PENTA[((midiAt(s,f)%12-root)%12+12)%12]}); }));
+  out.sort((a,b)=>a.m-b.m); return out;
+}
+/* widget « boîte » : 6 cordes × 5 cases, gros doigts, zéro défilement */
+function buildBox(low,onTap){
+  const wrap=el('div','boxwrap'), grid=el('div','boxgrid'), cells={};
+  for(let s=5;s>=0;s--){
+    const nm=el('div','bname',['E','A','D','G','B','e'][s]); grid.appendChild(nm);
+    for(let f=low;f<=low+4;f++){ const c=el('div','bcell'+(f===0?' nut':''));
+      c.appendChild(el('div','bsl')); c.dataset.s=s; c.dataset.f=f;
+      c.onclick=()=>onTap&&onTap(s,f,c); grid.appendChild(c); cells[s+':'+f]=c; }
+  }
+  wrap.appendChild(grid);
+  const nums=el('div','boxnums'); nums.appendChild(el('div','',''));
+  const marks={3:1,5:1,7:1,9:1,12:2,15:1};
+  for(let f=low;f<=low+4;f++) nums.appendChild(el('div',marks[f]===2?'mk2':marks[f]?'mk':'',''+f));
+  wrap.appendChild(nums);
+  wrap.dot=(s,f,label,cls)=>{ const c=cells[s+':'+f]; if(!c)return; let d=c.querySelector('.bdot');
+    if(!d){ d=el('div','bdot'); c.appendChild(d); } d.className='bdot '+(cls||''); d.textContent=label==null?'':label; return d; };
+  wrap.clear=()=>Object.values(cells).forEach(c=>{ const d=c.querySelector('.bdot'); if(d)d.remove(); });
+  wrap.flash=(s,f,cls)=>{ const c=cells[s+':'+f]; if(!c)return; c.classList.add(cls||'good');
+    setTimeout(()=>c.classList.remove(cls||'good'),260); };
+  return wrap;
+}
+
+/* ---------------- état de conquête ---------------- */
+function bxAll(){ if(!S.boxes) S.boxes={}; return S.boxes; }
+function bx(i){ const a=bxAll(); if(!a[i]) a[i]={lvl:0,seal:null,due:null,step:0,best:null,lapses:0,keys:{}}; return a[i]; }
+const bxAddDays=(d,n)=>{ const x=new Date(d+'T12:00:00'); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); };
+function bxDue(i){ const g=bx(i); return g.lvl>=5 && g.due && g.due<=today(); }
+function bxDueList(){ return [0,1,2,3,4].filter(bxDue); }
+function bxMastered(){ return [0,1,2,3,4].filter(i=>bx(i).lvl>=5).length; }
+function bxPct(){ let s=0; for(let i=0;i<5;i++) s+=Math.min(5,bx(i).lvl); return Math.round(100*s/25); }
+/* la prochaine boîte à ouvrir : la 1re encore inconnue, sinon la moins avancée */
+function bxNext(){ const d=bxDueList(); if(d.length) return d[0];
+  for(let i=0;i<5;i++) if(bx(i).lvl<5) return i; return 0; }
+function bxSchedPass(i){ const g=bx(i); g.step=Math.min((g.step||0)+1,BX_INTERVALS.length-1);
+  g.due=bxAddDays(today(),BX_INTERVALS[g.step]); save(); return BX_INTERVALS[g.step]; }
+function bxSchedFail(i){ const g=bx(i); g.lapses=(g.lapses||0)+1; g.lvl=4; g.step=0; g.due=null; g.seal=null; save(); }
+/* monte d’un palier ; le 4→5 exige DEUX jours différents */
+function bxAward(i,secs){
+  const g=bx(i), t=today();
+  if(secs!=null && (g.best==null||secs<g.best)) g.best=secs;
+  if(g.lvl<4){ g.lvl++; S.xp+=12; save(); return {up:true,msg:`▲ ${BOXES[i].n} → palier « ${BX_RANK[g.lvl]} »`}; }
+  if(g.lvl===4){
+    if(!g.seal){ g.seal=t; S.xp+=8; save();
+      return {up:false,msg:`🔒 Sceau posé sur la ${BOXES[i].n}. Reviens un AUTRE jour la refaire à l’aveugle pour la sceller — la mémoire a besoin de dormir dessus.`}; }
+    if(g.seal!==t){ g.lvl=5; g.seal=null; g.step=0; g.due=bxAddDays(t,BX_INTERVALS[0]); S.xp+=40; save();
+      return {up:true,master:true,msg:`🏅 ${BOXES[i].n} CONQUISE. Premier entretien demain, puis de plus en plus espacé.`}; }
+    save(); return {up:false,msg:`Déjà scellée aujourd’hui — reviens demain pour finir le travail.`};
+  }
+  bxSchedPass(i); S.xp+=10; save();
+  return {up:false,msg:`✓ Entretien fait. Prochaine révision dans ${BX_INTERVALS[bx(i).step]} j.`};
+}
+
+/* ---------------- le moteur d’épreuve ----------------
+   Un seul moteur, 5 modes. Tout se joue au doigt sur la fenêtre. */
+function runBoxTrial(host,opt,done){
+  const {root,bi,mode}=opt;
+  const cells=boxCells(root,bi), low=boxLow(root,bi);
+  const seq = mode==='chrono' ? cells.concat(cells.slice(0,-1).reverse()) : cells;
+  let i=0, err=0, t0=null, tk=null;
+  host.innerHTML='';
+  const head=el('div','qhead'); host.appendChild(head);
+  const box=buildBox(low,(s,f)=>tap(s,f)); host.appendChild(box);
+  const foot=el('div'); host.appendChild(foot);
+  const rootName=NOTES[root];
+
+  /* mode « cibles » : 8 degrés à trouver, une fenêtre différente à chaque fois */
+  let qs=null;
+  if(mode==='targets'){ qs=[]; const pool=PENTA_M.slice();
+    while(qs.length<8){ const iv=pool[Math.floor(Math.random()*pool.length)];
+      if(qs.length && qs[qs.length-1]===iv) continue; qs.push(iv); } }
+
+  function paintGuide(){ box.clear();
+    if(mode==='guide'){ cells.forEach((c,k)=>box.dot(c.s,c.f, DEG_PENTA[((c.pc-root)%12+12)%12], k<i?'okd':(c.pc===root?'root':'on'))); if(cells[i]) box.dot(cells[i].s,cells[i].f,'?','ask'); }
+    else if(mode==='order'){ cells.forEach((c,k)=>{ if(k<i) box.dot(c.s,c.f,'✓','okd'); else box.dot(c.s,c.f,'','on'); }); }
+    else if(mode==='targets'){ if(!host._painted){ host._painted=1; cells.forEach(c=>box.dot(c.s,c.f,'','on')); } }
+    /* 'blind' et 'chrono' : rien du tout, c’est le but */
+  }
+  function tick(){ const e=head.querySelector('.timer'); if(e&&t0) e.textContent=((performance.now()-t0)/1000).toFixed(1)+'s'; }
+  function startClock(){ if(t0) return; t0=performance.now(); if(tk)clearInterval(tk); tk=setInterval(tick,100); }
+
+  function show(){
+    const timed=(mode==='chrono'||mode==='blind'||mode==='targets');
+    const el0=timed?`<span class="timer bigtimer">${t0?((performance.now()-t0)/1000).toFixed(1):'0.0'}s</span> · `:'';
+    if(mode==='targets'){
+      const iv=qs[i];
+      head.innerHTML=`<div class="sub">${el0}${i+1}/8 · ❌ ${err}</div>
+        <div class="q" style="font-size:30px">touche ${DEG_PENTA[iv]}</div>
+        <div class="sub">${DEG_LONG[iv]} de <b>${rootName} mineur</b> — n’importe laquelle dans la boîte</div>`;
+    } else {
+      const asc = i<cells.length || mode!=='chrono';
+      const dir = (mode==='chrono' && i>=cells.length)?'↓ on redescend':'↑ on monte';
+      head.innerHTML=`<div class="sub">${el0}${i+1}/${seq.length} · ❌ ${err}</div>
+        <div class="q" style="font-size:22px">${BOXES[bi].n} · ${rootName} mineur</div>
+        <div class="sub">${mode==='guide'?'suis le <b>?</b> : les notes dans l’ordre, du grave à l’aigu':(mode==='order'?'les notes de la boîte, <b>dans l’ordre</b>':(mode==='blind'?'à l’aveugle : de la plus grave à la plus aiguë':dir))}</div>`;
+    }
+    paintGuide();
+  }
+  function tap(s,f){
+    if(host._done) return; pluck(midiAt(s,f)); startClock();
+    if(mode==='targets'){
+      const pc=midiAt(s,f)%12, want=(root+qs[i])%12;
+      const inBox=cells.some(c=>c.s===s&&c.f===f);
+      if(inBox && pc===want){ box.flash(s,f,'good'); box.dot(s,f,DEG_PENTA[qs[i]],'okd'); i++; if(i>=8) return finish(); setTimeout(show,180); }
+      else { err++; box.flash(s,f,'bad'); const d=box.dot(s,f,inBox?DEG_PENTA[((pc-root)%12+12)%12]:'✗','no'); setTimeout(()=>{ if(d&&d.parentNode)d.remove(); },420); show(); }
+      return;
+    }
+    const want=seq[i];
+    if(s===want.s && f===want.f){ box.flash(s,f,'good'); i++; if(i>=seq.length) return finish(); show(); }
+    else { err++; box.flash(s,f,'bad'); const d=box.dot(s,f,'✗','no'); setTimeout(()=>{ if(d&&d.parentNode)d.remove(); paintGuide(); },420); }
+  }
+  function finish(){ host._done=true; if(tk){clearInterval(tk);tk=null;}
+    const secs=t0?Math.round((performance.now()-t0)/100)/10:null;
+    box.clear(); cells.forEach(c=>box.dot(c.s,c.f,DEG_PENTA[((c.pc-root)%12+12)%12],c.pc===root?'root':'okd'));
+    done({err,secs,root,bi,mode});
+  }
+  show();
+}
+
+/* ---------------- l’écran d’une boîte ---------------- */
+function bxKeyFor(lvl){ /* paliers 1-2 : La mineur (le terrain connu) ; après : tonalité TIRÉE AU SORT */
+  if(lvl<2) return 9;
+  const pool=[9,4,2,7,0,5,11,10,3,8,6,1];
+  return pool[Math.floor(Math.random()*(lvl>=3?12:5))];
+}
+function openBox(bi){
+  ac(); markDay();
+  const g=bx(bi);
+  openOverlay(BOXES[bi].n+' — penta mineure', inner=>{
+    const due=bxDue(bi), lvl=g.lvl;
+    const isMaint = lvl>=5;
+    const mode = isMaint ? 'chrono' : BX_MODE[Math.min(4,lvl)];
+    const root = bxKeyFor(isMaint?4:lvl);
+
+    const h=el('div','card'); h.style.borderColor='var(--acc)';
+    h.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between">
+        <b style="font-size:17px">${BOXES[bi].n}</b>
+        <span style="color:var(--acc);font-weight:800;font-size:13px">${BX_RANK[Math.min(5,lvl)]}</span></div>
+      <div class="bxbar"><i style="width:${Math.min(100,lvl*20)}%"></i></div>
+      <p class="lead" style="margin:8px 0 0">${isMaint?(due?'🔁 <b style="color:var(--acc)">Entretien dû aujourd’hui.</b> Refais-la à l’aveugle sous chrono : si tu la rates, elle redescend d’un palier — c’est le prix de l’honnêteté.':'Conquise. Prochain entretien le <b>'+(g.due||'—')+'</b>. Tu peux la refaire quand tu veux, ça ne coûte rien.'):('Palier suivant : <b style="color:var(--acc)">'+BX_MODEN[Math.min(4,lvl)]+'</b>'+(lvl>=2?' · tonalité tirée au sort : la forme est <b>mobile</b>, c’est tout l’intérêt':''))}</p>`;
+    inner.appendChild(h);
+
+    inner.appendChild(el('div','theory',`<div class="tip">${BOXES[bi].tip}</div>`));
+
+    const arena=el('div','card'); inner.appendChild(arena);
+    function ready(){
+      arena.innerHTML='';
+      arena.appendChild(el('b',null,'▶ '+BX_MODEN[Math.min(4,isMaint?4:lvl)]+' · '+NOTES[root]+' mineur'));
+      const expl={guide:'La boîte est affichée avec ses degrés. Touche les notes <b>dans l’ordre</b>, du grave à l’aigu, en suivant le <b>?</b>. Le but ici : voir la forme, pas la retenir.',
+        order:'Les notes sont là, sans étiquette. Touche-les dans l’ordre, du grave à l’aigu, puis c’est fini. Deux erreurs maximum.',
+        blind:'<b>Manche vide.</b> Tu poses les 12 notes de la boîte de mémoire, du grave à l’aigu. C’est là que ça grave.',
+        targets:'8 questions : « touche la ♭3 », « touche la 5te »… N’importe laquelle dans la boîte. C’est ce qui transforme une forme en <b>vraies notes à viser</b>.',
+        chrono:`À l’aveugle, <b>monte ET redescends</b>, sous <b>${BX_CHRONO}s</b>, zéro faute. C’est le test qui scelle la boîte.`};
+      arena.appendChild(el('p','lead',expl[mode]));
+      const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
+      if(lvl>0){ const rev=el('button','btn ghost','👁 Revoir la forme (sans test)');
+        rev.onclick=()=>openBoxLook(bi,root); arena.appendChild(rev); }
+    }
+    function play(){
+      arena.innerHTML=''; arena._done=false; delete arena._done;
+      const host=el('div'); arena.appendChild(host);
+      runBoxTrial(host,{root,bi,mode},res=>{
+        const maxErr = mode==='guide'?99:(mode==='order'?2:(mode==='targets'?1:0));
+        const okTime = mode!=='chrono' || (res.secs!=null && res.secs<=BX_CHRONO);
+        const win = res.err<=maxErr && okTime;
+        const out=el('div'); arena.appendChild(out);
+        if(win){
+          const r=bxAward(bi,res.secs);
+          out.innerHTML=`<div class="qhead"><div class="q" style="color:var(--ok)">✓ ${res.secs!=null?res.secs+'s':'réussi'}</div>
+            <div class="sub">${res.err?res.err+' erreur(s)':'sans faute'}</div></div>
+            <div class="clogic" style="margin-top:10px"><b style="color:var(--acc)">${r.msg}</b></div>`;
+          toast(r.up?'▲ Palier franchi · +12 XP':'✓ +XP');
+        } else {
+          if(isMaint){ bxSchedFail(bi);
+            out.innerHTML=`<div class="qhead"><div class="q" style="color:var(--bad)">Entretien raté</div>
+              <div class="sub">${res.err} erreur(s)${res.secs!=null?' · '+res.secs+'s':''}</div></div>
+              <div class="clogic" style="margin-top:10px">La ${BOXES[bi].n} <b style="color:var(--bad)">redescend au palier « Par cœur »</b>. Ce n’est pas une punition : c’est l’app qui refuse de te mentir sur ce que tu sais.</div>`;
+          } else {
+            out.innerHTML=`<div class="qhead"><div class="q" style="color:var(--bad)">Pas encore</div>
+              <div class="sub">${res.err} erreur(s)${res.secs!=null?' · '+res.secs+'s'+(mode==='chrono'?' (cible '+BX_CHRONO+'s)':''):''}</div></div>
+              <div class="clogic" style="margin-top:10px">Le palier n’est pas validé — ${maxErr===0?'il faut le <b>sans-faute</b>':'maximum '+maxErr+' erreur(s)'}. Revois la forme 30 secondes et recommence : c’est normal d’y passer 2-3 essais.</div>`;
+          }
+        }
+        const again=el('button','btn','↻ Encore'); again.onclick=()=>openBox(bi); out.appendChild(again);
+        const back=el('button','btn ghost','← La Conquête'); back.onclick=()=>openConquete(); out.appendChild(back);
+      });
+    }
+    ready();
+  });
+}
+/* revoir la forme, sans enjeu */
+function openBoxLook(bi,root){
+  ac();
+  openOverlay(BOXES[bi].n+' — la forme', inner=>{
+    let r=root==null?9:root;
+    const c=el('div','card');
+    c.appendChild(el('b',null,'Touche pour entendre'));
+    c.appendChild(rootPicker(r,pc=>{ r=pc; draw(); }));
+    const holder=el('div'); c.appendChild(holder);
+    const info=el('div','clogic'); c.appendChild(info);
+    const play=el('button','btn ghost','🔊 Écouter la boîte'); c.appendChild(play);
+    inner.appendChild(c);
+    inner.appendChild(el('div','theory',`<div class="tip">${BOXES[bi].tip}</div>
+      <p>Les 5 boîtes sont les <b>mêmes 5 notes</b>, découpées en 5 fenêtres qui s’emboîtent. Change de tonalité ci-dessus : <b>la forme ne bouge pas</b>, elle glisse. C’est ça, une forme mobile — et c’est pour ça qu’en apprendre 5 suffit pour les 12 tonalités.</p>`));
+    function draw(){ holder.innerHTML='';
+      const low=boxLow(r,bi), cells=boxCells(r,bi);
+      const b=buildBox(low,(s,f)=>{ pluck(midiAt(s,f)); b.flash(s,f,'good'); }); holder.appendChild(b);
+      cells.forEach(x=>b.dot(x.s,x.f,DEG_PENTA[((x.pc-r)%12+12)%12], x.pc===r?'root':'on'));
+      play.onclick=()=>{ ac(); cells.forEach((x,k)=>setTimeout(()=>pluck(x.m,1.0,.5),k*135)); };
+      info.innerHTML=`<div class="deg">${NOTES[r]} mineur · ${BOXES[bi].n} · cases ${low}–${low+4}</div>
+        Notes : ${PENTA_M.map(iv=>NOTES[(r+iv)%12]).join(' · ')}. En <b style="color:var(--bad)">rouge</b> : la fondamentale.
+        <br><span style="color:var(--dim)">(Mêmes 5 notes que la penta MAJEURE de ${NOTES[(r+3)%12]} — une forme apprise, deux gammes.)</span>`;
+    }
+    draw();
+  });
+}
+
+/* ---------------- l’écran de conquête ---------------- */
+function openConquete(){
+  markDay();
+  openOverlay('La Conquête du manche', inner=>{
+    const m=bxMastered(), pct=bxPct(), due=bxDueList();
+    const h=el('div','card'); h.style.borderColor='var(--acc)';
+    h.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
+        <b style="font-size:17px">${m}/5 boîtes conquises</b><span style="color:var(--acc);font-weight:800">${pct}%</span></div>
+      <div class="bxbar"><i style="width:${pct}%"></i></div>
+      <p class="lead" style="margin:8px 0 0">${m>=5?'🏆 <b>Tout le manche est à toi.</b> Reviens pour les entretiens — et va jouer sur des vrais morceaux (🎧 Le Juke-box).':(due.length?'🔁 <b style="color:var(--acc)">'+due.length+' boîte(s) à revoir aujourd’hui</b> — l’entretien d’abord, toujours.':'5 boîtes, 5 paliers chacune. Une seule à la fois, 5 minutes par jour. Les 12 tonalités viennent gratuitement : la forme est mobile.')}</p>`;
+    inner.appendChild(h);
+
+    const nxt=bxNext();
+    const go=el('div','card'); go.style.borderColor='var(--acc2)';
+    go.innerHTML=`<b>⚔️ Ta prochaine étape</b><p class="lead" style="margin:6px 0 10px">${BOXES[nxt].n} — ${bxDue(nxt)?'entretien dû':('palier « '+BX_MODEN[Math.min(4,bx(nxt).lvl)]+' »')}</p>`;
+    const gb=el('button','btn','Y aller'); gb.onclick=()=>openBox(nxt); go.appendChild(gb);
+    inner.appendChild(go);
+
+    BOXES.forEach((B,i)=>{ const g=bx(i), d=bxDue(i);
+      const c=el('div','catcard');
+      const pipes=[0,1,2,3,4].map(k=>`<i class="${k<g.lvl?'on':''}"></i>`).join('');
+      c.innerHTML=`<div class="ico">${g.lvl>=5?'🏅':(i+1)}</div>
+        <div class="t"><b>${B.n} ${d?'<span style="color:var(--acc)">· 🔁 à revoir</span>':''}</b>
+        <small>${BX_RANK[Math.min(5,g.lvl)]}${g.best?' · record '+g.best+'s':''}${g.lapses?' · '+g.lapses+' rechute(s)':''}</small>
+        <div class="pips">${pipes}</div></div><div class="pc">›</div>`;
+      c.onclick=()=>openBox(i); inner.appendChild(c); });
+
+    const tools=el('div','card'); tools.innerHTML='<b>🛠 Autour des boîtes</b>';
+    const t1=el('button','btn ghost','🎯 Le Duel — 60 s, combo, 3 vies'); t1.onclick=()=>openDuel(); tools.appendChild(t1);
+    const t2=el('button','btn ghost','👁 Revoir une forme, sans test'); t2.onclick=()=>openBoxLook(0,9); tools.appendChild(t2);
+    const t3=el('button','btn ghost','🎧 Le Juke-box — jouer sur des vrais morceaux'); t3.onclick=()=>openJukebox(); tools.appendChild(t3);
+    inner.appendChild(tools);
+
+    inner.appendChild(el('div','theory',`
+      <h3>Pourquoi ça marche (et pas les autres méthodes)</h3>
+      <p><b>Une boîte à la fois.</b> Cinq formes en même temps, c’est zéro forme dans six semaines. On en ouvre une, on la scelle, on passe.</p>
+      <p><b>La forme se déplace.</b> Dès le 3<sup>e</sup> palier, l’app tire la tonalité au sort. Si tu ne sais la jouer qu’en La mineur, tu ne la sais pas.</p>
+      <p><b>Ça peut redescendre.</b> Une boîte scellée revient à J+1, +3, +7, +16, +35, +60. Entretien raté = elle redescend d’un palier. Une app qui ne fait que monter te ment.</p>
+      <div class="tip">Le vrai but n’est pas de « connaître 5 formes » : c’est de <b>viser une note précise</b> pendant qu’un accord passe. C’est exactement ce que teste le palier « Les cibles » — et ce que tu joues pour de vrai dans le Juke-box.</div>`));
+  });
+}
+
+/* ================================================================
+   LE DUEL — 60 secondes, combo, 3 vies. L’arcade des gammes.
+   Le contraire de la Conquête : ici on ne réfléchit pas, on répond
+   au réflexe. C’est ce mode-là qui transforme « je sais retrouver
+   la ♭3 » en « ma main est déjà dessus ».
+   ================================================================ */
+const DUEL_RANKS=[[0,'Bleu'],[250,'Habitué'],[600,'Tireur'],[1000,'Duelliste'],[1600,'Sniper du manche'],[2400,'Légende']];
+function duelRank(sc){ let n=DUEL_RANKS[0][1]; DUEL_RANKS.forEach(r=>{ if(sc>=r[0]) n=r[1]; }); return n; }
+var _duelT=null;
+function openDuel(){
+  ac(); markDay();
+  openOverlay('Le Duel', inner=>{
+    const best=S.duelBest||0;
+    const intro=el('div','card'); intro.style.borderColor='var(--acc)';
+    intro.innerHTML=`<b>🎯 60 secondes · combo · 3 vies</b>
+      <p class="lead" style="margin:6px 0 0">L’app te jette une boîte et une tonalité au hasard, et te demande un degré : <b>touche-le</b>. Juste = ton combo monte (×2, ×3, ×4). Faux = une vie en moins. Trois vies, et c’est fini.</p>
+      <div class="statgrid" style="margin-top:10px">
+        <div class="stat"><b>${best}</b><small>record</small></div>
+        <div class="stat"><b>${duelRank(best)}</b><small>rang</small></div>
+        <div class="stat"><b>${bxMastered()}/5</b><small>boîtes sues</small></div></div>`;
+    inner.appendChild(intro);
+    const arena=el('div','card'); inner.appendChild(arena);
+    const go=el('button','btn','▶ En garde'); go.onclick=()=>runDuel(arena); arena.appendChild(go);
+    inner.appendChild(el('div','theory',`<div class="tip">Astuce : ne cherche pas la note « en comptant ». Repère d’abord <b>la fondamentale</b> dans la fenêtre, puis attrape le degré <b>par la forme</b> — c’est comme ça qu’on va vite.</div>`));
+  });
+}
+function runDuel(host){
+  const DUR=60;
+  let score=0, combo=0, lives=3, hits=0, miss=0, t0=performance.now(), over=false;
+  const unlocked=[0,1,2,3,4].filter(i=>bx(i).lvl>=1);
+  const pool = unlocked.length?unlocked:[0];
+  let bi=0, root=9, want=0, cells=[], qt0=0;
+  host.innerHTML='';
+  const hud=el('div','duelhud'); host.appendChild(hud);
+  const head=el('div','qhead'); host.appendChild(head);
+  const holder=el('div'); host.appendChild(holder);
+  const foot=el('div'); host.appendChild(foot);
+  function hudDraw(){ const left=Math.max(0,DUR-(performance.now()-t0)/1000);
+    hud.innerHTML=`<div class="dh"><b>${score}</b><small>score</small></div>
+      <div class="dh"><b style="color:${combo>=3?'var(--acc)':'var(--txt)'}">×${Math.min(4,1+Math.floor(combo/3))}</b><small>combo ${combo}</small></div>
+      <div class="dh"><b>${'❤️'.repeat(lives)||'—'}</b><small>vies</small></div>
+      <div class="dh"><b class="bigtimer" style="color:${left<10?'var(--bad)':'var(--txt)'}">${left.toFixed(1)}</b><small>secondes</small></div>`;
+    if(left<=0 && !over) finish();
+  }
+  function nextQ(){
+    bi=pool[Math.floor(Math.random()*pool.length)];
+    root=[9,4,2,7,0,5,11,10,3,8,6,1][Math.floor(Math.random()*(bxMastered()>=2?12:6))];
+    cells=boxCells(root,bi);
+    const ivs=PENTA_M.filter(v=>v!==want); want=ivs[Math.floor(Math.random()*ivs.length)];
+    holder.innerHTML='';
+    const box=buildBox(boxLow(root,bi),(s,f)=>tap(s,f,box)); holder.appendChild(box);
+    cells.forEach(c=>box.dot(c.s,c.f,'','on'));
+    head.innerHTML=`<div class="sub">${BOXES[bi].n} · <b>${NOTES[root]} mineur</b></div>
+      <div class="q" style="font-size:34px">${DEG_PENTA[want]}</div>
+      <div class="sub">${DEG_LONG[want]}</div>`;
+    qt0=performance.now();
+  }
+  function tap(s,f,box){
+    if(over) return; pluck(midiAt(s,f));
+    const pc=midiAt(s,f)%12, inBox=cells.some(c=>c.s===s&&c.f===f);
+    if(inBox && pc===(root+want)%12){
+      const fast=(performance.now()-qt0)<2200;
+      const mult=Math.min(4,1+Math.floor(combo/3));
+      score+=(fast?15:10)*mult; combo++; hits++;
+      box.flash(s,f,'good'); box.dot(s,f,DEG_PENTA[want],'okd');
+      if(combo===3||combo===6||combo===9||combo===12) toast('🔥 combo ×'+Math.min(4,1+Math.floor(combo/3)));
+      setTimeout(()=>{ if(!over) nextQ(); },230);
+    } else {
+      combo=0; lives--; miss++;
+      box.flash(s,f,'bad'); const d=box.dot(s,f,'✗','no');
+      const good=cells.filter(c=>c.pc===(root+want)%12);
+      good.forEach(c=>box.dot(c.s,c.f,DEG_PENTA[want],'miss'));
+      if(lives<=0){ setTimeout(finish,700); }
+      else setTimeout(()=>{ if(!over) nextQ(); },900);
+    }
+    hudDraw();
+  }
+  function finish(){ if(over) return; over=true; if(_duelT){clearInterval(_duelT);_duelT=null;}
+    const isBest=score>(S.duelBest||0); if(isBest) S.duelBest=score;
+    S.xp+=Math.round(score/20); save();
+    holder.innerHTML=''; head.innerHTML='';
+    hud.innerHTML='';
+    const r=el('div','card'); r.style.borderColor='var(--acc)';
+    r.innerHTML=`<div class="qhead"><div class="q" style="font-size:38px">${score}</div>
+      <div class="sub">${hits} touches · ${miss} raté(s) · rang <b style="color:var(--acc)">${duelRank(score)}</b>${isBest?' · 🏆 <b>nouveau record</b>':''}</div></div>
+      <p class="lead" style="margin:10px 0 0">${score>=800?'Ta main sait où sont les notes. C’est exactement ce qu’on cherchait.':score>=350?'Bon rythme. Le combo est là où le score se fait : enchaîne sans te précipiter, une faute casse tout.':'Normal au début : cherche la <b>fondamentale</b> d’abord, le reste est une forme. Refais-en 3 d’affilée.'}<br><b style="color:var(--acc)">+${Math.round(score/20)} XP</b></p>`;
+    host.innerHTML=''; host.appendChild(r);
+    const again=el('button','btn','↻ Revanche'); again.onclick=()=>runDuel(host); host.appendChild(again);
+    const back=el('button','btn ghost','← La Conquête'); back.onclick=()=>openConquete(); host.appendChild(back);
+  }
+  if(_duelT) clearInterval(_duelT); _duelT=setInterval(hudDraw,100);
+  nextQ(); hudDraw();
+}
+
+/* ================================================================
+   LE JUKE-BOX — les gammes sur des VRAIS morceaux.
+   Chaque morceau : sa tonalité, sa gamme, sa grille jouée en boucle
+   par l’app, et LA note à viser quand tel accord passe. C’est le
+   chaînon manquant entre « je connais mes boîtes » et « je joue ».
+   ================================================================ */
+const SC_DEF={
+  pm:{n:'penta mineure', iv:[0,3,5,7,10], fam:'Penta mineure'},
+  aeo:{n:'mineure naturelle (éolien)', iv:[0,2,3,5,7,8,10], fam:'Penta mineure'},
+  PM:{n:'penta majeure', iv:[0,2,4,7,9], fam:'Penta majeure'},
+  maj:{n:'majeure', iv:[0,2,4,5,7,9,11], fam:'Penta majeure'},
+  dor:{n:'dorien', iv:[0,2,3,5,7,9,10], fam:'Dorien'},
+  mix:{n:'mixolydien', iv:[0,2,4,5,7,9,10], fam:'Mixolydien'},
+  lyd:{n:'lydien', iv:[0,2,4,6,7,9,11], fam:'Lydien'},
+  phr:{n:'phrygien', iv:[0,1,3,5,7,8,10], fam:'Phrygien'},
+  phrD:{n:'phrygien dominant', iv:[0,1,4,5,7,8,10], fam:'Phrygien'},
+  blu:{n:'gamme blues', iv:[0,3,5,6,7,10], fam:'Blues'},
+  har:{n:'mineure harmonique', iv:[0,2,3,5,7,8,11], fam:'Harmonique'}
+};
+const JB_FAMS=['Penta mineure','Penta majeure','Dorien','Mixolydien','Lydien','Phrygien','Blues','Harmonique'];
+/* ch : [fondamentale 0-11, type] par mesure · exact:false = boucle d’entraînement
+   dans la tonalité (pas la grille note pour note du disque) */
+const JUKE=[
+ {id:'lonelyday', ic:'🖤', t:'Lonely Day', a:'System of a Down', star:1, root:8, key:'Sol♯ mineur', sc:'pm', diff:1, bpm:88, exact:1,
+  ch:[[8,'min'],[4,'maj'],[11,'maj'],[3,'dom7']],
+  aim:[7,'Sur le <b>Ré♯7</b> (le dernier accord), vise le <b>Sol</b> — c’est sa tierce majeure, et c’est la note qui tire vers le retour au Sol♯m. Hors penta : c’est exactement la note qui fait « pro ».'],
+  why:'Ta découverte. La boucle est <b>i – ♭VI – ♭III – V7</b> : trois accords tout droit sortis de Sol♯ mineur, plus un Ré♯7 emprunté au mineur harmonique. C’est pour ça que la penta mineure de Sol♯ passe sur tout — et que le Ré♯7 sonne « tendu » : lui seul contient une note étrangère.',
+  tune:'SOAD accorde très bas. Si ta version sonne plus grave, ce n’est pas toi : garde la <b>forme</b> et déplace-la (la Boussole te donne la tonique à l’oreille).'},
+ {id:'change', ic:'🪰', t:'Change (In the House of Flies)', a:'Deftones', root:0, key:'Do mineur', sc:'pm', diff:1, bpm:96, exact:1,
+  ch:[[0,'min'],[0,'min'],[5,'min'],[5,'min']],
+  aim:[3,'Vise le <b>Mi♭</b> (la ♭3) et <b>tiens-la</b>. Le son Deftones, ce n’est pas des notes rapides : c’est une note tenue au-dessus d’un mur.'],
+  why:'Deux accords, <b>Dom – Fam</b> (i – iv) : le minimum absolu, et c’est ce qui laisse toute la place. Avec si peu d’harmonie, ce qui compte n’est plus QUELLE note mais <b>combien de temps</b> tu la laisses sonner.',
+  tune:'Accordage bas (drop C). En accordage standard, joue-le en <b>Mi mineur</b> : mêmes rapports, mêmes formes, juste plus haut.'},
+ {id:'teenspirit', ic:'💥', t:'Smells Like Teen Spirit', a:'Nirvana', root:5, key:'Fa mineur', sc:'pm', diff:1, bpm:117, exact:1,
+  ch:[[5,'min'],[10,'min'],[8,'maj'],[1,'maj']],
+  aim:[8,'Le <b>La♭</b> (la ♭3) est aussi la fondamentale du 3<sup>e</sup> accord : atterris dessus quand il arrive, ça « colle » d’un coup.'],
+  why:'<b>i – iv – ♭III – ♭VI</b> en power chords : la boucle mineure la plus jouée des années 90. Le solo de Kurt, c’est la mélodie du chant — preuve qu’un solo n’a pas besoin d’être une démonstration.',
+  tune:''},
+ {id:'comeasyouare', ic:'🌊', t:'Come As You Are', a:'Nirvana', root:6, key:'Fa♯ mineur', sc:'aeo', diff:1, bpm:120, exact:0,
+  ch:[[6,'min'],[6,'min'],[9,'maj'],[11,'min']],
+  aim:[4,'Le riff descend la gamme mineure. Repère le <b>Mi</b> (la ♭7) : c’est la note qui donne son côté « mou », résigné.'],
+  why:'Le riff EST la gamme : Fa♯ mineur naturelle jouée note à note. Le meilleur exercice de gamme du monde, parce que tu l’as déjà dans l’oreille depuis dix ans.',
+  tune:'Kurt accorde un TON plus bas (Ré Sol Do Fa La Ré) : sur le disque ça sonne en <b>Mi mineur</b>. En accordage standard, joue-le en Fa♯ mineur — c’est l’accordage, pas toi.'},
+ {id:'likeastone', ic:'🪨', t:'Like a Stone', a:'Audioslave', root:9, key:'La mineur', sc:'pm', diff:1, bpm:100, exact:1,
+  ch:[[9,'min'],[7,'maj'],[4,'min'],[5,'maj']],
+  aim:[9,'Sur le <b>Fa</b>, ta fondamentale La est SA tierce : reste dessus, ça sonne plein et triste à la fois. Le truc de Cornell.'],
+  why:'<b>i – ♭VII – v – ♭VI</b> : que du diatonique de La mineur, donc la penta mineure de La ne peut pas se tromper. C’est le morceau idéal pour ton premier vrai solo lent.',
+  tune:''},
+ {id:'zombie', ic:'🪖', t:'Zombie', a:'The Cranberries', root:4, key:'Mi mineur', sc:'aeo', diff:1, bpm:84, exact:1,
+  ch:[[4,'min'],[0,'maj'],[7,'maj'],[2,'maj']],
+  aim:[6,'Sur le <b>Ré</b>, vise le <b>Fa♯</b> : sa tierce. Elle est DANS la gamme de Mi mineur mais PAS dans la penta — ta première note « en plus ».'],
+  why:'<b>i – ♭VI – ♭III – ♭VII</b> : la boucle mineure la plus jouée de la planète (tu la retrouveras dans des centaines de morceaux). Parfaite pour apprendre à sortir de la penta d’une seule note.',
+  tune:''},
+ {id:'nothingelse', ic:'🖤', t:'Nothing Else Matters', a:'Metallica', root:4, key:'Mi mineur', sc:'aeo', diff:1, bpm:70, exact:1,
+  ch:[[4,'min'],[2,'maj'],[0,'maj']],
+  aim:[11,'Sur le <b>Ré</b>, le <b>Fa♯</b> ; sur le <b>Do</b>, le <b>Mi</b> (ta fondamentale). Tenues, lentes. Ici la vitesse tue.'],
+  why:'Em – Ré – Do : la descente ♭VII–♭VI, le cliché le plus émouvant du rock. À ce tempo, tu as le temps de <b>choisir</b> chaque note : c’est le meilleur terrain pour apprendre à viser.',
+  tune:''},
+ {id:'seven', ic:'🥁', t:'Seven Nation Army', a:'The White Stripes', root:4, key:'Mi mineur', sc:'pm', diff:1, bpm:124, exact:0,
+  ch:[[4,'min'],[4,'min'],[0,'maj'],[7,'maj']],
+  aim:[7,'Le riff, c’est <b>Mi – Sol – Mi – Ré – Do – Si</b> : cinq notes de la penta mineure de Mi, dans la boîte 1. Rejoue-le en le regardant comme une gamme.'],
+  why:'Le riff le plus connu du siècle est une <b>penta mineure descendante</b>, jouée lentement. Quand on te dit qu’une gamme, ça fait de la musique — c’est littéralement ça.',
+  tune:''},
+ {id:'stairway', ic:'🪜', t:'Stairway to Heaven (le solo)', a:'Led Zeppelin', root:9, key:'La mineur', sc:'pm', diff:2, bpm:82, exact:1,
+  ch:[[9,'min'],[7,'maj'],[5,'maj'],[9,'min']],
+  aim:[0,'Page reste dans la <b>boîte 1</b> de La mineur presque tout le solo. Le <b>Do</b> (♭3) tenu avec vibrato, c’est sa signature.'],
+  why:'Le solo modèle : une seule boîte, des motifs répétés, une montée d’intensité. Preuve qu’un grand solo se construit avec <b>peu de matériel</b> et beaucoup d’intention.',
+  tune:''},
+ /* ---- majeur / penta majeure ---- */
+ {id:'sweetchild', ic:'🌹', t:'Sweet Child o’ Mine', a:'Guns N’ Roses', root:2, key:'Ré majeur', sc:'PM', diff:2, bpm:126, exact:1,
+  ch:[[2,'maj'],[0,'maj'],[7,'maj'],[2,'maj']],
+  aim:[6,'Le <b>Fa♯</b> (la tierce majeure) est la note qui rend tout ça joyeux. En penta MAJEURE, tu l’as sous les doigts en permanence.'],
+  why:'Même forme que ta penta mineure — mais posée trois cases plus bas. Penta majeure de Ré = penta mineure de Si. <b>Une forme apprise, deux gammes.</b>',
+  tune:'Slash accorde un demi-ton plus bas ; en standard, c’est en Ré.'},
+ {id:'wishyou', ic:'🔥', t:'Wish You Were Here', a:'Pink Floyd', root:7, key:'Sol majeur', sc:'PM', diff:1, bpm:120, exact:1,
+  ch:[[0,'maj'],[2,'maj'],[9,'min'],[7,'maj']],
+  aim:[11,'Vise le <b>Si</b> (la tierce de Sol) sur le dernier accord : c’est la note « qui rentre à la maison ».'],
+  why:'Do – Ré – Lam – Sol : IV – V – ii – I en Sol majeur. Douce, ouverte, et la penta majeure de Sol y sonne comme une évidence. Le morceau parfait pour apprendre le majeur sans avoir l’air de faire un exercice.',
+  tune:''},
+ {id:'threelittle', ic:'🐦', t:'Three Little Birds', a:'Bob Marley', root:9, key:'La majeur', sc:'PM', diff:1, bpm:76, exact:1,
+  ch:[[9,'maj'],[2,'maj'],[4,'maj'],[9,'maj']],
+  aim:[1,'Le <b>Do♯</b> (tierce majeure) : c’est LA note du sourire. Reste dessus, tu ne peux pas sonner triste.'],
+  why:'<b>I – IV – V</b>, les trois accords voisins. Le plus doux terrain d’entraînement pour la penta majeure : trois accords, aucun piège, et le contretemps te force à respirer.',
+  tune:''},
+ {id:'creep', ic:'🕳', t:'Creep', a:'Radiohead', root:7, key:'Sol majeur', sc:'maj', diff:2, bpm:92, exact:1,
+  ch:[[7,'maj'],[11,'maj'],[0,'maj'],[0,'min']],
+  aim:[3,'Le <b>Mi♭</b> du dernier accord (Dom). Il n’appartient PAS à Sol majeur — c’est un accord <b>emprunté</b>, et c’est exactement ce qui fait le frisson. Vise-le quand il passe.'],
+  why:'I – III – IV – <b>iv</b>. Le 2<sup>e</sup> accord (Si majeur) et le dernier (Do MINEUR) sont des intrus. Le meilleur exemple pour comprendre qu’une « fausse » note choisie exprès est la plus belle du morceau.',
+  tune:''},
+ /* ---- dorien ---- */
+ {id:'oyecomova', ic:'🔥', t:'Oye Como Va', a:'Santana', root:9, key:'La dorien', sc:'dor', diff:2, bpm:112, exact:1,
+  ch:[[9,'m7'],[2,'dom7']],
+  aim:[6,'Le <b>Fa♯</b> — la sixte MAJEURE. C’est elle, et elle seule, qui fait la différence entre « mineur triste » et « mineur cool ».'],
+  why:'Deux accords : Am7 – D7. Le Ré7 contient un Fa♯, alors qu’un La mineur « normal » aurait un Fa naturel. Ce Fa♯ = le dorien. <b>Écoute-le, puis joue le Fa naturel : tu entendras la couleur s’éteindre.</b>',
+  tune:''},
+ {id:'getlucky', ic:'🕺', t:'Get Lucky', a:'Daft Punk', root:11, key:'Si dorien', sc:'dor', diff:2, bpm:116, exact:1,
+  ch:[[11,'min'],[2,'maj'],[6,'min'],[4,'maj']],
+  aim:[8,'Le <b>Sol♯</b>, apporté par le Mi majeur. Un IV MAJEUR dans un morceau mineur = signature du dorien.'],
+  why:'Bm – Ré – F♯m – Mi. Si le morceau était en Si mineur naturel, le 4<sup>e</sup> accord serait un Mi MINEUR. Il est majeur : voilà pourquoi ça groove au lieu de pleurer.',
+  tune:''},
+ {id:'wicked', ic:'🌘', t:'Wicked Game', a:'Chris Isaak', root:11, key:'Si dorien', sc:'dor', diff:1, bpm:112, exact:1,
+  ch:[[11,'min'],[9,'maj'],[4,'maj']],
+  aim:[8,'Même note-clé que Get Lucky : le <b>Sol♯</b> du Mi majeur. Joue-la longue, avec du trémolo — c’est tout le morceau.'],
+  why:'Bm – La – Mi, en boucle, sans fin. Trois accords, une ambiance : la démonstration que le <b>son</b> (réverbe, notes tenues, contraste doux/fort) compte autant que les notes. Ton terrain.',
+  tune:''},
+ {id:'sowhat', ic:'🎺', t:'So What', a:'Miles Davis', root:2, key:'Ré dorien', sc:'dor', diff:3, bpm:130, exact:1,
+  ch:[[2,'m7'],[2,'m7'],[3,'m7'],[2,'m7']],
+  aim:[11,'Le <b>Si</b> naturel (la 6te majeure). Sur le Mi♭m7 du pont, tout glisse d’un demi-ton : même gamme, un cran plus haut.'],
+  why:'Le jazz modal : <b>un seul accord</b> pendant 8 mesures. Plus rien ne t’aide, plus rien ne te gêne — tu ne peux compter que sur tes phrases. L’examen final de l’impro.',
+  tune:''},
+ {id:'brick', ic:'🧱', t:'Another Brick in the Wall (le solo)', a:'Pink Floyd', root:2, key:'Ré mineur / dorien', sc:'dor', diff:2, bpm:104, exact:0,
+  ch:[[2,'min'],[2,'min'],[0,'maj'],[0,'maj']],
+  aim:[7,'Gilmour vise des notes <b>tenues et bendées</b>. Prends le <b>Sol</b> (la 4te) et bende-la vers le La : c’est son geste signature.'],
+  why:'Le solo le plus « chantant » du rock, sur une boucle minimale. Leçon : <b>une note bien pliée vaut dix notes rapides</b>.',
+  tune:''},
+ /* ---- mixolydien ---- */
+ {id:'sweethome', ic:'🏡', t:'Sweet Home Alabama', a:'Lynyrd Skynyrd', root:2, key:'Ré mixolydien', sc:'mix', diff:2, bpm:98, exact:1,
+  ch:[[2,'maj'],[0,'maj'],[7,'maj']],
+  aim:[0,'Le <b>Do naturel</b> (la ♭7). Dans Ré MAJEUR il y aurait un Do♯ — ici non, et c’est exactement le grain « sudiste ».'],
+  why:'Ré – Do – Sol : I – ♭VII – IV. Le ♭VII (l’accord de Do) est impossible en majeur pur : c’est la carte d’identité du mixolydien. Tout le rock sudiste et une moitié des Stones vivent là-dedans.',
+  tune:''},
+ {id:'sympathy', ic:'😈', t:'Sympathy for the Devil', a:'The Rolling Stones', root:4, key:'Mi mixolydien', sc:'mix', diff:2, bpm:116, exact:1,
+  ch:[[4,'maj'],[2,'maj'],[9,'maj'],[4,'maj']],
+  aim:[8,'Le <b>Sol♯</b> (tierce MAJEURE) contre le <b>Ré</b> (♭7) : les deux ensemble, c’est le son Richards. Passe de l’un à l’autre.'],
+  why:'Mi – Ré – La – Mi : I – ♭VII – IV. Même formule que Sweet Home Alabama, autre planète. Preuve qu’un mode n’est pas un style : c’est une palette.',
+  tune:''},
+ {id:'backinblack', ic:'⚫', t:'Back in Black', a:'AC/DC', root:4, key:'Mi (mixo / blues)', sc:'mix', diff:2, bpm:92, exact:1,
+  ch:[[4,'maj'],[2,'maj'],[9,'maj']],
+  aim:[8,'Le mouvement <b>Sol → Sol♯</b> (♭3 vers 3). Glisse ou bende de l’un à l’autre : c’est LE son du rock, et c’est ton fameux « éclairage ».'],
+  why:'Angus joue la penta MINEURE de Mi sur des accords MAJEURS. Cette friction ♭3/3 est tout le rock’n’roll. Le morceau idéal pour installer le réflexe du bend d’un demi-ton.',
+  tune:''},
+ /* ---- lydien ---- */
+ {id:'simpsons', ic:'🍩', t:'Le thème des Simpson', a:'Danny Elfman', root:0, key:'Do lydien', sc:'lyd', diff:2, bpm:110, exact:0,
+  ch:[[0,'maj7'],[2,'maj']],
+  aim:[6,'Le <b>Fa♯</b> — la quarte AUGMENTÉE. Toute la couleur « décalée, magique » tient dans cette seule note.'],
+  why:'Un accord de Do avec un Ré majeur par-dessus : le Ré majeur apporte le Fa♯, et voilà le lydien. Le mode du cinéma (Elfman, Williams) : ça flotte, ça ne se pose jamais vraiment.',
+  tune:''},
+ {id:'dreams', ic:'🌫', t:'Dreams', a:'Fleetwood Mac', root:5, key:'Fa lydien', sc:'lyd', diff:1, bpm:120, exact:1,
+  ch:[[5,'maj7'],[7,'maj']],
+  aim:[11,'Le <b>Si</b> naturel (♯4), amené par l’accord de Sol. Fa majeur « normal » aurait un Si♭ : compare les deux, la bascule est immédiate.'],
+  why:'<b>Deux accords, tout le morceau</b> : Famaj7 – Sol. Le meilleur bac à sable lydien qui existe — tu as tout le temps du monde pour écouter ce que fait le Si.',
+  tune:''},
+ /* ---- phrygien ---- */
+ {id:'roam', ic:'🐍', t:'Wherever I May Roam', a:'Metallica', root:4, key:'Mi phrygien', sc:'phr', diff:2, bpm:110, exact:0,
+  ch:[[4,'min'],[5,'maj'],[4,'min'],[5,'maj']],
+  aim:[5,'Le <b>Fa</b> — la ♭2, collée à la fondamentale. Joue Mi puis Fa puis Mi : cette demi-marche, c’est tout l’Orient dans deux notes.'],
+  why:'Un Mi mineur suivi d’un Fa MAJEUR : impossible en mineur normal. Ce ♭II est la signature du phrygien (et le solo bascule en phrygien dominant, avec une tierce majeure en plus).',
+  tune:''},
+ {id:'misirlou', ic:'🏄', t:'Misirlou', a:'Dick Dale (Pulp Fiction)', root:4, key:'Mi phrygien dominant', sc:'phrD', diff:3, bpm:170, exact:0,
+  ch:[[4,'maj'],[5,'maj'],[4,'maj'],[4,'maj']],
+  aim:[8,'La tierce <b>MAJEURE</b> (Sol♯) juste au-dessus d’une ♭2 (Fa) : cet écart d’un ton et demi entre Fa et Sol♯, c’est LE son « oriental ».'],
+  why:'Le phrygien dominant = le 5<sup>e</sup> mode du mineur harmonique. Une ♭2 sombre + une tierce majeure claire dans la même gamme : le mélange impossible qui fait le flamenco, le metal oriental et la surf music.',
+  tune:''},
+ /* ---- blues ---- */
+ {id:'blues12', ic:'🎺', t:'Le blues en 12 mesures (en La)', a:'la grille reine', root:9, key:'La', sc:'blu', diff:1, bpm:92, exact:1,
+  ch:[[9,'dom7'],[9,'dom7'],[9,'dom7'],[9,'dom7'],[2,'dom7'],[2,'dom7'],[9,'dom7'],[9,'dom7'],[4,'dom7'],[2,'dom7'],[9,'dom7'],[4,'dom7']],
+  aim:[1,'Sur le <b>La7</b>, vise le <b>Do♯</b> ; sur le Ré7, le <b>Fa♯</b> ; sur le Mi7, le <b>Sol♯</b>. Chaque fois : la tierce de l’accord qui passe.'],
+  why:'La penta mineure de La passe sur les 12 mesures — mais viser la tierce de chaque accord, c’est ce qui sépare « je joue une gamme » de « je joue les changements ».',
+  tune:''},
+ {id:'thrill', ic:'👑', t:'The Thrill Is Gone', a:'B.B. King', root:11, key:'Si mineur', sc:'pm', diff:2, bpm:80, exact:1,
+  ch:[[11,'min'],[11,'min'],[4,'min'],[11,'min'],[7,'maj'],[6,'dom7'],[11,'min'],[11,'min']],
+  aim:[10,'Sur le <b>Fa♯7</b>, vise le <b>La♯</b> : sa tierce, une note étrangère à Si mineur qui crée toute la tension avant le retour.'],
+  why:'Le blues MINEUR (différent du blues à trois accords) : i – iv – ♭VI – V7. B.B. joue trois notes par phrase et laisse tout respirer. Écoute le silence autant que les notes.',
+  tune:''},
+ {id:'cometogether', ic:'🚶', t:'Come Together', a:'The Beatles', root:2, key:'Ré mineur', sc:'pm', diff:1, bpm:82, exact:0,
+  ch:[[2,'min'],[2,'min'],[9,'dom7'],[7,'dom7']],
+  aim:[5,'Le riff tourne autour du <b>Fa</b> (♭3) et du Ré. Joue-le très près du manche, mollement : le groove est dans la mollesse.'],
+  why:'Encore un riff qui n’est qu’une penta mineure. Trois morceaux d’époques différentes (Beatles, White Stripes, Nirvana), la même gamme : c’est le meilleur argument pour la travailler.',
+  tune:''},
+ {id:'heyjoe', ic:'🔫', t:'Hey Joe', a:'Jimi Hendrix', root:4, key:'Mi (blues)', sc:'blu', diff:2, bpm:80, exact:1,
+  ch:[[0,'maj'],[7,'maj'],[2,'maj'],[9,'maj'],[4,'maj']],
+  aim:[10,'La <b>♭5</b> (Si♭) en passage rapide : jamais tenue, juste traversée. C’est la « blue note », le grain sale.'],
+  why:'Do – Sol – Ré – La – Mi : la grille descend le <b>cycle des quintes</b>, chaque accord tire vers le suivant. Hendrix improvise en Mi blues par-dessus sans jamais changer de gamme — le morceau parfait pour comprendre qu’une gamme peut tenir sur des accords très mobiles.',
+  tune:''},
+ /* ---- mineur harmonique ---- */
+ {id:'hotel', ic:'🏨', t:'Hotel California', a:'Eagles', root:11, key:'Si mineur', sc:'har', diff:3, bpm:74, exact:1,
+  ch:[[11,'min'],[6,'maj'],[9,'maj'],[4,'maj'],[7,'maj'],[2,'maj'],[4,'min'],[6,'maj']],
+  aim:[10,'Sur le <b>Fa♯ majeur</b> (le V), vise le <b>La♯</b>. C’est la 7<sup>e</sup> RELEVÉE du mineur harmonique — la note qui donne cette couleur espagnole/dramatique.'],
+  why:'Huit accords, et un seul intrus : le Fa♯ MAJEUR (au lieu de Fa♯ mineur). Cet accord vient du mineur harmonique et c’est lui qui rend la boucle inoubliable. Le solo final de Felder/Walsh vise cette note à chaque tour.',
+  tune:''}
+];
+function jbScale(s){ return SC_DEF[s.sc]; }
+function jbDone(id){ return !!(S.jb&&S.jb[id]); }
+function jbCount(){ return S.jb?Object.keys(S.jb).length:0; }
+
+/* ---------------- la boucle d’accompagnement ---------------- */
+const CH_IV={maj:[0,4,7,12],min:[0,3,7,12],dom7:[0,4,7,10],m7:[0,3,7,10],maj7:[0,4,7,11]};
+const CH_SUF={maj:'',min:'m',dom7:'7',m7:'m7',maj7:'maj7'};
+const Loop={ on:false, timer:null, ctx:null, prog:null, bpm:90, spb:.66, bar:0, next:0, cb:null,
+  midis(pc,type){ const b=40+((pc-4)%12+12)%12; return (CH_IV[type]||CH_IV.maj).map(i=>b+i); },
+  start(prog,bpm,cb){ this.stop(); const ctx=ac(); this.ctx=ctx; this.prog=prog; this.bpm=bpm; this.cb=cb;
+    this.spb=60/bpm; this.bar=0; this.next=ctx.currentTime+.15; this.on=true;
+    this.timer=setInterval(()=>this._sched(),40); this._sched(); },
+  _sched(){ if(!this.on) return; const ctx=this.ctx;
+    while(this.next < ctx.currentTime+.35){
+      const c=this.prog[this.bar%this.prog.length], ms=this.midis(c[0],c[1]), d=this.next-ctx.currentTime;
+      ms.forEach((m,k)=>pluck(m,this.spb*3.4,.30,d+k*.030));
+      ms.slice(1).forEach((m,k)=>pluck(m,this.spb*2.2,.17,d+2*this.spb+k*.026));
+      if(this.cb){ const b=this.bar; setTimeout(()=>{ if(this.on&&this.cb) this.cb(b%this.prog.length); },Math.max(0,d*1000)); }
+      this.next+=4*this.spb; this.bar++;
+    } },
+  stop(){ this.on=false; if(this.timer){ clearInterval(this.timer); this.timer=null; } this.cb=null; }
+};
+
+/* ---------------- l’écran Juke-box ---------------- */
+function openJukebox(fam){
+  ac(); markDay(); Loop.stop();
+  let cur=fam||null;
+  openOverlay('Le Juke-box', inner=>{
+    inner.appendChild(el('p','lead','Des vrais morceaux, rangés <b>par gamme</b>. Pour chacun : la tonalité, la gamme à poser, la grille jouée en boucle par l’app — et LA note à viser quand tel accord passe. C’est ici que les boîtes deviennent de la musique.'));
+    const st=el('div','card'); st.style.borderColor='var(--acc)';
+    st.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><b>${jbCount()}/${JUKE.length} morceaux validés</b><span style="color:var(--acc);font-weight:800">${Math.round(100*jbCount()/JUKE.length)}%</span></div>
+      <div class="bxbar"><i style="width:${Math.round(100*jbCount()/JUKE.length)}%"></i></div>
+      <p class="lead" style="margin:8px 0 0">Un morceau se valide quand tu as improvisé dessus <b>et que ça sonnait</b> — pas quand tu l’as lu.</p>`;
+    inner.appendChild(st);
+    const fr=el('div','toolrow');
+    const all=el('div','tag'+(cur?'':' on'),'Tout'); all.onclick=()=>{ Loop.stop(); openJukebox(null); }; fr.appendChild(all);
+    JB_FAMS.forEach(f=>{ const n=JUKE.filter(s=>SC_DEF[s.sc].fam===f).length; if(!n) return;
+      const t=el('div','tag'+(cur===f?' on':''),f+' · '+n); t.onclick=()=>{ Loop.stop(); openJukebox(f); }; fr.appendChild(t); });
+    inner.appendChild(fr);
+    const list=cur?JUKE.filter(s=>SC_DEF[s.sc].fam===cur):JUKE;
+    let lastFam=null;
+    list.forEach(s=>{ const f=SC_DEF[s.sc].fam;
+      if(f!==lastFam && !cur){ lastFam=f; const h=el('h1','page',f); h.style.cssText='font-size:15px;color:var(--acc);margin:16px 0 8px'; inner.appendChild(h); }
+      const c=el('div','catcard'); const d=jbDone(s.id);
+      c.innerHTML=`<div class="ico">${s.ic}</div><div class="t"><b>${d?'✓ ':''}${s.t}${s.star?' ⭐':''}</b>
+        <small>${s.a} · <b style="color:var(--acc)">${s.key}</b> · ${SC_DEF[s.sc].n} · ${'◆'.repeat(s.diff)}</small></div><div class="pc">›</div>`;
+      if(d) c.style.opacity='.7';
+      c.onclick=()=>openSong(s); inner.appendChild(c); });
+  });
+}
+function openSong(s){
+  ac(); markDay(); Loop.stop();
+  const SC=SC_DEF[s.sc], pcs=pcsFrom(s.root,SC.iv);
+  openOverlay(s.t, inner=>{
+    const h=el('div','card'); h.style.borderColor='var(--acc)';
+    h.innerHTML=`<b style="font-size:17px">${s.ic} ${s.t}</b><div style="color:var(--dim);font-size:13px;margin-top:2px">${s.a}</div>
+      <div class="statgrid" style="margin-top:10px">
+        <div class="stat"><b style="font-size:15px">${s.key}</b><small>tonalité</small></div>
+        <div class="stat"><b style="font-size:15px">${SC.n}</b><small>ta gamme</small></div>
+        <div class="stat"><b style="font-size:15px">${s.bpm}</b><small>BPM</small></div></div>`;
+    inner.appendChild(h);
+
+    /* la grille + la boucle */
+    const g=el('div','card'); g.appendChild(el('b',null,'🎛 La grille'+(s.exact?'':' <span style="color:var(--dim);font-weight:600;font-size:12px">(boucle d’entraînement dans la tonalité, pas la grille exacte du disque)</span>')));
+    const grid=el('div','g12'); grid.style.gridTemplateColumns='repeat('+Math.min(4,s.ch.length)+',1fr)';
+    const cellEls=s.ch.map((c,i)=>{ const e=el('div','cell'+(i?'':' iv'),NOTES[c[0]]+CH_SUF[c[1]]); grid.appendChild(e); return e; });
+    g.appendChild(grid);
+    const pb=el('button','btn','▶ Lancer la boucle');
+    pb.onclick=()=>{ if(Loop.on){ Loop.stop(); pb.textContent='▶ Lancer la boucle'; cellEls.forEach(e=>e.classList.remove('now')); }
+      else { Loop.start(s.ch,s.bpm,bar=>{ cellEls.forEach((e,i)=>e.classList.toggle('now',i===bar)); }); pb.textContent='■ Stop'; } };
+    g.appendChild(pb);
+    g.appendChild(el('p','lead','Lance la boucle, baisse le son de l’app si besoin, et joue par-dessus. Commence par <b>une seule note par mesure</b> — vraiment une seule.'));
+    inner.appendChild(g);
+
+    /* la gamme sur le manche */
+    const sc=el('div','card'); sc.appendChild(el('b',null,'🎸 Ta palette'));
+    const fb=buildFretboard((st,f)=>pluck(midiAt(st,f))); sc.appendChild(fb);
+    const aimPc=s.aim?s.aim[0]:null;
+    paintScale(fb,s.root,pcs,{labels:true,extra:aimPc!=null&&pcs.indexOf(aimPc)<0?aimPc:null,char:aimPc!=null&&pcs.indexOf(aimPc)>=0?aimPc:null});
+    const info=el('div','clogic');
+    info.innerHTML=`<div class="deg">${SC.n} de ${NOTES[s.root]}</div>Notes : ${pcs.map(p=>NOTES[p]).join(' · ')}.
+      En <b style="color:var(--bad)">rouge</b> la fondamentale${aimPc!=null?`, en <b style="color:var(--blue)">bleu</b> le <b>${NOTES[aimPc]}</b> — la note à viser`:''}.`;
+    sc.appendChild(info);
+    const pl=el('button','btn ghost','🔊 Écouter la gamme'); pl.onclick=()=>playScaleUp(s.root,SC.iv); sc.appendChild(pl);
+    if(s.sc==='pm'||s.sc==='aeo'){ const bb=el('button','btn ghost','🗺 Voir la boîte 1 dans cette tonalité');
+      bb.onclick=()=>{ Loop.stop(); openBoxLook(0,s.root); }; sc.appendChild(bb); }
+    inner.appendChild(sc);
+
+    if(s.aim) inner.appendChild(el('div','theory',`<h3>🎯 Quoi viser</h3><p>${s.aim[1]}</p>`));
+    inner.appendChild(el('div','theory',`<h3>Pourquoi ça marche</h3><p>${s.why}</p>${s.tune?`<div class="tip">🎚 ${s.tune}</div>`:''}`));
+
+    const v=el('div','card'); v.style.borderColor='var(--acc2)';
+    if(jbDone(s.id)){ v.innerHTML=`<b>✓ Morceau validé</b><p class="lead" style="margin:6px 0 0">Tu l’as joué. Reviens-y quand tu veux — un morceau validé reste un terrain d’échauffement.</p>`; }
+    else{
+      v.innerHTML=`<b>✅ Valider ce morceau</b><p class="lead" style="margin:6px 0 10px">À cocher uniquement si tu as improvisé dessus <b>et que ça sonnait</b>. Sinon, ça ne compte pas — l’app ne peut pas t’entendre, donc l’honnêteté, c’est toi.</p>`;
+      const b=el('button','btn','J’ai joué dessus, ça sonnait');
+      b.onclick=()=>{ if(!S.jb)S.jb={}; S.jb[s.id]=today(); S.xp+=25; save(); toast('🎧 Morceau validé · +25 XP'); Loop.stop(); openSong(s); };
+      v.appendChild(b);
+    }
+    inner.appendChild(v);
+    const back=el('button','btn ghost','← Le Juke-box'); back.onclick=()=>{ Loop.stop(); openJukebox(SC.fam); }; inner.appendChild(back);
+  });
+}
+
+/* ================================================================
+   L’ONGLET GAMMES — la maison des gammes : conquête, arcade, terrain
+   ================================================================ */
+function renderGammes(){
+  const m=document.getElementById('main'); m.innerHTML=''; markDay();
+  m.appendChild(el('h1','page','Gammes'));
+  m.appendChild(el('p','lead','Trois étages : tu <b>conquiers</b> les formes, tu les rends <b>réflexes</b>, tu les joues sur des <b>vrais morceaux</b>.'));
+  const pct=bxPct(), mm=bxMastered(), due=bxDueList().length;
+  const hero=el('div','card'); hero.style.borderColor='var(--acc)';
+  hero.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:17px">🗺 La Conquête</b><span style="color:var(--acc);font-weight:800">${mm}/5 · ${pct}%</span></div>
+    <div class="bxbar"><i style="width:${pct}%"></i></div>
+    <p class="lead" style="margin:8px 0 0">${due?('🔁 <b style="color:var(--acc)">'+due+' boîte(s) à revoir aujourd’hui.</b>'):(mm>=5?'Les 5 boîtes sont à toi. Entretien + terrain.':'Les 5 boîtes de la penta mineure, une par une, 5 paliers chacune.')}</p>`;
+  const hb=el('button','btn','Ouvrir la Conquête'); hb.onclick=()=>openConquete(); hero.appendChild(hb);
+  m.appendChild(hero);
+  const items=[
+    ['🎯','Le Duel — 60 s, combo, 3 vies','L’arcade des degrés : l’app te jette une boîte et une tonalité, tu touches la note demandée. Record : '+(S.duelBest||0)+'.',()=>openDuel()],
+    ['🎧','Le Juke-box — '+jbCount()+'/'+JUKE.length+' morceaux','Des vrais morceaux rangés par gamme, la grille jouée en boucle, et la note à viser. De Lonely Day à Hotel California.',()=>openJukebox()],
+    ['🎸','La penta & les notes à viser','Le cours : les 5 notes, la ♭3 → 3, la blue note.',()=>openPentaModule()],
+    ['🪜','La gamme majeure en positions','Les 5 positions = ta penta + 2 notes.',()=>openMajorPositions()],
+    ['🎭','Les 7 modes, par ordre','Une couleur, une note caractéristique. Comparées sur la même fondamentale.',()=>openModesModule()],
+    ['🧭','La Boussole','Perdu sur un morceau ? Trouve la tonique, puis la palette.',()=>openBoussole()],
+    ['🎼','De la chanson au mode','« Ma chanson est en Mi mineur » → quelle gamme majeure, quelle position.',()=>openSongMode()],
+  ];
+  items.forEach(it=>{ const c=el('div','catcard',`<div class="ico">${it[0]}</div><div class="t"><b>${it[1]}</b><small>${it[2]}</small></div><div class="pc">›</div>`); c.onclick=it[3]; m.appendChild(c); });
+}
+
+/* ================================================================
    AUJOURD’HUI — la séance guidée du jour
    ================================================================ */
 function sessToday(){ const t=today(); if(!S.sess||S.sess.date!==t){ S.sess={date:t,done:[]}; save(); } return S.sess; }
@@ -2036,6 +2778,8 @@ function renderJour(){
   const blocks=[
     {id:'cours', ic:'🎓', t:'Le mini-cours du jour', d:T.n, open:()=>openMiniLesson(T)},
     {id:'sprint', ic:'⏱', t:'Le sprint des cordes', d:'Corde de '+STR_NAME[rec]+' — trouve chaque note, vite.', open:()=>openStringSprint()},
+    {id:'gammes', ic:'🗺', t:'La Conquête des gammes', d:(bxDueList().length?bxDueList().length+' boîte(s) à revoir — l’entretien d’abord.':BOXES[bxNext()].n+' · palier « '+BX_MODEN[Math.min(4,bx(bxNext()).lvl)]+' »'), open:()=>openConquete()},
+    {id:'juke', ic:'🎧', t:'Jouer sur un vrai morceau', d:'Le Juke-box — '+jbCount()+'/'+JUKE.length+' validés. Lance la boucle, improvise 5 minutes.', open:()=>openJukebox()},
     {id:'cartes', ic:'🔁', t:'Tes cartes du jour', d:dueCards?(dueCards+' carte(s) à réviser'):'Rien de dû — prends de l’avance.', open:()=>goTab('cartes')},
     {id:'impro', ic:'🎤', t:'Un pas vers l’impro rapide', d:'Le hub : lick du jour, Boussole, séquences.', open:()=>openImproHub()},
   ];
@@ -2053,7 +2797,7 @@ function renderJour(){
   const qt=el('div','card'); qt.innerHTML='<b>Outils rapides</b>';
   const row=el('div','row3'); row.style.marginTop='10px';
   const bm=el('button','btn ghost','🥁 Métronome'); bm.onclick=()=>openMetronome();
-  const bb=el('button','btn ghost','🧭 Boussole'); bb.onclick=()=>openBoussole();
+  const bb=el('button','btn ghost','🎯 Le Duel'); bb.onclick=()=>openDuel();
   const bp=el('button','btn ghost','📈 Profil'); bp.onclick=()=>goTab('profil');
   row.append(bm,bb,bp); qt.appendChild(row); m.appendChild(qt);
 }
@@ -2087,19 +2831,22 @@ function renderProfil(){
      <div class="stat"><b>${S.quizBest||0}/10</b><small>nommer cases</small></div>
      <div class="stat"><b>${bestFind()}</b><small>trouve tout</small></div>
      <div class="stat"><b>${S.powBest||0}/8</b><small>power chords</small></div>
-     <div class="stat"><b>${bpmVals.length}</b><small>exos chronés</small></div>`));
+     <div class="stat"><b>${S.duelBest||0}</b><small>record du Duel</small></div>`));
   m.appendChild(rc);
   const triK=tKnown(), triT=TRIADS.length; let chK=0, chT=0; CHORD_CATS.forEach(k=>{ chK+=cKnown(k.id); chT+=chordsIn(k.id).length; });
   function bar(label,val,tot){ const p=tot?Math.round(val/tot*100):0; return `<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>${label}</span><span style="color:var(--acc)">${val}/${tot}</span></div><div style="background:var(--bg3);border-radius:8px;height:8px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${p}%;background:var(--acc)"></div></div></div>`; }
-  const mc=el('div','card'); mc.innerHTML='<b>Ta maîtrise</b>'+bar('Triades (leurs notes)',triK,triT)+bar('Formes d’accords',chK,chT)+bar('Cordes du manche',cleanStrings,6);
+  const mc=el('div','card'); mc.innerHTML='<b>Ta maîtrise</b>'+bar('Triades (leurs notes)',triK,triT)+bar('Formes d’accords',chK,chT)+bar('Cordes du manche',cleanStrings,6)+bar('Boîtes de gamme conquises',bxMastered(),5)+bar('Morceaux joués (Juke-box)',jbCount(),JUKE.length);
   m.appendChild(mc);
   const nb=el('div','card'); nb.style.borderColor='var(--acc2)';
   const dueC=cDueTotal(), dueT=tDue().length; let battle;
-  if(dueT>0) battle={t:'Réviser tes triades',d:dueT+' triade(s) dues — rafraîchis avant d’oublier.',go:()=>goTab('cartes')};
+  if(bxDueList().length) battle={t:'Entretien des gammes',d:bxDueList().length+' boîte(s) à revoir — si tu les rates, elles redescendent.',go:()=>openConquete()};
+  else if(dueT>0) battle={t:'Réviser tes triades',d:dueT+' triade(s) dues — rafraîchis avant d’oublier.',go:()=>goTab('cartes')};
   else if(dueC>0) battle={t:'Réviser tes accords',d:dueC+' accord(s) dus.',go:()=>goTab('cartes')};
   else if(cleanStrings<6) battle={t:'Le sprint des cordes',d:'Il te reste des cordes à passer sans faute.',go:()=>openStringSprint()};
   else if((S.quizBest||0)<8) battle={t:'Nommer les cases',d:'Tu es à '+(S.quizBest||0)+'/10 — vise 8+.',go:()=>openNameQuiz()};
   else if(bpmVals.length===0) battle={t:'Un exo au métronome',d:'Chronomètre-toi : pose ton premier record de BPM.',go:()=>openSpeed()};
+  else if(bxMastered()<5) battle={t:'La Conquête des gammes',d:BOXES[bxNext()].n+' t’attend — palier « '+BX_MODEN[Math.min(4,bx(bxNext()).lvl)]+' ».',go:()=>openConquete()};
+  else if(jbCount()<JUKE.length) battle={t:'Le Juke-box',d:(JUKE.length-jbCount())+' morceau(x) pas encore joué(s). Les gammes, c’est pour ça.',go:()=>openJukebox()};
   else battle={t:'Improviser vite comme un pro',d:'Les fondations sont là. Va jouer.',go:()=>openFastImpro()};
   nb.innerHTML=`<b>⚔️ Ton prochain combat</b><p class="lead" style="margin:6px 0 10px">${battle.t} — ${battle.d}</p>`;
   const gb=el('button','btn','Y aller'); gb.onclick=battle.go; nb.appendChild(gb);
@@ -2109,14 +2856,14 @@ function renderProfil(){
 /* ---------------- overlay + nav ---------------- */
 const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
 function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
-function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } metroStop(); render(); }
+function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } if(_duelT){ clearInterval(_duelT); _duelT=null; } if(typeof Loop!=='undefined') Loop.stop(); metroStop(); render(); }
 let tab='jour';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; metroStop(); render(); });
 function goTab(t){ tab=t; document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.tab===t)); metroStop(); render(); }
 document.getElementById('badge').onclick=()=>goTab('profil');
-function render(){ const due=cDueTotal()+tDue().length; document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
+function render(){ const due=cDueTotal()+tDue().length+bxDueList().length; document.getElementById('badge').textContent=(S.streak?'🔥 '+S.streak+'  ':'')+(due?('🔁 '+due):'🎸');
   document.getElementById('badge').style.cursor='pointer';
-  if(tab==='jour')renderJour(); else if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='theorie')renderTheorie(); else if(tab==='profil')renderProfil(); else renderSuite(); }
+  if(tab==='jour')renderJour(); else if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='gammes')renderGammes(); else if(tab==='theorie')renderTheorie(); else if(tab==='profil')renderProfil(); else renderSuite(); }
 render();
 if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
