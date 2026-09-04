@@ -3078,8 +3078,12 @@ function renderJour(){
 
   /* 4. TROIS CHOSES, PAS PLUS — et la première se joue */
   const T=miniToday(), dueCards=cDueTotal()+tDue().length, dueBox=bxDueList().length;
+  const cs=soloCur();
+  const bloc1 = (cs && !repDone(cs.id))
+    ? {id:'solo', ic:'🎼', t:'Ton solo : '+cs.t, d:'Marche '+Math.min(5,repCount(cs.id)+1)+'/5 — '+SOL_STEPS[Math.min(4,repCount(cs.id))].n+' · '+cs.a+' · '+cs.key, open:()=>openSolo(cs)}
+    : {id:'solo', ic:'🎼', t:(repJoue()?'Choisis ton prochain solo':'Choisis ton premier solo'), d:'Le répertoire — '+repJoue()+'/'+SOLOS.length+' sus. Un seul à la fois, jusqu’au bout.', open:()=>openRepertoire()};
   const blocks=[
-    {id:'juke', ic:'🎧', t:'Jouer sur un morceau', d:'Le Juke-box — la grille tourne, tu improvises. '+jbCount()+'/'+JUKE.length+' validés.', open:()=>openJukebox()},
+    bloc1,
     (dueBox
       ? {id:'gammes', ic:'🗺', t:'Entretien des gammes', d:dueBox+' boîte(s) à revoir — si tu les rates, elles redescendent.', open:()=>openConquete()}
       : {id:'gammes', ic:'🗺', t:'La Conquête des gammes', d:BOXES[bxNext()].n+' · palier « '+BX_MODEN[Math.min(4,bx(bxNext()).lvl)]+' »', open:()=>openConquete()}),
@@ -3118,6 +3122,7 @@ function renderBiblio(){
   m.appendChild(el('p','lead','Tout ce qui n’est pas quotidien. On vient ici <b>quand on cherche quelque chose</b>, pas tous les jours.'));
   const groups=[
     ['🎸 Jouer', [
+      ['🎼','Le répertoire de solos','15 solos gradués, 5 marches chacun — ce que tu sais jouer',()=>openRepertoire()],
       ['🎧','Le Juke-box','30 morceaux par gamme, la grille en boucle',()=>openJukebox()],
       ['🎸','Licks, riffs & lick du jour','Des phrases toutes faites, en tablature + au son',()=>openLicks()],
       ['🕷️','Technique & déliateurs','L’araignée, l’alternance, le legato',()=>openTechnique()],
@@ -3150,6 +3155,320 @@ function renderBiblio(){
   });
 }
 
+
+/* ================================================================
+   LE RÉPERTOIRE — des solos à jouer, un à la fois, jusqu’au bout.
+   « Je progresse » n’est pas un sentiment : c’est une LISTE de solos
+   que tu sais jouer aujourd’hui et que tu ne savais pas hier.
+   Chaque solo franchit 5 marches (écouter → décortiquer → au ralenti
+   → au tempo → enregistré) et finit dans ton répertoire.
+   ⚠️ Aucune tablature de solo n’est recopiée ici : on donne la CARTE
+   (tonalité, position, structure phrase par phrase, gestes, pièges)
+   et une ÉTUDE ORIGINALE écrite pour te faire travailler exactement
+   le geste du solo. La copie ne t’apprendrait rien de plus, et ne
+   m’appartient pas.
+   🖐 Chaque solo est noté « aux doigts » : tu joues sans médiator,
+   ça change tout — certains solos deviennent plus faciles pour toi
+   que pour un joueur au médiator, d’autres deviennent des murs.
+   ================================================================ */
+const SOL_STEPS=[
+ {k:'ecoute', n:'Écouter', d:'3 fois de suite, sans guitare, en suivant la structure ci-dessous. Tu dois pouvoir <b>chanter</b> la première phrase avant de la jouer.'},
+ {k:'carte',  n:'Décortiquer', d:'Repère la tonalité et la position sur le manche, joue la gamme dans la boîte, puis l’étude très lentement.'},
+ {k:'lent',   n:'Au ralenti', d:'L’étude au métronome, à un tempo où c’est PROPRE. Trois fois sans faute, puis +5 BPM.'},
+ {k:'tempo',  n:'Au tempo', d:'Le tempo cible atteint, proprement, trois fois de suite.'},
+ {k:'prise',  n:'Enregistré', d:'45 s au micro. C’est la marche qui compte : tant que ce n’est pas enregistré, tu ne sais pas vraiment où tu en es.'}
+];
+const SOL_PAL=['','① Le socle — mélodique, une position, aucune vitesse',
+  '② Le blues-rock — bends, vibrato, phrasé','③ Le long cours — plusieurs positions, endurance','④ Le sommet — la vitesse, plus tard'];
+const DOIGTS=['','⚠️ dur sans médiator','🖐 jouable aux doigts','🖐 idéal aux doigts'];
+const SOLOS=[
+ /* ---------- ① LE SOCLE ---------- */
+ {id:'s_caya', ic:'🌊', t:'Come As You Are', a:'Nirvana', pal:1, root:6, key:'Fa♯ mineur', sc:'pm', doigts:3, bpm:120, dur:'~0:25',
+  pourquoi:'Le premier solo à savoir jouer en entier, pour une raison précise : <b>ce n’est pas un solo, c’est la mélodie du chant</b>. Quatre notes, une position, zéro technique. Tu l’as déjà dans l’oreille depuis dix ans — donc tu entendras immédiatement quand c’est juste.',
+  structure:['Le solo <b>double la voix</b> du couplet, note pour note : même rythme, mêmes hauteurs.',
+    'Tout tient dans la <b>boîte 1</b> de Fa♯ mineur, sur deux ou trois cordes.',
+    'Rien n’est plié, rien n’est rapide : c’est un <b>test de justesse et de son</b>, pas de doigts.'],
+  gestes:['jouer lentement sans accélérer','tenir une note jusqu’au bout','pas de vibrato — la nudité assumée'],
+  piege:'Tu vas vouloir « l’enjoliver ». Ne le fais pas. Ce solo ne pardonne rien parce qu’il n’y a rien derrière quoi se cacher — c’est exactement pour ça qu’il est le n°1.',
+  accord:'Kurt accorde un TON plus bas (Ré Sol Do Fa La Ré) : sur le disque ça sonne en Mi mineur. En accordage standard, joue-le en Fa♯ mineur.',
+  etude:{n:'Étude — la descente chantée', key:'Fa♯ mineur · boîte 1', how:'pouce sur les graves, index/majeur qui alternent sur les aiguës.',
+   seq:[{s:3,f:4},{s:3,f:2},{s:2,f:4},{s:2,f:2},{s:1,f:4},{s:1,f:2},{s:0,f:5},{s:0,f:2,t:'~'}],
+   why:'Une descente pure de Fa♯ mineur, une note par temps. Le seul objectif : que les huit notes aient <b>exactement la même durée et le même volume</b>. C’est le socle de tout le reste.'}},
+
+ {id:'s_slts', ic:'💥', t:'Smells Like Teen Spirit', a:'Nirvana', pal:1, root:5, key:'Fa mineur', sc:'pm', doigts:3, bpm:117, dur:'~0:30',
+  pourquoi:'Le même principe que Come As You Are, mais avec du <b>rythme</b> : le solo répète un motif court, encore et encore. C’est ta première leçon de « <b>une idée répétée bat dix idées</b> ».',
+  structure:['Là encore, la ligne suit la mélodie du chant.',
+    'Un <b>motif de 2-3 notes</b> qui revient, décalé, presque obstiné.',
+    'Position basse de Fa mineur (fondamentale case 1 sur le Mi grave).'],
+  gestes:['répéter sans se lasser','garder le tempo malgré la distorsion','attaque régulière'],
+  piege:'La distorsion masque les notes sales. Travaille-le <b>en son clair</b> : si c’est propre en clair, c’est propre partout.',
+  etude:{n:'Étude — le motif obstiné', key:'Fa mineur · position basse', how:'i-m-i-m, jamais deux fois le même doigt.',
+   seq:[{s:2,f:3},{s:2,f:1},{s:3,f:1},{s:2,f:3},{s:2,f:1},{s:3,f:3,t:'~'}],
+   why:'Deux notes qui reviennent, une troisième qui change la fin. Joue-le <b>huit fois d’affilée sans varier</b> : la difficulté n’est pas technique, elle est mentale.'}},
+
+ {id:'s_stone', ic:'🪨', t:'Like a Stone', a:'Audioslave', pal:1, root:9, key:'La mineur', sc:'pm', doigts:3, bpm:100, dur:'~0:40',
+  pourquoi:'Ton premier <b>vrai</b> solo : lent, mélodique, en La mineur (que des touches faciles), et il te force à faire la seule chose qui distingue un guitariste d’un débutant — <b>tenir une note et la faire vibrer</b>.',
+  structure:['Phrases courtes, séparées par de vrais <b>silences</b>.',
+    'Chaque phrase se termine sur une note <b>tenue et vibrée</b>, souvent la fondamentale ou la ♭3.',
+    'Reste dans la boîte 1 de La mineur (case 5) presque tout du long.'],
+  gestes:['vibrato lent et large','bend d’un ton, tenu','laisser sonner — ne pas remplir'],
+  piege:'Le silence. Tu vas vouloir jouer dans les trous : c’est exactement ce qu’il ne faut pas. Compte les temps pendant les silences, ne les remplis pas.',
+  etude:{n:'Étude — bend, tenue, vibrato', key:'La mineur · boîte 1', how:'le bend se pousse avec l’annulaire, majeur et index derrière pour aider.',
+   seq:[{s:3,f:7,t:'b'},{s:3,f:5},{s:4,f:5,t:'~'},{s:4,f:8},{s:3,f:7,t:'~'}],
+   why:'Un bend d’un ton, un retour, puis <b>deux notes tenues avec vibrato</b>. Vise 5 secondes de vibrato régulier sur la dernière : c’est plus dur que ça n’en a l’air, et c’est ce qui s’entend au premier coup d’oreille.'}},
+
+ {id:'s_change', ic:'🪰', t:'Change (In the House of Flies)', a:'Deftones', pal:1, root:0, key:'Do mineur', sc:'pm', doigts:3, bpm:96, dur:'~0:20',
+  pourquoi:'Presque pas de notes — et c’est le sujet. Ce morceau t’apprend le <b>son</b> : la note tenue, la dynamique, le contraste doux/fort. C’est ton terrain, celui que tu écoutes.',
+  structure:['Des notes <b>longues</b> par-dessus le mur Dom–Fam.',
+    'La ligne monte lentement, sans jamais se presser.',
+    'Tout se joue à la main droite : attaque douce sur les couplets, franche sur les refrains.'],
+  gestes:['sustain','dynamique (jouer doux PUIS fort)','vibrato très lent'],
+  piege:'Croire qu’il n’y a « rien à jouer ». Tenir trois notes justes pendant 20 secondes avec un son qui ne s’effondre pas est plus difficile que douze notes rapides.',
+  accord:'Accordage bas (drop C). En standard, joue-le en Mi mineur : mêmes rapports, mêmes formes.',
+  etude:{n:'Étude — trois notes, vingt secondes', key:'Do mineur',
+   seq:[{s:2,f:10,t:'~'},{s:3,f:8,t:'~'},{s:2,f:8,t:'~'}],
+   why:'Trois notes. Fais-les durer <b>chacune 6 secondes</b>, avec un vibrato régulier, en jouant d’abord très doux puis très fort. Chronomètre-toi : c’est un exercice de patience, pas de doigts.'}},
+
+ /* ---------- ② LE BLUES-ROCK ---------- */
+ {id:'s_thrill', ic:'👑', t:'The Thrill Is Gone', a:'B.B. King', pal:2, root:11, key:'Si mineur', sc:'pm', doigts:3, bpm:80, dur:'~0:50',
+  pourquoi:'L’école du <b>vibrato</b>. B.B. joue trois notes là où d’autres en jouent trente, et on le reconnaît en une seconde. Aux doigts, tu es avantagé : le vibrato « papillon » se contrôle mieux sans médiator.',
+  structure:['Appel / réponse : une phrase courte, un silence, une phrase qui répond.',
+    'Presque tout se joue dans une seule position (« la boîte de B.B. »), autour de la case 7 en Si mineur.',
+    'Chaque phrase finit sur une note <b>tenue</b> avec un vibrato large et régulier.'],
+  gestes:['vibrato large','bend d’un demi-ton juste','jouer DERRIÈRE le temps'],
+  piege:'Jouer trop tôt. Le blues se joue en retard sur le temps — laisse le clic passer avant d’attaquer.',
+  etude:{n:'Étude — la boîte de B.B.', key:'Si mineur · case 7', how:'annulaire pour le bend, poignet qui tourne (pas le doigt) pour le vibrato.',
+   seq:[{s:4,f:10,t:'b'},{s:5,f:7,t:'~'},{s:4,f:12},{s:4,f:10},{s:3,f:9,t:'~'}],
+   why:'Le geste complet : bend d’un ton, note haute vibrée, redescente, résolution vibrée. Cinq notes, une éternité pour les faire sonner comme lui.'}},
+
+ {id:'s_brick', ic:'🧱', t:'Another Brick in the Wall pt.2', a:'Pink Floyd', pal:2, root:2, key:'Ré mineur', sc:'pm', doigts:3, bpm:104, dur:'~1:00',
+  pourquoi:'Le solo le plus « chantant » du rock, et le meilleur professeur de <b>bend juste</b> qui existe. Gilmour plie des notes lentement, longtemps, et elles arrivent <b>exactement</b> sur la hauteur visée.',
+  structure:['Des phrases longues, très peu de notes, beaucoup d’air.',
+    'Des <b>bends tenus</b> qui montent lentement puis restent en haut.',
+    'Le solo se promène entre deux positions de Ré mineur sans jamais courir.'],
+  gestes:['bend lent et JUSTE','sustain','glissés entre positions'],
+  piege:'Le bend approximatif. Vérifie chaque bend en jouant d’abord la note visée : ton oreille doit refuser un demi-ton en dessous.',
+  etude:{n:'Étude — le bend qui vise', key:'Ré mineur · case 10', how:'pousse vers le haut avec trois doigts, écoute jusqu’à ce que la hauteur soit exacte.',
+   seq:[{s:3,f:12,t:'b'},{s:3,f:10},{s:4,f:10,t:'~'},{s:3,f:12,t:'b'},{s:4,f:13,t:'~'}],
+   why:'Deux fois le même bend, encadré de notes tenues. Joue d’abord la note d’arrivée seule (case 14 sur la corde de Sol) pour la mémoriser, puis plie jusqu’à elle. <b>Le bend n’est pas un geste, c’est une écoute.</b>'}},
+
+ {id:'s_black', ic:'⚫', t:'Back in Black', a:'AC/DC', pal:2, root:4, key:'Mi (penta + tierce majeure)', sc:'pm', doigts:2, bpm:92, dur:'~0:50',
+  pourquoi:'Le solo rock’n’roll type : penta mineure jouée sur des accords MAJEURS, avec le frottement ♭3 → 3 qui fait tout le sel. C’est le geste que tu as découvert avec ta tierce majeure — ici il est partout.',
+  extra:[8,'la tierce MAJEURE (Sol♯), empruntée : elle n’est PAS dans la penta mineure, et c’est exactement ce qui fait le son AC/DC'],
+  structure:['Des rafales courtes, séparées, très rythmiques.',
+    'Le motif ♭3 → 3 (Sol → Sol♯) revient sans arrêt, en glissé ou en bend.',
+    'Deux positions : la basse (case 0-3) et la haute (case 12).'],
+  gestes:['glissé ♭3 → 3','alternance rapide','couper net les fins de phrase'],
+  piege:'Aux doigts, les rafales rapides sur une même corde sont ton point faible. Travaille-les en <b>alternance stricte index-majeur</b>, sinon tu buteras à 100 BPM.',
+  etude:{n:'Étude — le frottement ♭3 → 3', key:'Mi · position basse',
+   seq:[{s:2,f:5},{s:3,f:0},{s:3,f:1,t:'/'},{s:3,f:2},{s:4,f:0,t:'~'}],
+   why:'Sol, puis Sol glissé vers Sol♯, puis La, puis Si. Ce petit glissé d’un demi-ton, c’est <b>tout le rock</b>. Fais-le sonner sale et décidé, jamais timide.'}},
+
+ {id:'s_stair', ic:'🪜', t:'Stairway to Heaven', a:'Led Zeppelin', pal:2, root:9, key:'La mineur', sc:'pm', doigts:2, bpm:82, dur:'~1:10',
+  pourquoi:'Le solo <b>modèle</b> : il tient presque entier dans la boîte 1 de La mineur, il est construit sur des motifs répétés, et il monte en intensité du début à la fin. Si tu ne devais en apprendre qu’un pour comprendre comment un solo se CONSTRUIT, c’est celui-là.',
+  structure:['Il commence <b>bas et lent</b>, presque timide.',
+    'Un motif de trois notes revient, décalé à chaque fois : c’est la colonne vertébrale.',
+    'L’intensité monte par paliers, les notes se resserrent, et la fin dévale en cascade.'],
+  gestes:['motifs répétés','pull-offs en cascade','construire une intensité'],
+  piege:'Attaquer la fin trop tôt. Ce solo n’est bon que si le début est retenu — enregistre-toi et écoute si tu as la patience de commencer doucement.',
+  etude:{n:'Étude — le motif qui se décale', key:'La mineur · boîte 1',
+   seq:[{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:4,f:8},{s:4,f:5},{s:3,f:7},{s:3,f:5},{s:2,f:7,t:'~'}],
+   why:'Trois notes, répétées, puis une résolution qui change tout. C’est <b>la</b> recette : l’oreille adore ce qui revient, et n’écoute vraiment que lorsque ça change enfin.'}},
+
+ {id:'s_joe', ic:'🔫', t:'Hey Joe', a:'Jimi Hendrix', pal:2, root:4, key:'Mi (blues)', sc:'blu', doigts:3, bpm:80, dur:'~0:45',
+  pourquoi:'Le solo pour apprendre le <b>groove</b> et la blue note. Lent, en Mi, sur une grille qui descend le cercle des quintes — une seule gamme tient sur les cinq accords. Hendrix jouait beaucoup avec le pouce : aux doigts, tu es dans sa logique.',
+  structure:['Des phrases décontractées, très en arrière du temps.',
+    'La <b>♭5</b> (Si♭) traverse les phrases sans jamais être tenue.',
+    'Beaucoup de doubles-cordes et de notes qu’on laisse traîner.'],
+  gestes:['blue note en passage','jouer en retard','doubles-cordes'],
+  piege:'Jouer trop propre. Ce solo demande de la crasse : notes à moitié étouffées, attaques inégales. Le propre viendra après.',
+  etude:{n:'Étude — la note sale', key:'Mi blues · position ouverte',
+   seq:[{s:1,f:0},{s:1,f:1,t:'/'},{s:1,f:2},{s:2,f:0},{s:2,f:2},{s:3,f:0,t:'~'}],
+   why:'La, Si♭ <b>traversé</b>, Si, Ré, Mi, Sol. Le Si♭ ne doit jamais durer : on passe dessus. Une blue note tenue sonne fausse — c’est la seule règle.'}},
+
+ /* ---------- ③ LE LONG COURS ---------- */
+ {id:'s_sultans', ic:'🎩', t:'Sultans of Swing', a:'Dire Straits', pal:3, root:2, key:'Ré mineur', sc:'pm', doigts:3, bpm:148, dur:'~1:30', star:1,
+  pourquoi:'⭐ <b>Le solo à viser si tu joues aux doigts.</b> Mark Knopfler ne touche pas un médiator : tout ce son, ces arpèges qui claquent, cette précision — c’est de la main nue. Ce n’est pas un handicap contourné, c’est <b>ta technique</b> portée à son sommet.',
+  structure:['Deux solos : un court au milieu, un long à la fin.',
+    'Beaucoup d’<b>arpèges</b> (les notes de l’accord, pas la gamme) : c’est ce qui donne ce côté « ça parle ».',
+    'Les cordes sont pincées et étouffées avec la paume — le son est sec, jamais flou.',
+    'Il descend de la position haute vers la basse par glissades.'],
+  gestes:['arpèges pouce-index-majeur','étouffé de paume','précision rythmique'],
+  piege:'Vouloir tout jouer à la vitesse du disque. Ce solo se construit <b>arpège par arpège</b> à 60 BPM. Six semaines, pas six jours.',
+  etude:{n:'Étude — l’arpège aux doigts', key:'Ré mineur · arpège', how:'p (pouce) sur la corde de La, i et m sur Ré et Sol. Le pouce donne le temps, les doigts remplissent.',
+   seq:[{s:1,f:5},{s:2,f:3},{s:3,f:2},{s:4,f:3},{s:3,f:2},{s:2,f:3,t:'~'}],
+   why:'Ré, Fa, La, Ré, La, Fa : l’accord de Ré mineur, joué note à note. C’est <b>la</b> brique de Knopfler. Quand cet arpège coule à 100 BPM, tu peux commencer le solo.'}},
+
+ {id:'s_numb', ic:'💊', t:'Comfortably Numb (2ᵉ solo)', a:'Pink Floyd', pal:3, root:11, key:'Si mineur', sc:'pm', doigts:3, bpm:63, dur:'~2:00',
+  pourquoi:'Le sommet du <b>phrasé</b>. Deux minutes, peu de notes, et pas une seule de trop. C’est le solo qu’on met dix ans à jouer « bien » alors qu’on peut le jouer « juste » en un mois. Enregistre-le tous les six mois : c’est ton mètre-étalon à vie.',
+  structure:['Il commence sur une note tenue, très haut, qui s’installe.',
+    'Chaque phrase <b>respire</b> : joue, silence, joue.',
+    'Des bends longs qui montent et redescendent lentement.',
+    'La fin tourne en boucle sur un motif de plus en plus intense, sans jamais devenir rapide.'],
+  gestes:['bend d’un ton et demi','vibrato très lent','endurance sur 2 minutes'],
+  piege:'L’endurance. Tu tiendras 40 secondes puis tu te crisperas. Travaille-le <b>par sections de 15 secondes</b>, jamais en entier au début — et arrête au premier signe de tension dans l’avant-bras.',
+  etude:{n:'Étude — la phrase qui respire', key:'Si mineur · case 7',
+   seq:[{s:4,f:10,t:'b'},{s:5,f:7,t:'~'},{s:4,f:12},{s:4,f:10},{s:3,f:9},{s:3,f:7,t:'~'}],
+   why:'Six notes sur quatre temps entiers. Entre chaque note, <b>compte un temps de silence</b>. L’exercice n’est pas de jouer : c’est de ne pas jouer.'}},
+
+ {id:'s_hotel', ic:'🏨', t:'Hotel California (l’outro)', a:'Eagles', pal:3, root:11, key:'Si mineur', sc:'har', doigts:2, bpm:74, dur:'~2:20',
+  pourquoi:'Le solo <b>long</b> à mettre au programme quand les précédents sont solides : huit accords qui tournent, deux guitares qui se répondent puis s’harmonisent, et une fin en arpèges qu’on reconnaît entre mille.',
+  structure:['Trois parties : appel-réponse entre deux guitares, puis harmonisation en tierces, puis l’arpège final en boucle.',
+    'La grille de huit accords tourne sans arrêt — c’est <b>elle</b> qu’il faut avoir dans l’oreille avant de jouer une note.',
+    'Sur le Fa♯ MAJEUR, une note étrangère à Si mineur apparaît (La♯) : c’est la couleur du morceau.'],
+  gestes:['arpèges rapides','tenir une forme longtemps','viser la note du mineur harmonique'],
+  piege:'La longueur. Découpe en trois chantiers séparés, et ne les colle qu’à la fin.',
+  etude:{n:'Étude — l’arpège de Si mineur', key:'Si mineur · arpège',
+   seq:[{s:1,f:2},{s:2,f:4},{s:3,f:4},{s:4,f:3},{s:3,f:4},{s:2,f:4,t:'~'}],
+   why:'Si, Fa♯, Si, Ré : l’accord, en montant et en descendant. Tout l’outro est bâti là-dessus. Fais-le couler comme de l’eau avant de penser au solo.'}},
+
+ {id:'s_nem', ic:'🖤', t:'Nothing Else Matters', a:'Metallica', pal:3, root:4, key:'Mi mineur', sc:'aeo', doigts:2, bpm:70, dur:'~1:10',
+  pourquoi:'Le pont entre le mélodique et la vitesse : il commence en chantant et finit en courant. C’est ton test pour savoir si tu es prêt pour le palier 4.',
+  structure:['Première moitié : mélodique, tenue, presque vocale.',
+    'Puis un changement de vitesse net — des traits rapides en Mi mineur.',
+    'Retour au calme pour finir.'],
+  gestes:['contraste lent/rapide','legato','endurance'],
+  piege:'La partie rapide, aux doigts, demande une alternance i-m irréprochable. Si elle bafouille, ce n’est pas la vitesse le problème : c’est l’alternance. Reviens aux déliateurs.',
+  etude:{n:'Étude — l’arc mélodique', key:'Mi mineur · position ouverte',
+   seq:[{s:4,f:0},{s:4,f:3},{s:5,f:0},{s:5,f:3},{s:5,f:0},{s:4,f:3},{s:4,f:0,t:'~'}],
+   why:'Une montée, un sommet, une descente : la forme la plus simple d’une phrase qui « raconte ». Toutes les mélodies de ce solo sont des variantes de cet arc.'}},
+
+ /* ---------- ④ LE SOMMET ---------- */
+ {id:'s_scom', ic:'🌹', t:'Sweet Child o’ Mine (solo final)', a:'Guns N’ Roses', pal:4, root:4, key:'Mi mineur', sc:'pm', doigts:1, bpm:126, dur:'~1:30',
+  pourquoi:'Le solo « récompense » : long, rapide, spectaculaire — et honnêtement <b>dur sans médiator</b>. À garder comme objectif de fin d’année, pas comme travail du mois.',
+  structure:['Il démarre par une phrase mélodique lente, presque une deuxième mélodie de chant.',
+    'Puis des séquences rapides par petits groupes de notes qui se chevauchent.',
+    'Beaucoup de mouvement entre positions, sur toute la longueur du manche.'],
+  gestes:['séquences par groupes','vitesse d’alternance','changements de position'],
+  piege:'Aux doigts, les traits rapides sur une seule corde sont ton mur. Solution : <b>réarrange</b> les phrases pour qu’elles traversent plusieurs cordes — c’est ce que font les joueurs classiques, et ça sonne pareil.',
+  etude:{n:'Étude — la séquence par paires', key:'Mi mineur · case 12', how:'une note par corde autant que possible : c’est ce qui rend la vitesse accessible aux doigts.',
+   seq:[{s:4,f:15},{s:4,f:12},{s:3,f:14},{s:4,f:12},{s:3,f:14},{s:3,f:12},{s:2,f:14},{s:3,f:12}],
+   why:'Le secret des traits rapides : on ne joue pas note à note, on joue de <b>petits groupes qui se chevauchent</b>. Lentement d’abord — à 60 BPM, puis +5 seulement quand c’est parfait trois fois.'}},
+
+ {id:'s_voodoo', ic:'🌩', t:'Voodoo Child (Slight Return)', a:'Jimi Hendrix', pal:4, root:4, key:'Mi (penta)', sc:'pm', doigts:2, bpm:105, dur:'~2:00',
+  pourquoi:'Moins une question de notes qu’une question d’<b>attitude</b>. Tout est en penta mineure de Mi, rien n’est techniquement hors de portée — mais il faut oser jouer sale, fort, et laisser des trous. C’est le solo qui te sortira de la sagesse.',
+  structure:['Des attaques violentes, des notes qui partent en vrille.',
+    'Beaucoup de doubles-cordes et de notes étouffées.',
+    'Aucune phrase n’est jouée deux fois pareil : l’improvisation est le sujet.'],
+  gestes:['doubles-cordes','dynamique extrême','improviser dans la forme'],
+  piege:'Le vouloir « exact ». Ce solo n’a pas de version définitive — même lui ne le rejouait jamais pareil. Apprends-en <b>l’esprit</b> et improvise le reste : c’est le seul du répertoire où on te demande ça.',
+  etude:{n:'Étude — attaque et laisser-aller', key:'Mi penta · case 12',
+   seq:[{s:0,f:12},{s:0,f:15,t:'h'},{s:1,f:12},{s:1,f:14},{s:0,f:12,t:'~'}],
+   why:'Cinq notes, mais joue-les <b>trois fois</b> : une fois très doux, une fois normal, une fois le plus fort possible sans que ça sature. La dynamique est une technique, et personne ne la travaille.'}}
+];
+
+/* ---- état du répertoire ---- */
+function repAll(){ if(!S.rep) S.rep={}; return S.rep; }
+function rep(id){ const a=repAll(); if(!a[id]) a[id]={steps:{}, started:today()}; return a[id]; }
+function repStep(id,k){ return !!rep(id).steps[k]; }
+function repCount(id){ return SOL_STEPS.filter(s=>repStep(id,s.k)).length; }
+function repDone(id){ return repCount(id)===SOL_STEPS.length; }
+function repJoue(){ return SOLOS.filter(s=>repDone(s.id)).length; }
+function repStarted(){ return SOLOS.filter(s=>repCount(s.id)>0 && !repDone(s.id)).length; }
+function soloCur(){ return S.solo? SOLOS.find(s=>s.id===S.solo)||null : null; }
+function soloSuggest(){ /* le 1er non fini du palier le plus bas */
+  return SOLOS.find(s=>!repDone(s.id)) || SOLOS[0]; }
+function repMark(id,k){ const r=rep(id); if(r.steps[k]) return false;
+  r.steps[k]=today(); S.xp+=8;
+  if(repDone(id)){ r.done=today(); S.xp+=50; }
+  save(); return true; }
+
+/* ---- la liste ---- */
+function openRepertoire(){
+  markDay();
+  openOverlay('Le répertoire', inner=>{
+    const j=repJoue();
+    const h=el('div','card'); h.style.borderColor='var(--acc)';
+    h.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
+        <b style="font-size:17px">${j} solo${j>1?'s':''} que tu sais jouer</b><span style="color:var(--acc);font-weight:800">${j}/${SOLOS.length}</span></div>
+      <div class="bxbar"><i style="width:${Math.round(100*j/SOLOS.length)}%"></i></div>
+      <p class="lead" style="margin:8px 0 0">${j?'Cette liste, c’est ta progression. Pas l’XP, pas les cartes : <b>ce que tu sais jouer</b>.':'Aucun pour l’instant. <b>Un seul à la fois</b> — c’est la règle, et c’est pour ça que ça marchera.'}${repStarted()?' <span style="color:var(--dim)">('+repStarted()+' en chantier)</span>':''}</p>`;
+    inner.appendChild(h);
+    inner.appendChild(el('div','theory',`<div class="tip">🖐 <b>Tu joues aux doigts.</b> Chaque solo est noté pour ça : « idéal aux doigts » veut dire que ta technique est un <b>avantage</b> (arpèges, doubles-cordes, dynamique). « dur sans médiator » veut dire qu’il faudra réarranger les phrases pour qu’elles traversent les cordes au lieu de mitrailler une seule.</div>`));
+    let pal=0;
+    SOLOS.forEach(s=>{
+      if(s.pal!==pal){ pal=s.pal; const t=el('h1','page',SOL_PAL[pal]);
+        t.style.cssText='font-size:14px;color:var(--acc);margin:18px 0 8px;line-height:1.4'; inner.appendChild(t); }
+      const n=repCount(s.id), done=repDone(s.id), cur=S.solo===s.id;
+      const c=el('div','catcard'); if(done) c.style.opacity='.72'; if(cur) c.style.borderColor='var(--acc)';
+      c.innerHTML=`<div class="ico">${done?'✅':s.ic}</div>
+        <div class="t"><b>${s.t}${s.star?' ⭐':''}${cur?' <span style="color:var(--acc);font-size:11px">· EN COURS</span>':''}</b>
+          <small>${s.a} · ${s.key} · ${DOIGTS[s.doigts]}</small>
+          <div class="pips">${SOL_STEPS.map(st=>`<i class="${repStep(s.id,st.k)?'on':''}"></i>`).join('')}</div></div>
+        <div class="pc">${n}/5</div>`;
+      c.onclick=()=>openSolo(s); inner.appendChild(c);
+    });
+  });
+}
+
+/* ---- la fiche d’un solo ---- */
+function openSolo(s){
+  ac(); markDay();
+  const SC=SC_DEF[s.sc], pcs=pcsFrom(s.root,SC.iv);
+  openOverlay(s.t, inner=>{
+    const cur=S.solo===s.id, n=repCount(s.id);
+    const h=el('div','card'); h.style.borderColor='var(--acc)';
+    h.innerHTML=`<b style="font-size:17px">${s.ic} ${s.t}</b><div style="color:var(--dim);font-size:13px;margin-top:2px">${s.a} · ${s.dur}</div>
+      <div class="statgrid" style="margin-top:10px">
+        <div class="stat"><b style="font-size:15px">${s.key}</b><small>tonalité</small></div>
+        <div class="stat"><b style="font-size:15px">${SC.n}</b><small>ta gamme</small></div>
+        <div class="stat"><b style="font-size:15px">${s.bpm}</b><small>BPM cible</small></div></div>
+      <p class="lead" style="margin:10px 0 0">${DOIGTS[s.doigts]} · palier ${s.pal}</p>`;
+    if(!cur && !repDone(s.id)){ const b=el('button','btn','🎯 En faire mon solo en cours');
+      b.onclick=()=>{ S.solo=s.id; rep(s.id); save(); toast('🎯 '+s.t+' — c’est ton chantier'); openSolo(s); }; h.appendChild(b); }
+    inner.appendChild(h);
+
+    inner.appendChild(el('div','theory',`<h3>Pourquoi celui-là</h3><p>${s.pourquoi}</p>`));
+
+    /* les 5 marches */
+    const st=el('div','card'); st.innerHTML=`<div style="display:flex;justify-content:space-between"><b>Les 5 marches</b><span style="color:var(--acc);font-weight:800">${n}/5</span></div>`;
+    SOL_STEPS.forEach((step,i)=>{
+      const done=repStep(s.id,step.k);
+      const row=el('div','step'+(!done && n===i?' now':'')); if(done) row.style.opacity='.62';
+      row.innerHTML=`<div class="n">${done?'✓':i+1}</div><div><b>${step.n}</b><small>${step.d}</small></div>`;
+      const t=el('div','tag'+(done?' on':''),done?'✓':'valider');
+      t.style.cssText+='align-self:center;flex-shrink:0';
+      t.onclick=()=>{ if(step.k==='prise' && !done){ S.solo=s.id; save(); openTake('libre','Solo · '+s.t); return; }
+        if(repMark(s.id,step.k)){ toast(repDone(s.id)?'🏅 Solo au répertoire · +50 XP':'✓ marche franchie'); }
+        openSolo(s); };
+      row.appendChild(t); st.appendChild(row);
+    });
+    inner.appendChild(st);
+
+    /* la carte du solo */
+    const sc=el('div','card'); sc.innerHTML='<b>🗺 La carte du solo</b>';
+    const ul=el('ul'); ul.style.cssText='margin:8px 0 0 18px;color:#d8cebf;line-height:1.6;font-size:14px';
+    s.structure.forEach(x=>{ const li=document.createElement('li'); li.style.marginBottom='5px'; li.innerHTML=x; ul.appendChild(li); });
+    sc.appendChild(ul);
+    sc.appendChild(el('div','clogic',`<div class="deg">Les gestes à travailler</div>${s.gestes.map(g=>'• '+g).join('<br>')}`));
+    sc.appendChild(el('div','theory',`<div class="tip">⚠️ <b>Le piège :</b> ${s.piege}</div>${s.accord?`<div class="tip">🎚 ${s.accord}</div>`:''}`));
+    inner.appendChild(sc);
+
+    /* la gamme sur le manche */
+    const gc=el('div','card'); gc.appendChild(el('b',null,'🎸 Ta palette'));
+    const fb=buildFretboard((str,f)=>pluck(midiAt(str,f))); gc.appendChild(fb);
+    paintScale(fb,s.root,pcs,{labels:true, extra:s.extra?s.extra[0]:null});
+    gc.appendChild(el('div','clogic',`<div class="deg">${SC.n} de ${NOTES[s.root]}</div>Notes : ${pcs.map(p=>NOTES[p]).join(' · ')}. Fondamentale en <b style="color:var(--bad)">rouge</b>.${s.extra?`<br><b style="color:var(--blue)">En bleu : ${NOTES[s.extra[0]]}</b> — ${s.extra[1]}.`:''}`));
+    const pl=el('button','btn ghost','🔊 Écouter la gamme'); pl.onclick=()=>playScaleUp(s.root,SC.iv); gc.appendChild(pl);
+    if(s.sc==='pm'||s.sc==='aeo'){ const bb=el('button','btn ghost','🗺 La boîte 1 dans cette tonalité');
+      bb.onclick=()=>openBoxLook(0,s.root); gc.appendChild(bb); }
+    inner.appendChild(gc);
+
+    /* l’étude originale + le log de BPM */
+    inner.appendChild(el('h1','page','L’étude'));
+    inner.appendChild(el('p','lead','Une phrase que <b>j’ai écrite</b> pour ce solo : elle ne le copie pas, elle te fait travailler exactement son geste. Légende : b = bend, h = hammer, p = pull-off, / = slide, ~ = vibrato.'));
+    inner.appendChild(lickCard(s.etude,true));
+
+    /* écouter le morceau */
+    const yt=document.createElement('a');
+    yt.href='https://www.youtube.com/results?search_query='+encodeURIComponent(s.a+' '+s.t+' guitar solo');
+    yt.target='_blank'; yt.rel='noopener noreferrer'; yt.className='btn ghost';
+    yt.style.cssText='text-decoration:none;display:block'; yt.textContent='▶️ Écouter / voir le solo';
+    inner.appendChild(yt);
+    const rb=el('button','btn ghost','← Le répertoire'); rb.onclick=()=>openRepertoire(); inner.appendChild(rb);
+  });
+}
+
 /* ================================================================
    PROFIL — le progrès rendu visible
    ================================================================ */
@@ -3174,7 +3493,7 @@ function renderProfil(){
      <div class="stat"><b>${playStreak()}</b><small>jours de suite</small></div>
      <div class="stat"><b>${daysPlayed(28)}/28</b><small>jours joués</small></div>
      <div class="stat"><b>${bestW}</b><small>meilleure semaine</small></div>
-     <div class="stat"><b>${takes().length}</b><small>prises gardées</small></div>`));
+     <div class="stat"><b>${repJoue()}</b><small>solos au répertoire</small></div>`));
   tc.appendChild(chart28());
   m.appendChild(tc);
 
@@ -3228,11 +3547,13 @@ function renderProfil(){
   m.appendChild(rc);
   const triK=tKnown(), triT=TRIADS.length; let chK=0, chT=0; CHORD_CATS.forEach(k=>{ chK+=cKnown(k.id); chT+=chordsIn(k.id).length; });
   function bar(label,val,tot){ const p=tot?Math.round(val/tot*100):0; return `<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>${label}</span><span style="color:var(--acc)">${val}/${tot}</span></div><div style="background:var(--bg3);border-radius:8px;height:8px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${p}%;background:var(--acc)"></div></div></div>`; }
-  const mc=el('div','card'); mc.innerHTML='<b>Ta maîtrise</b>'+bar('Triades (leurs notes)',triK,triT)+bar('Formes d’accords',chK,chT)+bar('Cordes du manche',cleanStrings,6)+bar('Boîtes de gamme conquises',bxMastered(),5)+bar('Morceaux joués (Juke-box)',jbCount(),JUKE.length);
+  const mc=el('div','card'); mc.innerHTML='<b>Ta maîtrise</b>'+bar('Solos joués en entier',repJoue(),SOLOS.length)+bar('Triades (leurs notes)',triK,triT)+bar('Formes d’accords',chK,chT)+bar('Cordes du manche',cleanStrings,6)+bar('Boîtes de gamme conquises',bxMastered(),5)+bar('Morceaux joués (Juke-box)',jbCount(),JUKE.length);
   m.appendChild(mc);
   const nb=el('div','card'); nb.style.borderColor='var(--acc2)';
   const dueC=cDueTotal(), dueT=tDue().length; let battle;
   if(dayMin()===0) battle={t:'Prendre la guitare',d:'Zéro minute aujourd’hui. Dix minutes valent mieux qu’une séance parfaite qui n’arrive pas.',go:()=>openPlay()};
+  else if(soloCur() && !repDone(soloCur().id)) battle={t:'Ton solo : '+soloCur().t,d:'Marche '+Math.min(5,repCount(soloCur().id)+1)+'/5 — '+SOL_STEPS[Math.min(4,repCount(soloCur().id))].n+'.',go:()=>openSolo(soloCur())};
+  else if(!soloCur()) battle={t:'Choisir un solo',d:'Un solo appris en entier vaut dix modules survolés. Commence par « Come As You Are ».',go:()=>openRepertoire()};
   else if(temoinDue()) battle={t:'Le témoin de la semaine',d:'45 s à enregistrer. C’est la seule mesure honnête de ton jeu.',go:()=>openTake('temoin')};
   else if(bxDueList().length) battle={t:'Entretien des gammes',d:bxDueList().length+' boîte(s) à revoir — si tu les rates, elles redescendent.',go:()=>openConquete()};
   else if(dueT>0) battle={t:'Réviser tes triades',d:dueT+' triade(s) dues — rafraîchis avant d’oublier.',go:()=>goTab('cartes')};
