@@ -156,6 +156,29 @@
   .topbar .back{width:38px;height:38px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font-size:18px;cursor:pointer}.topbar b{font-size:16px}
   #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--acc);color:var(--txt);padding:12px 20px;border-radius:14px;font-weight:700;z-index:100;transition:transform .35s;font-size:14px}
   #toast.show{transform:translateX(-50%) translateY(0)}
+  /* ---- LE STUDIO : écrire ses chansons ---- */
+  .sgin{width:100%;background:var(--bg3);border:1px solid var(--line);color:var(--txt);border-radius:10px;
+    padding:12px;font-size:15px;font-weight:700;font-family:inherit;user-select:text;-webkit-user-select:text}
+  textarea.sgin{font-weight:500;line-height:1.75;min-height:170px;resize:vertical}
+  .sgin:focus{outline:none;border-color:var(--acc)}
+  .sgrow{display:grid;grid-template-columns:46px repeat(4,1fr);gap:5px;margin:5px 0;align-items:stretch}
+  .sgrow .bn{font-size:11px;color:var(--acc);font-weight:800;display:flex;align-items:center;justify-content:flex-end;padding-right:3px}
+  .sgc{background:var(--bg3);border:1px solid var(--line);border-radius:8px;text-align:center;font-weight:800;
+    font-size:13px;cursor:pointer;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+  .sgc small{display:block;font-size:9px;color:var(--dim);font-weight:700;margin-top:1px}
+  .sgc.ct{border-color:var(--acc2);background:#2a2015}
+  .sgc.hold{color:var(--dim);font-size:17px}
+  .sgpal{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin:10px 0 4px}
+  .sgpal .p{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:8px 1px;text-align:center;
+    font-weight:800;font-size:14px;cursor:pointer;line-height:1.15}
+  .sgpal .p small{display:block;font-size:8.5px;color:var(--dim);font-weight:700}
+  .sgpal .p.on{background:var(--acc);color:#1a1200;border-color:var(--acc)}
+  .sgpal .p.on small{color:#5a3c00}
+  .sgline{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.4}
+  .sgline b{color:var(--acc);font-variant-numeric:tabular-nums;font-size:12px}
+  .sgchip{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;
+    background:var(--bg3);border:1px solid var(--line);color:var(--dim);margin:3px 3px 0 0}
+  .sgchip.ok{color:var(--ok);border-color:#2c5c36}
 </style>
 </head>
 <body>
@@ -186,7 +209,7 @@ const noteAt=(s,f)=>NOTES[midiAt(s,f)%12];
 const FRETS=12;
 
 const DEFAULT={chords:{}, cNewDay:{date:null,n:0}, triads:{}, tNewDay:{date:null,n:0}, streak:0, lastDay:null, xp:0,
-  findBest:{}, chordFindBest:{}, quizBest:0, cagedQuizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}};
+  findBest:{}, chordFindBest:{}, quizBest:0, cagedQuizBest:0, powBest:0, sprint:{best:{}}, showNames:false, natOnly:true, bpm:{}, sess:{date:null,done:[]}, songs:[]};
 let S=load();
 function load(){ try{return Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('shred2')||'{}'));}catch(e){return {...DEFAULT};} }
 function save(){ localStorage.setItem('shred2',JSON.stringify(S)); }
@@ -2800,7 +2823,7 @@ function sessMark(id){ const s=sessToday(); if(s.done.indexOf(id)<0){ s.done.pus
       amélioré » : t’entendre il y a un mois.
    ================================================================ */
 const GOAL_DEF=30;                       /* minutes/jour visées */
-const TAKE_SECS=45, TAKE_MAX=24;         /* durée d’une prise, nb gardé */
+const TAKE_SECS=45, TAKE_MAX=32;         /* durée d’une prise libre, nb gardé */
 
 /* ---- l’historique daté (localStorage : léger, sauvegardé par LE COFFRE) ---- */
 function goal(){ return S.goal||GOAL_DEF; }
@@ -2842,11 +2865,15 @@ const TDB={ db:null,
 };
 function takes(){ if(!S.takes) S.takes=[]; return S.takes; }
 function takesOf(kind){ return takes().filter(t=>t.kind===kind).sort((a,b)=>b.ts-a.ts); }
+/* ⚠️ Les témoins ne sont JAMAIS effacés : c'est la série de mesure, elle n'a
+   de valeur que complète. On ne fait le ménage que dans le reste. */
 async function pruneTakes(){ const all=takes().sort((a,b)=>b.ts-a.ts);
-  if(all.length<=TAKE_MAX) return;
-  const drop=all.slice(TAKE_MAX);
+  const keep=all.filter(t=>t.kind==='temoin'), rest=all.filter(t=>t.kind!=='temoin');
+  if(rest.length<=TAKE_MAX) return;
+  const drop=rest.slice(TAKE_MAX);
   for(const t of drop){ try{ await TDB.del(t.id); }catch(e){} }
-  S.takes=all.slice(0,TAKE_MAX); save(); }
+  const ids=drop.map(t=>t.id);
+  S.takes=all.filter(t=>ids.indexOf(t.id)<0); save(); }
 
 /* ---- l’enregistreur ---- */
 const MIMES=['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg'];
@@ -2948,12 +2975,18 @@ function openTake(kind,label){
 
 /* ---- le journal des prises : écouter, comparer, supprimer ---- */
 function openTakes(kind){
-  openOverlay(kind==='temoin'?'Tes témoins':'Tes prises', inner=>{
+  const TITRES={temoin:'Tes témoins', song:'Tes prises de chansons', libre:'Tes prises'};
+  openOverlay(TITRES[kind]||'Tes prises', inner=>{
     const list=takesOf(kind||'temoin');
-    if(!list.length){ inner.appendChild(el('p','lead','Rien encore. Le premier témoin est le plus important : c’est ton point zéro.'));
+    if(!list.length){
+      if(kind==='song'){ inner.appendChild(el('p','lead','Aucune prise de chanson. On enregistre depuis une chanson du Studio : elle joue la grille pendant que tu chantes.'));
+        const b=el('button','btn','✍️ Le Studio'); b.onclick=()=>openStudio(); inner.appendChild(b); return; }
+      inner.appendChild(el('p','lead','Rien encore. Le premier témoin est le plus important : c’est ton point zéro.'));
       const b=el('button','btn','🔴 Enregistrer le premier'); b.onclick=()=>openTake(kind||'temoin'); inner.appendChild(b); return; }
     inner.appendChild(el('p','lead',kind==='temoin'
       ?'Le même exercice, semaine après semaine. <b>Écoute le plus ancien, puis le plus récent.</b> C’est ça, la preuve — pas une barre d’XP.'
+      :kind==='song'
+      ?'Tes chansons enregistrées. <b>⬇️ Télécharge</b> celle que tu veux me faire mesurer, puis dis-moi où est le fichier — je ne l’entends pas, mais je peux l’analyser (justesse, tempo, notes).'
       :'Tes prises libres, de la plus récente à la plus ancienne.'));
     list.forEach((t,i)=>{
       const c=el('div','card');
@@ -2968,11 +3001,21 @@ function openTakes(kind){
           a.src=URL.createObjectURL(b); holder.appendChild(a); load.remove();
         }catch(e){ holder.appendChild(el('p','lead','Lecture impossible : '+e.message)); load.remove(); } };
       c.appendChild(load);
+      const dl=el('button','btn ghost','⬇️ Télécharger le fichier');
+      dl.onclick=async()=>{ const lbl=dl.textContent; dl.textContent='…';
+        try{ const b=await TDB.get(t.id);
+          if(!b){ toast('Le son n’est plus là'); dl.remove(); return; }
+          const nm='shred-'+(t.kind||'prise')+'-'+t.d+'-'+String(t.id).slice(-4)+'.'+extOf(b.type||t.mime);
+          toast(dlBlob(b,nm)?'⬇️ '+nm:'Téléchargement refusé par le navigateur');
+        }catch(e){ toast('Impossible : '+e.message); }
+        dl.textContent=lbl; };
+      c.appendChild(dl);
       if(i===0 && list.length>1){ const n=list[list.length-1], d2=Math.round((Date.now()-n.ts)/864e5);
         c.appendChild(el('p','lead',`<b style="color:var(--acc)">Compare celui-ci avec le plus ancien</b> (${d2} jours). Écoute deux choses : la <b>régularité</b> (les notes tombent-elles au même endroit ?) et les <b>silences</b> (est-ce que tu respires, ou est-ce que tu remplis ?).`)); }
       inner.appendChild(c);
     });
-    const b=el('button','btn','🔴 Nouvelle prise'); b.onclick=()=>openTake(kind||'temoin'); inner.appendChild(b);
+    const b=el('button','btn',kind==='song'?'✍️ Le Studio':'🔴 Nouvelle prise');
+    b.onclick=()=>kind==='song'?openStudio():openTake(kind||'temoin'); inner.appendChild(b);
   });
 }
 
@@ -3104,6 +3147,15 @@ function renderJour(){
     const chk=el('div','tag', done?'✓':'fait ?'); chk.onclick=(ev)=>{ ev.stopPropagation(); sessMark(b.id); render(); };
     wrap.append(go,chk); c.appendChild(wrap); c.onclick=b.open; m.appendChild(c); });
 
+  if(sgAll().length){ const s0=sgAll()[0], st0=sgState(s0);
+    const sc=el('div','card');
+    sc.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><b>🎵 Ta chanson en cours</b>
+      <span style="color:var(--dim);font-size:12px">${sgKeyName(s0)} · ${s0.bpm} BPM</span></div>
+      <p class="lead" style="margin:6px 0 6px"><b>${sgEsc(s0.t)}</b> — ${st0.chips}</p>
+      <p class="lead" style="margin:0 0 4px">Fini vaut mieux que parfait : une chanson terminée t’apprend dix fois plus que trois brouillons.</p>`;
+    const sb=el('button','btn ghost','✍️ Reprendre'); sb.onclick=()=>openSg(s0.id); sc.appendChild(sb);
+    m.appendChild(sc); }
+
   const qt=el('div','card'); qt.innerHTML='<b>Outils</b>';
   const row=el('div','row3'); row.style.marginTop='10px';
   const bm=el('button','btn ghost','🥁 Métro'); bm.onclick=()=>openMetronome();
@@ -3129,7 +3181,7 @@ function renderBiblio(){
       ['⚡','Jouer vite','La méthode des pros + exos en progression',()=>openSpeed()],
       ['🗣️','Bien phraser','Le silence, les motifs, l’appel-réponse',()=>openPhrasing()],
       ['🎤','Improviser vite comme un pro','La progression complète',()=>openFastImpro()],
-      ['✍️','Écrire une chanson','Pensé rock dynamique (grunge / alt)',()=>openSongwriting()],
+      ['✍️','Le Studio — mes chansons','Grille, mélodie, paroles, prise… et un dossier à me coller',()=>openStudio()],
     ]],
     ['🧠 Savoir', [
       ['🎸','Le manche','Fretboard, entraînement « nommer les cases »',()=>goTab('manche')],
@@ -3146,6 +3198,7 @@ function renderBiblio(){
     ['🎙 Tes traces', [
       ['🎙','Tes témoins','Les prises hebdomadaires, à comparer',()=>openTakes('temoin')],
       ['🔴','Tes prises libres','Ce que tu as gardé en passant',()=>openTakes('libre')],
+      ['🎵','Tes prises de chansons','Tes chansons enregistrées, à télécharger',()=>openTakes('song')],
     ]],
   ];
   groups.forEach(([title,items])=>{
@@ -3569,10 +3622,912 @@ function renderProfil(){
   m.appendChild(nb);
 }
 
+/* ================================================================
+   LE STUDIO — écrire ses chansons, jusqu’au bout.
+   Le reste de l’app te fait JOUER la musique des autres. Ici tu
+   fabriques la tienne, et surtout tu la FINIS : une grille, une
+   mélodie, des paroles, une prise, un dossier.
+   ⚠️ Ce que l’app peut juger : des FAITS (une mélodie de refrain
+   plus basse que celle du couplet, 31 syllabes pour 24 notes, une
+   grille sans aucune tension). Elle ne juge pas une émotion, et
+   elle ne t’entend pas. Le dossier exporté est fait pour ça :
+   il se colle dans Claude, qui lit la musique.
+   ================================================================ */
+const SG_SHARP=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const SG_FLAT =['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+const SG_FRS=['Do','Do♯','Ré','Ré♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const SG_FRF=['Do','Ré♭','Ré','Mi♭','Mi','Fa','Sol♭','Sol','La♭','La','Si♭','Si'];
+const SG_FLATMAJ=[5,10,3,8,1,6], SG_FLATMIN=[2,7,0,5,10,3];
+const SG_SPB=4;            /* 4 pas par mesure : un pas = un temps */
+const SG_BASE=48;          /* un Do : la tonique de la mélodie = la tonique de la chanson (48+root, soit Do3→Si3) */
+const SG_DEGMAX=10;        /* palette : 1..7 puis l’octave, la 2 et la 3 au-dessus */
+
+const SG_KEY={
+  maj:{ n:'majeur', sc:[0,2,4,5,7,9,11],
+    deg:[['I',0,'maj','la maison — tout y revient'],
+         ['ii',2,'min','le tremplin : il appelle le V'],
+         ['iii',4,'min','le mélancolique discret'],
+         ['IV',5,'maj','l’ouverture, l’air qui entre'],
+         ['V',7,'maj','la tension : il veut rentrer au I'],
+         ['vi',9,'min','le cousin mineur : même notes, autre humeur']],
+    col:[['V7',7,'dom7','La tension pure, avec la note qui gratte. C’est l’accord à mettre juste avant un refrain.'],
+         ['♭VII',10,'maj','L’accord rock (mixolydien). Il sort de la tonalité et enlève immédiatement le côté « chanson gentille ».'],
+         ['iv',5,'min','Le IV passé au mineur : une ombre traverse la pièce. Magnifique à l’avant-dernière mesure.'],
+         ['Imaj7',0,'maj7','Le I adouci, suspendu. Pour un couplet qui ne veut pas encore s’affirmer.']] },
+  min:{ n:'mineur', sc:[0,2,3,5,7,8,10],
+    deg:[['i',0,'min','la maison, sombre'],
+         ['♭III',3,'maj','la lumière qui perce — le relatif majeur'],
+         ['iv',5,'min','le poids, la gravité'],
+         ['v',7,'min','la tension molle (sans la note qui pique)'],
+         ['♭VI',8,'maj','le grand large, l’accord épique'],
+         ['♭VII',10,'maj','l’élan, la poussée rock']],
+    col:[['V7',7,'dom7','Emprunté au mineur harmonique : la SEULE façon d’avoir une vraie tension en mineur. Il contient une note étrangère à ta gamme — c’est exactement ce qui fait « pro ».'],
+         ['IV',5,'maj','Le iv passé au majeur : c’est le dorien. Ça ouvre, ça décrispe, sans quitter le mineur.'],
+         ['i m7',0,'m7','La tonique adoucie et flottante. Parfait pour un vamp immobile (le terrain Deftones).'],
+         ['♭VImaj7',8,'maj7','L’épique, en version rêveuse.']] }
+};
+
+/* ---- des suites d’accords à voler, en degrés (mobiles dans les 12 tonalités) ---- */
+const SG_PROGS={
+  min:[
+   {n:'L’épique', ch:[[0,'min'],[8,'maj'],[3,'maj'],[10,'maj']],
+    w:'<b>i – ♭VI – ♭III – ♭VII</b> : la suite la plus utilisée du rock mineur. Elle monte sans jamais se résoudre, donc elle peut tourner à l’infini — c’est exactement ce qu’on veut d’un refrain qui doit paraître grand.'},
+   {n:'La descente fatale', ch:[[0,'min'],[10,'maj'],[8,'maj'],[7,'dom7']],
+    w:'<b>i – ♭VII – ♭VI – V7</b> : chaque accord tombe d’un ton, puis le V7 te renvoie au départ. Elle a un côté inéluctable : idéale pour un couplet qui raconte.'},
+   {n:'Le vamp immobile', ch:[[0,'min'],[0,'min'],[5,'min'],[5,'min']],
+    w:'<b>i – iv</b>, deux accords sur quatre mesures : presque rien ne bouge. C’est la recette Deftones. Tout le mouvement doit alors venir du chant et de la texture — c’est une suite exigeante, pas une suite facile.'},
+   {n:'La marche sombre', ch:[[0,'min'],[5,'min'],[3,'maj'],[10,'maj']],
+    w:'<b>i – iv – ♭III – ♭VII</b> : le iv appuie, puis ♭III–♭VII relance. Couplet lourd, très grunge.'},
+   {n:'La tension courte', ch:[[0,'min'],[0,'min'],[7,'dom7'],[7,'dom7']],
+    w:'<b>i – V7</b> : deux accords, une question et une réponse. Le V7 tient deux mesures : tu as le temps de chanter dessus la note étrangère qui fait tout.'},
+   {n:'La lumière', ch:[[3,'maj'],[10,'maj'],[0,'min'],[5,'min']],
+    w:'<b>♭III – ♭VII – i – iv</b> : elle commence en majeur et retombe en mineur. Le tour de passe-passe des refrains qui semblent lumineux alors que la chanson est triste.'},
+   {n:'Le pont qui décroche', ch:[[5,'min'],[10,'maj'],[3,'maj'],[7,'dom7']],
+    w:'<b>iv – ♭VII – ♭III – V7</b> : elle part du iv (pas de la tonique) — c’est ce décrochage qui fait qu’un pont sonne comme un pont.'}
+  ],
+  maj:[
+   {n:'Les quatre accords', ch:[[0,'maj'],[7,'maj'],[9,'min'],[5,'maj']],
+    w:'<b>I – V – vi – IV</b> : la suite de la moitié des tubes depuis 50 ans. Ça marche, et c’est précisément le problème : si tu la prends, il faut que ta mélodie, elle, ne soit pas déjà entendue.'},
+   {n:'La version triste', ch:[[9,'min'],[5,'maj'],[0,'maj'],[7,'maj']],
+    w:'<b>vi – IV – I – V</b> : les mêmes quatre accords, décalés d’un cran. Elle démarre en mineur : la chanson a l’air grave alors que la tonalité est majeure.'},
+   {n:'Le rock à trois', ch:[[0,'maj'],[5,'maj'],[7,'maj'],[5,'maj']],
+    w:'<b>I – IV – V – IV</b> : le socle du rock, trois accords. Tout se joue alors dans le riff et le rythme, pas dans l’harmonie.'},
+   {n:'Le mixolydien', ch:[[0,'maj'],[10,'maj'],[5,'maj'],[5,'maj']],
+    w:'<b>I – ♭VII – IV</b> : le ♭VII est étranger à la tonalité, et c’est lui qui donne le grain rock (des Stones à Audioslave). Ta meilleure suite en majeur.'},
+   {n:'Les années 50', ch:[[0,'maj'],[9,'min'],[5,'maj'],[7,'maj']],
+    w:'<b>I – vi – IV – V</b> : le doo-wop. Très daté si tu la joues telle quelle, très efficace si tu la joues lourd et lent.'},
+   {n:'La montée', ch:[[5,'maj'],[7,'maj'],[0,'maj'],[9,'min']],
+    w:'<b>IV – V – I – vi</b> : elle commence suspendue et arrive sur la tonique à la 3e mesure. Un refrain qui « arrive » au milieu de lui-même.'}
+  ]};
+
+const SG_KINDS=[['couplet','Couplet','①'],['refrain','Refrain','★'],['pont','Pont','↯'],['intro','Intro','▸'],['outro','Outro','▪']];
+
+/* ---- noms de notes : orthographe correcte selon la tonalité ---- */
+function sgFlatKey(s){ return (s.mode==='min'?SG_FLATMIN:SG_FLATMAJ).indexOf(s.root)>=0; }
+function sgN(pc,s){ return (sgFlatKey(s)?SG_FLAT:SG_SHARP)[((pc%12)+12)%12]; }
+function sgFR(pc,s){ return (sgFlatKey(s)?SG_FRF:SG_FRS)[((pc%12)+12)%12]; }
+function sgKeyName(s){ return sgFR(s.root,s)+' '+SG_KEY[s.mode].n; }
+function sgChName(c,s){ return sgN(c[0],s)+CH_SUF[c[1]]; }
+function sgRole(c,s){ const K=SG_KEY[s.mode], iv=((c[0]-s.root)%12+12)%12;
+  for(const d of K.deg) if(d[1]===iv && d[2]===c[1]) return d[0];
+  for(const d of K.col) if(d[1]===iv && d[2]===c[1]) return d[0];
+  return '?'; }
+function sgEsc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ---- le magasin ---- */
+function sgAll(){ if(!S.songs) S.songs=[]; return S.songs; }
+function sgGet(id){ return sgAll().find(x=>x.id===id)||null; }
+function sgTouch(s){ s.up=Date.now(); save(); }
+function sgNew(t,root,mode,bpm){
+  const P=SG_PROGS[mode];
+  const mk=(k,prog)=>{ const bars=prog.ch.map(c=>[((root+c[0])%12+12)%12, c[1]]);
+    return {k, bars, mel:new Array(bars.length*SG_SPB).fill(0), lyr:''}; };
+  const s={ id:'sg'+Date.now(), t:t||'Sans titre', root, mode, bpm:bpm||90, intent:'',
+    secs:[ mk('couplet',P[1]||P[0]), mk('refrain',P[0]) ], cr:Date.now(), up:Date.now() };
+  sgAll().unshift(s); save(); return s;
+}
+function sgDegOf(v){ return ((v-1)%7)+1; }
+function sgOctOf(v){ return Math.floor((v-1)/7); }
+function sgMelMidi(v,s){ return SG_BASE + s.root + SG_KEY[s.mode].sc[sgDegOf(v)-1] + 12*sgOctOf(v); }
+function sgMelName(v,s){ return sgN(sgMelMidi(v,s)%12,s); }
+function sgPitchName(midi,s){ return sgN(midi%12,s)+(Math.floor(midi/12)-1); }
+function sgDegLabel(v){ const d=sgDegOf(v), o=sgOctOf(v); return d+(o?'·8':''); }
+function sgBarPcs(c){ return CH_IV[c[1]].slice(0,3).map(i=>((c[0]+i)%12+12)%12); }
+function sgIsCT(v,c,s){ return sgBarPcs(c).indexOf(sgMelMidi(v,s)%12)>=0; }
+function sgMelFix(sec){ const n=sec.bars.length*SG_SPB; if(!sec.mel) sec.mel=[];
+  while(sec.mel.length<n) sec.mel.push(0); if(sec.mel.length>n) sec.mel.length=n;
+  /* une tenue (⌒) qui ne suit aucune note ne tient rien : on la rend au silence */
+  let snd=false;
+  for(let i=0;i<n;i++){ const v=sec.mel[i];
+    if(v>0) snd=true; else if(v===-1){ if(!snd) sec.mel[i]=0; } else snd=false; }
+  return sec.mel; }
+function sgNotes(sec){ sgMelFix(sec); const out=[];
+  for(let i=0;i<sec.mel.length;i++){ const v=sec.mel[i]; if(v>0){ let len=1;
+    while(i+len<sec.mel.length && sec.mel[i+len]===-1) len++; out.push({i,v,len}); } }
+  return out; }
+function sgKindN(k){ const f=SG_KINDS.find(x=>x[0]===k); return f?f[1]:k; }
+function sgKindIc(k){ const f=SG_KINDS.find(x=>x[0]===k); return f?f[2]:'•'; }
+
+/* ---- le moteur de lecture : accords + mélodie + clic, calé à la mesure ---- */
+function sgPlan(s,only){
+  const secs = (only==null? s.secs : [s.secs[only]]).filter(Boolean);
+  const bars=[], notes=[]; let step=0;
+  secs.forEach((sec,k)=>{ sgMelFix(sec);
+    sec.bars.forEach((ch,bi)=>bars.push({ch, k, sec, bi, first:bi===0}));
+    sgNotes(sec).forEach(n=>notes.push({i:step+n.i, len:n.len, v:n.v, m:sgMelMidi(n.v,s)}));
+    step += sec.bars.length*SG_SPB; });
+  return {bars, notes, secs, s};
+}
+const SLoop={ on:false, timer:null, ctx:null, P:null, bpm:90, spb:.5, i:0, next:0, cb:null, o:{},
+  start(P,bpm,o,cb){ this.stop(); if(!P||!P.bars.length) return; const ctx=ac(); this.ctx=ctx;
+    this.P=P; this.bpm=bpm; this.spb=60/bpm; this.o=o||{}; this.cb=cb||null; this.i=0; this.on=true;
+    let t0=ctx.currentTime+.18;
+    if(this.o.count){ for(let b=0;b<4;b++) metroClick(t0+b*this.spb,b===0); t0+=4*this.spb; }
+    this.next=t0;
+    this.timer=setInterval(()=>this._s(),40); this._s(); },
+  _s(){ if(!this.on||!this.ctx) return; const ctx=this.ctx, n=this.P.bars.length;
+    while(this.next < ctx.currentTime+.45){
+      if(!this.o.loop && this.i>=n){ const end=this.next; const ms=Math.max(200,(end-ctx.currentTime)*1000+600);
+        const self=this; this.timer&&clearInterval(this.timer); this.timer=null;
+        setTimeout(()=>{ if(self.on){ self.on=false; if(self.o.onEnd) self.o.onEnd(); } },ms); return; }
+      const b=this.i%n, bar=this.P.bars[b], d=this.next-ctx.currentTime;
+      if(this.o.click) for(let k=0;k<SG_SPB;k++) metroClick(this.next+k*this.spb,k===0);
+      if(this.o.ch!==false && bar.ch){ const ms=Loop.midis(bar.ch[0],bar.ch[1]);
+        ms.forEach((m,k)=>pluck(m,this.spb*3.4,.26,d+k*.030));
+        ms.slice(1).forEach((m,k)=>pluck(m,this.spb*2.2,.14,d+2*this.spb+k*.026)); }
+      if(this.o.mel!==false) this.P.notes.forEach(nt=>{ if(nt.i>=b*SG_SPB && nt.i<(b+1)*SG_SPB)
+        pluck(nt.m, this.spb*nt.len*1.35, .55, d+(nt.i-b*SG_SPB)*this.spb); });
+      if(this.cb){ const idx=b, dl=Math.max(0,d*1000); setTimeout(()=>{ if(this.on&&this.cb) this.cb(idx); },dl); }
+      this.next+=SG_SPB*this.spb; this.i++;
+    } },
+  stop(){ this.on=false; if(this.timer){ clearInterval(this.timer); this.timer=null; } this.cb=null; this.o={}; }
+};
+
+/* ---- une idée de mélodie : notes de l’accord, mouvement conjoint, des trous ---- */
+function sgIdea(s,sec){
+  sgMelFix(sec); const out=new Array(sec.bars.length*SG_SPB).fill(0); let last=null;
+  sec.bars.forEach((ch,bi)=>{
+    const cands=[]; for(let v=1;v<=8;v++) if(sgIsCT(v,ch,s)) cands.push(v);
+    if(!cands.length) for(let v=1;v<=8;v++) cands.push(v);
+    const pick=pool=>{ if(!pool.length) pool=cands;
+      if(last==null) return pool[Math.floor(Math.random()*pool.length)];
+      const so=pool.slice().sort((a,b)=>Math.abs(a-last)-Math.abs(b-last));
+      return so[Math.min(so.length-1,Math.floor(Math.random()*2))]; };
+    const a=pick(cands); out[bi*SG_SPB]=a; out[bi*SG_SPB+1]=-1; last=a;
+    /* la dernière mesure reste ouverte : une phrase doit finir par de l’air —
+       sinon l’app proposerait une mélodie que son propre verdict sanctionne */
+    if(bi<sec.bars.length-1 && Math.random()<.72){ const b=pick(cands.filter(v=>v!==a));
+      out[bi*SG_SPB+2]=b; out[bi*SG_SPB+3]=-1; last=b; }
+  });
+  return out;
+}
+
+/* ---- les paroles : syllabes (ESTIMATION) et rimes (APPROXIMATIVES) ----
+   Le compte des syllabes en français dépend de comment tu CHANTES (le
+   « e » muet, les diphtongues…). Ces deux fonctions donnent un ordre de
+   grandeur utile pour la question « est-ce que ça rentre ? » — et rien
+   de plus. C’est pour ça que l’app affiche toujours « ≈ ». */
+const SG_VOW='aàâäeéèêëiîïoôöuùûüyÿœæ';
+function sgSyl(line){
+  const words=String(line||'').toLowerCase().replace(/[’']/g,' ').replace(new RegExp('[^'+SG_VOW+'a-z \\-]','g'),' ').split(/[\s\-]+/).filter(Boolean);
+  let n=0;
+  words.forEach(w=>{
+    let x=w.replace(/qu/g,'k').replace(new RegExp('gu(['+SG_VOW+'])','g'),'g$1');
+    const g=x.match(new RegExp('['+SG_VOW+']+','g'))||[];
+    let c=g.length;
+    if(c>1 && new RegExp('[^'+SG_VOW+']es?$').test(x)) c--;   /* « table », « tables » : e final peu ou pas chanté */
+    n+=c;   /* un fragment élidé (« n’ », « m’ ») n’a pas de voyelle : il ne compte pas */
+  });
+  return n;
+}
+/* Rime = le SON de la fin de ligne, pas son orthographe. On approxime :
+   1) on ne garde que le dernier mot ; 2) on traite les terminaisons verbales
+   (-er/-ez/-ais/-ent…) AVANT tout découpage ; 3) on coupe les lettres finales
+   muettes ; 4) on traduit digrammes et nasales en pseudo-sons ; 5) on garde la
+   dernière voyelle et ce qui la suit. Approximatif, et affiché comme tel.
+   ⚠️ Une nasale n’en est une que si le n/m n’est PAS suivi d’une voyelle
+   (« amour » n’est pas nasal — sinon « amour » ne rimait plus avec « toujours »). */
+const SG_NV='(?![aeiouyàâäéèêëîïôöùûüœæ])';
+const SG_PHON=[[/qu/g,'k'],[/ph/g,'f'],[/ch/g,'C'],[/gn/g,'N'],
+  [/eaux?/g,'o'],[/aux?$/,'o'],[/au/g,'o'],[/ou/g,'u'],[/eu|œu|oeu/g,'2'],
+  [/oi/g,'wa'],[/ai|ei/g,'è'],
+  [new RegExp('(ain|aim|ein|in|im|yn)'+SG_NV,'g'),'5'],
+  [new RegExp('(an|am|en|em)'+SG_NV,'g'),'4'],
+  [new RegExp('(on|om)'+SG_NV,'g'),'6'],
+  [new RegExp('(un|um)'+SG_NV,'g'),'7'],
+  [/ill/g,'y'],[/é/g,'é'],[/è|ê/g,'è'],
+  [/à|â/g,'a'],[/ù|û|ü/g,'u'],[/ô/g,'o'],[/î|ï/g,'i'],[/ë/g,'e'],[/ÿ/g,'i'],
+  [/([bcdfgklmnprstvzCNy])\1/g,'$1']];
+function sgRhyKey(line){
+  const ws=String(line||'').toLowerCase().replace(/[’']/g,' ').replace(new RegExp('[^'+SG_VOW+'a-z ]','g'),' ').split(/\s+/).filter(Boolean);
+  if(!ws.length) return '';
+  let w=ws[ws.length-1];
+  w=w.replace(/aient$|ait$|ais$|ai$/,'è').replace(/ent$/,'e').replace(/ées$|ée$|és$|ez$|er$/,'é');
+  for(let k=0;k<2;k++){ if(w.length>2 && /[estdxzp]$/.test(w) && new RegExp('['+SG_VOW+']').test(w.slice(0,-1))) w=w.slice(0,-1); else break; }
+  SG_PHON.forEach(([re,to])=>{ w=w.replace(re,to); });
+  /* on garde la semi-voyelle qui ouvre la syllabe : /wa/ (froid) ≠ /a/ (là) */
+  const m=w.match(/[wy]?[aeiouèé245672]+[^aeiouyèé245672]*$/);
+  return m?m[0]:w.slice(-2);
+}
+function sgLyrLines(sec){ return String(sec.lyr||'').split('\n').map(l=>l.trim()).filter(l=>l.length); }
+function sgRhymeScheme(lines){
+  const keys=lines.map(sgRhyKey), map={}, out=[]; let next=65;
+  keys.forEach(k=>{ if(!k){ out.push('–'); return; }
+    if(map[k]==null) map[k]=String.fromCharCode(next++);
+    out.push(map[k]); });
+  return out;
+}
+
+/* ---- le verdict : rien que des faits vérifiables ---- */
+function sgMelStats(s,sec){ const ns=sgNotes(sec); if(!ns.length) return null;
+  const ms=ns.map(n=>sgMelMidi(n.v,s));
+  const filled=ns.reduce((a,n)=>a+n.len,0);
+  return { n:ns.length, min:Math.min(...ms), max:Math.max(...ms), avg:ms.reduce((a,b)=>a+b,0)/ms.length,
+    rest:sec.bars.length*SG_SPB-filled, last:ns[ns.length-1], span:Math.max(...ms)-Math.min(...ms) }; }
+function sgCheck(s){
+  const out=[], secs=s.secs||[];
+  const cou=secs.find(x=>x.k==='couplet'), ref=secs.find(x=>x.k==='refrain');
+  const add=(ok,t,d)=>out.push({ok,t,d});
+  /* 1. la forme */
+  add(!!(cou&&ref),'Un couplet ET un refrain', (cou&&ref)?'La structure minimale est là.':'Il te manque '+(!cou?'un couplet':'un refrain')+'. Une chanson sans les deux n’a pas de sommet.');
+  /* 2. la tension */
+  const allCh=[].concat(...secs.map(x=>x.bars||[]));
+  const tens=allCh.filter(c=>{ const iv=((c[0]-s.root)%12+12)%12; return c[1]==='dom7' || (s.mode==='min'&&(iv===7||iv===10)) || (s.mode==='maj'&&(iv===7||iv===10)); });
+  add(tens.length>0,'Quelque chose qui pousse', tens.length>0
+    ? 'Tu as '+tens.length+' accord(s) de tension (V, V7 ou ♭VII) : il y a un endroit où ça tire.'
+    : 'Aucun V, V7 ni ♭VII dans toute la chanson. Rien ne « tire » vers le retour : ta grille tourne, mais elle ne respire pas. Mets-en un à la dernière mesure d’un couplet, juste avant le refrain.');
+  /* 3. le nombre d’accords */
+  const uniq=[...new Set(allCh.map(c=>c[0]+':'+c[1]))];
+  add(uniq.length<=5,'Peu d’accords', uniq.length<=5
+    ? uniq.length+' accords différents en tout. C’est bien : le hook a de la place.'
+    : uniq.length+' accords différents. Au-delà de 5, l’oreille n’a plus de repère et le refrain ne s’imprime pas. Cobain en utilisait 4.');
+  /* 4. le refrain plus haut */
+  if(cou&&ref){ const a=sgMelStats(s,cou), b=sgMelStats(s,ref);
+    if(a&&b) add(b.avg>a.avg+0.6,'Le refrain monte', b.avg>a.avg+0.6
+      ? 'Mélodie du refrain en moyenne '+(b.avg-a.avg).toFixed(1)+' demi-tons au-dessus du couplet. C’est ça qui fait un sommet.'
+      : 'Ton refrain n’est pas plus haut que ton couplet ('+(b.avg-a.avg).toFixed(1)+' demi-ton en moyenne). C’est le défaut n°1 des premières chansons : les deux parties se ressemblent, donc il n’y a pas de sommet. Monte la mélodie du refrain, ou baisse celle du couplet.');
+    else add(false,'Le refrain monte','Écris les deux mélodies (couplet et refrain) pour que je puisse comparer leur hauteur.');
+    const same=JSON.stringify(cou.bars)===JSON.stringify(ref.bars);
+    add(true, same?'Même grille couplet/refrain':'Grilles différentes', same
+      ? 'Couplet et refrain ont la même grille. Ce n’est PAS une faute — c’est même la formule de ton style (Pixies/Nirvana). Mais alors tout le contraste doit venir d’ailleurs : clean → saturé, arpège → power chords, et une mélodie de refrain plus haute. Si tu n’as ni l’un ni l’autre, les deux parties sonneront pareil.'
+      : 'Le refrain change de grille : le contraste est déjà dans l’harmonie.');
+    const mSame = JSON.stringify(cou.mel)===JSON.stringify(ref.mel) && sgNotes(cou).length>0;
+    if(mSame) add(false,'Mélodies identiques','Couplet et refrain ont exactement la même mélodie. Là, c’est une vraie faute : il n’y a qu’une seule partie dans ta chanson.');
+  }
+  /* 5. par section : les trous, l’ambitus, la note finale, les syllabes */
+  secs.forEach((sec,i)=>{
+    const st=sgMelStats(s,sec), lines=sgLyrLines(sec), syl=lines.reduce((a,l)=>a+sgSyl(l),0);
+    const nm=sgKindN(sec.k)+(secs.filter(x=>x.k===sec.k).length>1?' '+(secs.filter(x=>x.k===sec.k).indexOf(sec)+1):'');
+    if(!st){ add(false,nm+' — pas de mélodie','Cette partie n’a aucune note. Une grille seule n’est pas une chanson.'); return; }
+    add(st.rest>0, nm+' — ça respire', st.rest>0
+      ? st.rest+' temps de silence sur '+(sec.bars.length*SG_SPB)+'. Bien : les trous sont ce qui rend une mélodie chantable.'
+      : 'Aucun silence : tu chantes sur les '+(sec.bars.length*SG_SPB)+' temps. Une mélodie sans trou est impossible à respirer et impossible à retenir. Enlève au moins deux notes.');
+    add(st.span<=14, nm+' — chantable', st.span<=14
+      ? 'Ambitus de '+st.span+' demi-tons : ça tient dans une voix.'
+      : 'Ambitus de '+st.span+' demi-tons (plus d’une octave et une quinte). Tu ne pourras pas le chanter sans casser. Ramène les extrêmes.');
+    const lastCT = sgIsCT(st.last.v, sec.bars[Math.floor(st.last.i/SG_SPB)]||sec.bars[sec.bars.length-1], s);
+    add(lastCT, nm+' — la phrase se pose', lastCT
+      ? 'La dernière note ('+sgMelName(st.last.v,s)+') appartient à l’accord : la phrase atterrit.'
+      : 'La dernière note ('+sgMelName(st.last.v,s)+') n’est pas dans l’accord de sa mesure. Ça reste en suspens — très bien si c’est voulu pour enchaîner, gênant en fin de refrain.');
+    if(lines.length) add(Math.abs(syl-st.n)<=Math.max(2,Math.round(st.n*.25)), nm+' — les mots rentrent',
+      '≈'+syl+' syllabes pour '+st.n+' notes. '+(syl>st.n+2?'Il y a trop de mots : soit tu coupes, soit tu ajoutes des notes (ou tu découpes une tenue en deux).':(syl<st.n-2?'Il y a trop de notes pour tes mots : allonge des voyelles (des tenues) ou écris davantage.':'Ça tombe juste.')));
+  });
+  /* 6. l’intention */
+  add(!!(s.intent&&s.intent.trim().length>8),'Une intention écrite', (s.intent&&s.intent.trim().length>8)
+    ? 'Tu as écrit ce que tu cherches. C’est ce qui me permet de juger la chanson sur SON projet, pas sur un idéal abstrait.'
+    : 'Tu n’as pas écrit ce que cette chanson cherche à faire. Une ligne suffit ("la colère froide de quelqu’un qui part sans claquer la porte"). Sans ça, personne — ni toi, ni moi — ne peut dire si elle est réussie ou ratée.');
+  return out;
+}
+
+/* ---- le dossier : ce qui part chez Claude ---- */
+function sgBarLine(s,sec,bi){
+  const c=sec.bars[bi], cells=[];
+  for(let k=0;k<SG_SPB;k++){ const v=sec.mel[bi*SG_SPB+k];
+    if(v===0) cells.push('·');
+    else if(v===-1) cells.push('⌒');
+    else cells.push(sgMelName(v,s)+'('+sgDegLabel(v)+')'+(sgIsCT(v,c,s)?'':'*')); }
+  return 'm'+(bi+1)+' ['+sgChName(c,s)+']  '+cells.join('  ');
+}
+function sgDossier(s){
+  const L=[], dt=x=>new Date(x).toISOString().slice(0,10);
+  L.push('# '+s.t);
+  L.push('');
+  L.push('- **Tonalité** : '+sgKeyName(s)+'  ('+sgN(s.root,s)+(s.mode==='min'?'m':'')+')');
+  L.push('- **Tempo** : '+s.bpm+' BPM, 4/4  (1 pas = 1 temps, 4 pas par mesure)');
+  L.push('- **Gamme utilisée pour les degrés** : '+SG_KEY[s.mode].sc.map((iv,i)=>(i+1)+'='+sgN(s.root+iv,s)).join(' · '));
+  L.push('- **Écrite dans SHRED** le '+dt(s.cr)+', dernière retouche le '+dt(s.up));
+  L.push('- **Ce que je cherche** : '+(s.intent&&s.intent.trim()?s.intent.trim():'⚠️ pas écrit'));
+  L.push('');
+  L.push('Notation de la mélodie : `Note(degré)` sur chaque temps · `·` = silence · `⌒` = la note précédente tient · `*` = note hors de l’accord de la mesure.');
+  L.push('');
+  s.secs.forEach((sec,i)=>{
+    sgMelFix(sec);
+    const st=sgMelStats(s,sec), lines=sgLyrLines(sec), sch=sgRhymeScheme(lines);
+    L.push('## '+(i+1)+'. '+sgKindN(sec.k)+' — '+sec.bars.length+' mesures');
+    L.push('');
+    L.push('**Grille** : '+sec.bars.map(c=>sgChName(c,s)).join(' | ')+'   →   '+sec.bars.map(c=>sgRole(c,s)).join(' – '));
+    L.push('');
+    L.push('**Mélodie** :');
+    L.push('```');
+    if(st) sec.bars.forEach((c,bi)=>L.push(sgBarLine(s,sec,bi)));
+    else L.push('(aucune note écrite)');
+    L.push('```');
+    if(st) L.push('_'+st.n+' notes · ambitus '+st.span+' demi-tons · '+st.rest+' temps de silence · de '+sgPitchName(st.min,s)+' à '+sgPitchName(st.max,s)+'_');
+    L.push('');
+    L.push('**Paroles** :');
+    if(!lines.length) L.push('_(vides)_');
+    else { L.push('');
+      lines.forEach((l,k)=>L.push('> '+l+'   `≈'+sgSyl(l)+' syll · rime '+sch[k]+'`'));
+      L.push('');
+      L.push('_≈'+lines.reduce((a,l)=>a+sgSyl(l),0)+' syllabes pour '+(st?st.n:0)+' notes · schéma de rimes '+sch.join('')+'_'); }
+    L.push('');
+  });
+  const tk=takes().filter(t=>t.sg===s.id);
+  L.push('## Les prises');
+  L.push('');
+  if(!tk.length) L.push('_Aucune prise enregistrée._');
+  else tk.forEach(t=>L.push('- '+t.d+' · '+t.secs+' s · '+(t.label||'prise')));
+  L.push('');
+  L.push('## Ce que je te demande, Claude');
+  L.push('');
+  L.push('Juge cette chanson **durement et précisément**, sans faux équilibre :');
+  L.push('1. **L’harmonie** : la grille tient-elle ? Où est la tension, où est la résolution ? Y a-t-il un accord qui ne sert à rien, ou un accord qui manque ?');
+  L.push('2. **La mélodie contre les accords** : les notes marquées `*` sonnent-elles comme une couleur voulue ou comme une erreur ? Le contour monte-t-il quelque part ? Le refrain a-t-il un sommet ?');
+  L.push('3. **Couplet vs refrain** : y a-t-il vraiment deux parties distinctes, ou une seule déguisée ?');
+  L.push('4. **Les paroles** : prosodie (les syllabes accentuées tombent-elles sur les temps forts ?), images concrètes vs abstraites, clichés à virer, rimes faciles, et est-ce que la phrase-titre est à la bonne place ?');
+  L.push('5. **Contre mon intention** : est-ce que ça fait ce que j’ai écrit vouloir faire ? Si non, où ça déraille.');
+  L.push('6. **Les 3 choses à changer**, classées par impact, avec la modification exacte (quelle mesure, quel accord, quelle note, quel mot).');
+  L.push('');
+  L.push('_Dis-moi aussi ce qui est bon, mais sans me ménager sur le reste._');
+  L.push('');
+  L.push('## Le verdict automatique de l’app (des faits, pas un goût)');
+  L.push('');
+  sgCheck(s).forEach(c=>L.push('- '+(c.ok?'✓':'⚠️')+' **'+c.t+'** — '+c.d.replace(/<[^>]+>/g,'')));
+  return L.join('\n');
+}
+
+/* ---- petits utilitaires ---- */
+function sgStrum(c){ ac(); const ms=Loop.midis(c[0],c[1]); ms.forEach((m,k)=>setTimeout(()=>pluck(m,1.5,.42),k*38)); }
+function dlBlob(blob,name){ try{ const u=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=u; a.download=name; a.style.display='none'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(u); },5000); return true; }catch(e){ return false; } }
+function extOf(m){ m=m||''; if(m.indexOf('mp4')>=0) return 'm4a'; if(m.indexOf('ogg')>=0) return 'ogg'; return 'webm'; }
+function copyText(txt,ta){
+  const done=()=>toast('📋 Copié — collé-le dans Claude');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>fallback()); }
+  else fallback();
+  function fallback(){ if(ta){ ta.focus(); ta.select(); try{ document.execCommand('copy'); done(); }
+    catch(e){ toast('Sélectionne le texte et copie-le à la main'); } } }
+}
+
+/* ================================================================
+   LES ÉCRANS
+   ================================================================ */
+function openStudio(){
+  ac(); markDay(); SLoop.stop();
+  openOverlay('Le Studio', inner=>{
+    inner.appendChild(el('p','lead','Tes chansons. Une grille, une mélodie, des paroles, une prise — puis un <b>dossier</b> que tu me colles pour que je la démonte.'));
+    const songs=sgAll();
+    if(!songs.length){
+      inner.appendChild(el('div','theory',`<h3>Rien encore</h3>
+        <p>Une chanson finie et moyenne t’apprend dix fois plus que trois chansons parfaites jamais terminées. On commence par le squelette : <b>4 accords</b>, <b>8 notes</b>, <b>deux lignes</b>. Le reste vient après.</p>`));
+    }
+    const nb=el('button','btn','＋ Nouvelle chanson'); nb.onclick=()=>openSgNew(); inner.appendChild(nb);
+    songs.forEach(s=>{
+      const c=el('div','catcard'); const st=sgState(s);
+      c.innerHTML=`<div class="ico">🎵</div><div class="t"><b>${sgEsc(s.t)}</b>
+        <small>${sgKeyName(s)} · ${s.bpm} BPM · ${s.secs.length} parties</small>
+        <div style="margin-top:4px">${st.chips}</div></div><div class="pc">›</div>`;
+      c.onclick=()=>openSg(s.id); inner.appendChild(c);
+    });
+    const m=el('div','card'); m.innerHTML='<b>Avant d’écrire</b>';
+    const m1=el('button','btn ghost','📖 La méthode (la leçon)'); m1.onclick=()=>openSongwriting();
+    const m2=el('button','btn ghost','🎙 Mes prises de chansons'); m2.onclick=()=>openTakes('song');
+    m.append(m1,m2); inner.appendChild(m);
+    inner.appendChild(el('div','theory',`<div class="tip">⚠️ <b>Ce que je peux juger, et ce que je ne peux pas.</b> Je lis la musique : accords, mélodie, paroles, prosodie — là, je suis utile et sévère. Je <b>n’entends pas</b> ton audio : ni ton timbre, ni ton grain, ni l’émotion. Ce que je peux faire d’un fichier, c’est le <b>mesurer</b> (justesse en cents, tempo, régularité). Le goût, c’est toi.</div>`));
+  });
+}
+function sgState(s){
+  const nCh=s.secs.reduce((a,x)=>a+x.bars.length,0);
+  const nMel=s.secs.reduce((a,x)=>a+sgNotes(x).length,0);
+  const nLyr=s.secs.reduce((a,x)=>a+sgLyrLines(x).length,0);
+  const nTk=takes().filter(t=>t.sg===s.id).length;
+  const chip=(ok,t)=>`<span class="sgchip${ok?' ok':''}">${ok?'✓ ':''}${t}</span>`;
+  return { nCh, nMel, nLyr, nTk,
+    chips: chip(nCh>0,'grille')+chip(nMel>0,'mélodie')+chip(nLyr>0,'paroles')+chip(nTk>0,nTk?nTk+' prise'+(nTk>1?'s':''):'prise') };
+}
+function openSgNew(){ openSgNew2({root:9,mode:'min',bpm:90,t:''}); }
+function openSgNew2(st){ /* re-rendu avec l’état conservé */
+  let root=st.root, mode=st.mode, bpm=st.bpm, t=st.t;
+  openOverlay('Nouvelle chanson', inner=>{
+    inner.appendChild(el('p','lead','Trois décisions, dix secondes. Tout est modifiable ensuite.'));
+    const c1=el('div','card'); c1.innerHTML='<b>Le titre</b>';
+    const ti=el('input','sgin'); ti.placeholder='Sans titre'; ti.value=t||''; ti.oninput=()=>t=ti.value; c1.appendChild(ti); inner.appendChild(c1);
+    const c2=el('div','card'); c2.innerHTML='<b>La tonalité</b>';
+    const mr=el('div','toolrow');
+    [['min','mineur'],['maj','majeur']].forEach(([k,n])=>{ const x=el('div','tag'+(mode===k?' on':''),n);
+      x.onclick=()=>openSgNew2({root,mode:k,bpm,t:ti.value}); mr.appendChild(x); });
+    c2.appendChild(mr);
+    const kr=el('div','toolrow');
+    [4,9,7,2,11,0,5,10,3,8,1,6].forEach(pc=>{ const x=el('div','tag'+(root===pc?' on':''),sgFR(pc,{root:pc,mode}));
+      x.onclick=()=>openSgNew2({root:pc,mode,bpm,t:ti.value}); kr.appendChild(x); });
+    c2.appendChild(kr);
+    const ps=el('button','btn ghost','🔊 Écouter la gamme'); ps.onclick=()=>playScaleUp(root,SG_KEY[mode].sc); c2.appendChild(ps);
+    inner.appendChild(c2);
+    const c3=el('div','card'); c3.innerHTML='<b>Le tempo</b>';
+    const bl=el('div','toolrow');
+    [[68,'lent et lourd'],[84,'mid-tempo'],[96,'qui avance'],[120,'nerveux'],[150,'punk']].forEach(([v,n])=>{
+      const x=el('div','tag'+(bpm===v?' on':''),v+' · '+n); x.onclick=()=>openSgNew2({root,mode,bpm:v,t:ti.value}); bl.appendChild(x); });
+    c3.appendChild(bl); inner.appendChild(c3);
+    const go=el('button','btn','Créer la chanson');
+    go.onclick=()=>{ const s=sgNew(ti.value.trim()||'Sans titre',root,mode,bpm); toast('🎵 Chanson créée'); openSg(s.id); };
+    inner.appendChild(go);
+    inner.appendChild(el('div','theory',`<div class="tip">Mi mineur et La mineur sont les tonalités de la guitare : cordes à vide, accords ouverts, tout tombe sous la main. Et l’app te met déjà <b>deux suites d’accords</b> dans le couplet et le refrain — tu ne commenceras jamais devant une page blanche.</div>`));
+  });
+}
+
+/* ---- l’écran d’une chanson ---- */
+function openSg(id){
+  const s=sgGet(id); if(!s){ openStudio(); return; }
+  ac(); markDay(); SLoop.stop();
+  openOverlay(sgEsc(s.t)||'Chanson', inner=>{
+    /* en-tête : titre, tonalité, tempo */
+    const h=el('div','card'); h.style.borderColor='var(--acc)';
+    h.appendChild(el('b',null,'Le titre'));
+    const ti=el('input','sgin'); ti.value=s.t||''; ti.placeholder='Sans titre'; ti.style.marginTop='6px';
+    ti.oninput=()=>{ s.t=ti.value; sgTouch(s); }; h.appendChild(ti);
+    const meta=el('div','statgrid');
+    meta.innerHTML=`<div class="stat"><b style="font-size:15px">${sgKeyName(s)}</b><small>tonalité</small></div>
+      <div class="stat"><b style="font-size:15px">${s.bpm}</b><small>BPM</small></div>
+      <div class="stat"><b style="font-size:15px">${s.secs.reduce((a,x)=>a+x.bars.length,0)}</b><small>mesures</small></div>`;
+    h.appendChild(meta);
+    const tr=el('div','toolrow');
+    [-8,-4,+4,+8].forEach(d=>{ const x=el('div','tag',(d>0?'+':'')+d+' BPM');
+      x.onclick=()=>{ s.bpm=Math.max(40,Math.min(200,s.bpm+d)); sgTouch(s); openSg(id); }; tr.appendChild(x); });
+    const kx=el('div','tag','♪ tonalité'); kx.onclick=()=>openSgKey(id); tr.appendChild(kx);
+    h.appendChild(tr);
+    const pl=el('button','btn','▶ Écouter toute la chanson');
+    pl.onclick=()=>{ if(SLoop.on){ SLoop.stop(); openSg(id); return; }
+      const P=sgPlan(s,null);
+      SLoop.start(P,s.bpm,{loop:false,count:true,onEnd:()=>{ pl.textContent='▶ Écouter toute la chanson'; }},null);
+      pl.textContent='■ Stop'; };
+    h.appendChild(pl);
+    inner.appendChild(h);
+
+    /* l’intention */
+    const ic=el('div','card');
+    ic.innerHTML='<b>🎯 Ce que cette chanson cherche à faire</b><p class="lead" style="margin:6px 0 8px">Une ligne, concrète. Pas « la tristesse » : <i>« quelqu’un qui part sans claquer la porte »</i>. C’est ce qui permet de juger si elle est réussie — sinon on juge dans le vide.</p>';
+    const ia=el('textarea','sgin'); ia.style.minHeight='70px'; ia.value=s.intent||''; ia.placeholder='La colère froide de…';
+    ia.oninput=()=>{ s.intent=ia.value; sgTouch(s); }; ic.appendChild(ia); inner.appendChild(ic);
+
+    /* les parties */
+    inner.appendChild(el('h1','page','Les parties'));
+    s.secs.forEach((sec,i)=>{
+      sgMelFix(sec);
+      const st=sgMelStats(s,sec), lines=sgLyrLines(sec);
+      const c=el('div','card');
+      c.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
+        <b>${sgKindIc(sec.k)} ${sgKindN(sec.k)}</b>
+        <span style="color:var(--dim);font-size:12px">${sec.bars.length} mesures · ${st?st.n+' notes':'0 note'} · ${lines.length} ligne(s)</span></div>`;
+      const gr=el('div','g12'); gr.style.gridTemplateColumns='repeat('+Math.min(4,sec.bars.length)+',1fr)';
+      const cells=sec.bars.map((ch,bi)=>{ const e=el('div','cell'+(bi?'':' iv'),sgChName(ch,s)+'<small style="display:block;font-size:9px;color:var(--dim)">'+sgRole(ch,s)+'</small>');
+        gr.appendChild(e); return e; });
+      c.appendChild(gr);
+      const r1=el('div','row3');
+      const b1=el('button','btn ghost','🎛 Accords'); b1.onclick=()=>openSgProg(id,i,0);
+      const b2=el('button','btn ghost','🎵 Mélodie'); b2.onclick=()=>openSgMel(id,i);
+      const b3=el('button','btn ghost','✍️ Paroles'); b3.onclick=()=>openSgLyr(id,i);
+      r1.append(b1,b2,b3); c.appendChild(r1);
+      const r2=el('div','toolrow');
+      const p1=el('div','tag on','▶ écouter'); p1.onclick=()=>{ SLoop.stop();
+        SLoop.start(sgPlan(s,i),s.bpm,{loop:false,count:true},b=>cells.forEach((e,k)=>e.classList.toggle('now',k===b))); };
+      const p2=el('div','tag','⧉ dupliquer'); p2.onclick=()=>{ const cp=JSON.parse(JSON.stringify(sec));
+        s.secs.splice(i+1,0,cp); sgTouch(s); openSg(id); };
+      const p3=el('div','tag','↑'); p3.onclick=()=>{ if(i>0){ const x=s.secs.splice(i,1)[0]; s.secs.splice(i-1,0,x); sgTouch(s); openSg(id); } };
+      const p4=el('div','tag','↓'); p4.onclick=()=>{ if(i<s.secs.length-1){ const x=s.secs.splice(i,1)[0]; s.secs.splice(i+1,0,x); sgTouch(s); openSg(id); } };
+      const p5=el('div','tag','🗑'); p5.onclick=()=>{ if(confirm('Supprimer cette partie ?')){ s.secs.splice(i,1); sgTouch(s); openSg(id); } };
+      r2.append(p1,p2,p3,p4,p5); c.appendChild(r2);
+      if(lines.length){ const sch=sgRhymeScheme(lines);
+        const lp=el('div'); lp.style.cssText='margin-top:8px;font-size:13px;color:var(--dim);line-height:1.6';
+        lines.slice(0,2).forEach((l,k)=>{ const d=el('div'); d.textContent='« '+l+' » ≈'+sgSyl(l)+' syll · '+sch[k]; lp.appendChild(d); });
+        if(lines.length>2){ const d=el('div'); d.textContent='…'; lp.appendChild(d); }
+        c.appendChild(lp); }
+      inner.appendChild(c);
+    });
+    const ad=el('div','card'); ad.innerHTML='<b>＋ Ajouter une partie</b>';
+    const ar=el('div','toolrow');
+    SG_KINDS.forEach(([k,n,ic2])=>{ const x=el('div','tag',ic2+' '+n);
+      x.onclick=()=>{ const P=SG_PROGS[s.mode], p=P[Math.floor(Math.random()*P.length)];
+        s.secs.push({k, bars:p.ch.map(c=>[((s.root+c[0])%12+12)%12, c[1]]),
+          mel:new Array(p.ch.length*SG_SPB).fill(0), lyr:''}); sgTouch(s); openSg(id); };
+      ar.appendChild(x); });
+    ad.appendChild(ar);
+    ad.appendChild(el('p','lead','La forme qui marche 9 fois sur 10 : <b>Intro · Couplet · Refrain · Couplet · Refrain · Pont · Refrain</b>. Tu n’as pas besoin d’écrire deux fois le couplet — duplique-le au moment d’enregistrer.'));
+    inner.appendChild(ad);
+
+    /* les actions */
+    const act=el('div','card'); act.style.borderColor='var(--acc2)'; act.innerHTML='<b>Et maintenant</b>';
+    const a1=el('button','btn','🎙 M’enregistrer sur cette chanson'); a1.onclick=()=>openSgRec(id);
+    const a2=el('button','btn ghost','🧠 Le verdict de l’app'); a2.onclick=()=>openSgCoach(id);
+    const a3=el('button','btn ghost','📤 Le dossier pour Claude'); a3.onclick=()=>openSgExport(id);
+    act.append(a1,a2,a3); inner.appendChild(act);
+    const del=el('button','btn ghost','🗑 Supprimer la chanson');
+    del.style.cssText='color:var(--bad);margin-top:18px';
+    del.onclick=()=>{ if(confirm('Supprimer « '+(s.t||'sans titre')+' » définitivement ?')){
+      S.songs=sgAll().filter(x=>x.id!==id); save(); toast('Supprimée'); openStudio(); } };
+    inner.appendChild(del);
+    const back=el('button','btn ghost','← Le Studio'); back.onclick=()=>{ SLoop.stop(); openStudio(); }; inner.appendChild(back);
+  });
+}
+function openSgKey(id){
+  const s=sgGet(id); if(!s) return; SLoop.stop();
+  openOverlay('Changer la tonalité', inner=>{
+    inner.appendChild(el('p','lead','Tout est écrit en <b>degrés</b> : changer de tonalité transpose la grille ET la mélodie, sans rien casser. Tu peux donc chercher la tonalité qui tombe le mieux dans ta voix.'));
+    const mr=el('div','toolrow');
+    [['min','mineur'],['maj','majeur']].forEach(([k,n])=>{ const x=el('div','tag'+(s.mode===k?' on':''),n);
+      x.onclick=()=>{ sgTranspose(s,s.root,k); openSgKey(id); }; mr.appendChild(x); });
+    inner.appendChild(mr);
+    const kr=el('div','toolrow');
+    [4,9,7,2,11,0,5,10,3,8,1,6].forEach(pc=>{ const x=el('div','tag'+(s.root===pc?' on':''),sgFR(pc,{root:pc,mode:s.mode}));
+      x.onclick=()=>{ sgTranspose(s,pc,s.mode); openSgKey(id); }; kr.appendChild(x); });
+    inner.appendChild(kr);
+    const c=el('div','card'); c.innerHTML=`<b>${sgKeyName(s)}</b><p class="lead" style="margin:6px 0 0">Notes de la gamme : ${SG_KEY[s.mode].sc.map((iv,i)=>'<b>'+(i+1)+'</b>='+sgN(s.root+iv,s)).join(' · ')}</p>`;
+    const p=el('button','btn ghost','🔊 Écouter la gamme'); p.onclick=()=>playScaleUp(s.root,SG_KEY[s.mode].sc); c.appendChild(p);
+    inner.appendChild(c);
+    const back=el('button','btn','← La chanson'); back.onclick=()=>openSg(id); inner.appendChild(back);
+  });
+}
+function sgTranspose(s,root,mode){
+  const d=((root-s.root)%12+12)%12;
+  s.secs.forEach(sec=>{ sec.bars=sec.bars.map(c=>[((c[0]+d)%12+12)%12, c[1]]); });
+  s.root=root; s.mode=mode; sgTouch(s);
+}
+
+/* ---- l’éditeur d’accords ---- */
+let _sgBar=0;
+function openSgProg(id,si,sel){
+  const s=sgGet(id); if(!s) return; const sec=s.secs[si]; if(!sec) return;
+  ac(); SLoop.stop(); sgMelFix(sec);
+  if(sel!=null) _sgBar=sel;
+  if(_sgBar>=sec.bars.length) _sgBar=sec.bars.length-1;
+  const selBar=_sgBar;
+  openOverlay(sgKindN(sec.k)+' · les accords', inner=>{
+    const K=SG_KEY[s.mode];
+    /* longueur */
+    const lc=el('div','card'); lc.innerHTML='<b>Combien de mesures</b>';
+    const lr=el('div','toolrow');
+    [2,4,8].forEach(n=>{ const x=el('div','tag'+(sec.bars.length===n?' on':''),n+' mesures');
+      x.onclick=()=>{ const old=sec.bars.slice(); const out=[];
+        for(let i=0;i<n;i++) out.push(old[i%old.length].slice());
+        sec.bars=out; sgMelFix(sec); sgTouch(s); openSgProg(id,si); }; lr.appendChild(x); });
+    lc.appendChild(lr);
+    lc.appendChild(el('p','lead','4 mesures, c’est la boucle par défaut de 90 % du rock. 2 mesures = obsédant. 8 = une vraie histoire, mais il faut la tenir.'));
+    inner.appendChild(lc);
+    /* la grille */
+    const gc=el('div','card'); gc.innerHTML='<b>Ta grille</b><p class="lead" style="margin:6px 0 8px">Tape une mesure, puis choisis son accord dessous.</p>';
+    const gr=el('div','g12'); gr.style.gridTemplateColumns='repeat('+Math.min(4,sec.bars.length)+',1fr)';
+    const cells=sec.bars.map((ch,bi)=>{
+      const e=el('div','cell'+(bi===selBar?' iv':''),sgChName(ch,s)+'<small style="display:block;font-size:9px;color:var(--dim)">'+sgRole(ch,s)+'</small>');
+      e.onclick=()=>{ sgStrum(ch); openSgProg(id,si,bi); }; gr.appendChild(e); return e; });
+    gc.appendChild(gr);
+    const pb=el('button','btn','▶ Boucler la grille');
+    pb.onclick=()=>{ if(SLoop.on){ SLoop.stop(); pb.textContent='▶ Boucler la grille'; cells.forEach(e=>e.classList.remove('now')); }
+      else { SLoop.start(sgPlan(s,si),s.bpm,{loop:true,mel:false},b=>cells.forEach((e,k)=>e.classList.toggle('now',k===b)));
+        pb.textContent='■ Stop'; } };
+    gc.appendChild(pb);
+    const pb2=el('button','btn ghost','▶ Boucler avec la mélodie');
+    pb2.onclick=()=>{ SLoop.stop(); SLoop.start(sgPlan(s,si),s.bpm,{loop:true},b=>cells.forEach((e,k)=>e.classList.toggle('now',k===b))); };
+    gc.appendChild(pb2);
+    inner.appendChild(gc);
+    /* le choix d’accord pour la mesure sélectionnée */
+    const pc=el('div','card'); pc.style.borderColor='var(--acc)';
+    pc.innerHTML=`<b>Mesure ${selBar+1} — quel accord ?</b>`;
+    const put=(root,type)=>{ sec.bars[selBar]=[((s.root+root)%12+12)%12, type]; sgStrum(sec.bars[selBar]);
+      sgTouch(s); openSgProg(id,si,Math.min(sec.bars.length-1,selBar+1)); };
+    const dg=el('div','toolrow');
+    K.deg.forEach(([lab,iv,ty,role])=>{ const cur=sec.bars[selBar], on=(((cur[0]-s.root)%12+12)%12===iv&&cur[1]===ty);
+      const x=el('div','tag'+(on?' on':''),sgN(s.root+iv,s)+CH_SUF[ty]+' · '+lab); x.onclick=()=>put(iv,ty); dg.appendChild(x); });
+    pc.appendChild(dg);
+    pc.appendChild(el('p','lead','Les 6 accords de ta tonalité : ils sonneront <b>toujours</b> ensemble, quoi que tu fasses.'));
+    const cl=el('div'); cl.innerHTML='<b style="font-size:13px">🎨 Les couleurs (hors des 6)</b>';
+    K.col.forEach(([lab,iv,ty,why])=>{
+      const b=el('button','btn ghost',sgN(s.root+iv,s)+CH_SUF[ty]+' · '+lab);
+      b.style.textAlign='left'; b.onclick=()=>put(iv,ty); cl.appendChild(b);
+      const p=el('p','lead'); p.style.cssText='margin:4px 0 10px;font-size:12.5px'; p.innerHTML=why; cl.appendChild(p); });
+    pc.appendChild(cl);
+    const role=K.deg.find(d=>((sec.bars[selBar][0]-s.root)%12+12)%12===d[1]&&sec.bars[selBar][1]===d[2]);
+    if(role) pc.appendChild(el('div','clogic',`<div class="deg">${role[0]}</div>${sgChName(sec.bars[selBar],s)} — ${role[3]}.`));
+    inner.appendChild(pc);
+    /* voler une suite */
+    const st=el('div','card'); st.innerHTML='<b>🎼 Voler une suite qui marche</b><p class="lead" style="margin:6px 0 8px">Elles sont écrites en degrés : tu les récupères directement dans <b>ta</b> tonalité.</p>';
+    SG_PROGS[s.mode].forEach(p=>{
+      const line=el('div'); line.style.cssText='border-top:1px solid var(--line);padding:10px 0';
+      const nm=el('div'); nm.style.cssText='display:flex;justify-content:space-between;align-items:baseline';
+      nm.innerHTML=`<b style="font-size:14px">${p.n}</b><span style="color:var(--acc);font-weight:800;font-size:13px">${p.ch.map(c=>sgN(s.root+c[0],s)+CH_SUF[c[1]]).join(' · ')}</span>`;
+      line.appendChild(nm);
+      const w=el('p','lead'); w.style.cssText='margin:6px 0 8px;font-size:12.5px'; w.innerHTML=p.w; line.appendChild(w);
+      const r=el('div','toolrow');
+      const e=el('div','tag','🔊 écouter'); e.onclick=()=>{ SLoop.stop();
+        const P={bars:p.ch.map(c=>({ch:[((s.root+c[0])%12+12)%12,c[1]]})),notes:[],secs:[],s};
+        SLoop.start(P,s.bpm,{loop:false,mel:false}); };
+      const u=el('div','tag on','la prendre'); u.onclick=()=>{ SLoop.stop();
+        const n=sec.bars.length, out=[]; for(let i=0;i<n;i++){ const c=p.ch[i%p.ch.length]; out.push([((s.root+c[0])%12+12)%12,c[1]]); }
+        sec.bars=out; sgTouch(s); toast('Grille remplacée'); openSgProg(id,si); };
+      r.append(e,u); line.appendChild(r); st.appendChild(line); });
+    inner.appendChild(st);
+    const back=el('button','btn','← La chanson'); back.onclick=()=>{ SLoop.stop(); openSg(id); }; inner.appendChild(back);
+  });
+}
+
+/* ---- l’éditeur de mélodie ---- */
+let _sgBrush=1;
+function openSgMel(id,si){
+  const s=sgGet(id); if(!s) return; const sec=s.secs[si]; if(!sec) return;
+  ac(); SLoop.stop(); sgMelFix(sec);
+  openOverlay(sgKindN(sec.k)+' · la mélodie', inner=>{
+    inner.appendChild(el('p','lead','Un pas = <b>un temps</b>. Choisis un degré dans la palette, puis tape les cases. <b>·</b> efface (silence), <b>⌒</b> fait tenir la note précédente.'));
+    /* la palette */
+    const pal=el('div','card'); pal.innerHTML='<b>La palette</b>';
+    const pg=el('div','sgpal');
+    const mk=(v,main,sub,on)=>{ const x=el('div','p'+(on?' on':''),main+(sub?'<small>'+sub+'</small>':''));
+      x.onclick=()=>{ _sgBrush=v; if(v>0) pluck(sgMelMidi(v,s),1.1,.5); openSgMel(id,si); }; pg.appendChild(x); };
+    mk(0,'·','silence',_sgBrush===0); mk(-1,'⌒','tenue',_sgBrush===-1);
+    for(let v=1;v<=SG_DEGMAX;v++) mk(v,sgMelName(v,s),'deg. '+sgDegLabel(v),_sgBrush===v);
+    pal.appendChild(pg);
+    pal.appendChild(el('p','lead','Les degrés <b>1</b>, <b>3</b> et <b>5</b> sont les notes de la maison : une mélodie qui s’y pose sonne juste à coup sûr. Le <b>·8</b> est la même note, une octave plus haut — c’est comme ça qu’on fait monter un refrain.'));
+    inner.appendChild(pal);
+    /* la grille */
+    const gc=el('div','card'); gc.innerHTML='<b>Ta mélodie</b>';
+    const rows=[];
+    sec.bars.forEach((ch,bi)=>{
+      const row=el('div','sgrow');
+      const lab=el('div','bn',sgChName(ch,s)); row.appendChild(lab);
+      const cs=[];
+      for(let k=0;k<SG_SPB;k++){
+        const idx=bi*SG_SPB+k, v=sec.mel[idx];
+        const e=el('div','sgc'+(v>0&&sgIsCT(v,ch,s)?' ct':'')+(v===-1?' hold':''));
+        e.innerHTML = v>0 ? sgMelName(v,s)+'<small>'+sgDegLabel(v)+'</small>' : (v===-1?'⌒':'·');
+        e.onclick=()=>{ sec.mel[idx]=_sgBrush; if(idx===0&&_sgBrush===-1) sec.mel[0]=0;
+          if(_sgBrush>0) pluck(sgMelMidi(_sgBrush,s),1.2,.55); sgTouch(s); openSgMel(id,si); };
+        row.appendChild(e); cs.push(e);
+      }
+      gc.appendChild(row); rows.push({row,cs});
+    });
+    const r=el('div','row3'); r.style.marginTop='10px';
+    const p1=el('button','btn','▶ Tout'); const p2=el('button','btn ghost','▶ Mélodie'); const p3=el('button','btn ghost','▶ Accords');
+    const hi=b=>rows.forEach((x,k)=>x.row.style.opacity=(k===b?'1':'.45'));
+    p1.onclick=()=>{ SLoop.stop(); SLoop.start(sgPlan(s,si),s.bpm,{loop:false,count:true,onEnd:()=>hi(-1)},hi); };
+    p2.onclick=()=>{ SLoop.stop(); SLoop.start(sgPlan(s,si),s.bpm,{loop:false,count:true,ch:false,onEnd:()=>hi(-1)},hi); };
+    p3.onclick=()=>{ SLoop.stop(); SLoop.start(sgPlan(s,si),s.bpm,{loop:true,mel:false},hi); };
+    r.append(p1,p2,p3); gc.appendChild(r);
+    const r2=el('div','toolrow');
+    const i1=el('div','tag on','🎲 Une idée'); i1.onclick=()=>{ sec.mel=sgIdea(s,sec); sgTouch(s);
+      SLoop.stop(); openSgMel(id,si); toast('Idée posée — garde ce qui te plaît, change le reste'); };
+    const i2=el('div','tag','🧹 Effacer'); i2.onclick=()=>{ if(confirm('Effacer la mélodie de cette partie ?')){
+      sec.mel=new Array(sec.bars.length*SG_SPB).fill(0); sgTouch(s); openSgMel(id,si); } };
+    /* ⚠️ Transposer en écrêtant écrasait les degrés les uns sur les autres
+       (toute la mélodie finissait sur la même note) : on ne bouge que si
+       TOUTE la mélodie peut bouger. */
+    const i3=el('div','tag','⇧ +1 octave'); i3.onclick=()=>{
+      if(sgNotes(sec).some(n=>n.v+7>SG_DEGMAX)){ toast('Impossible : la palette s’arrête au degré '+SG_DEGMAX); return; }
+      sec.mel=sec.mel.map(v=>v>0?v+7:v); sgTouch(s); openSgMel(id,si); };
+    const i4=el('div','tag','⇩ −1 octave'); i4.onclick=()=>{
+      if(sgNotes(sec).some(n=>n.v-7<1)){ toast('Impossible : tu es déjà dans l’octave du bas'); return; }
+      sec.mel=sec.mel.map(v=>v>0?v-7:v); sgTouch(s); openSgMel(id,si); };
+    r2.append(i1,i2,i3,i4); gc.appendChild(r2);
+    inner.appendChild(gc);
+    /* ce que dit la mélodie */
+    const st=sgMelStats(s,sec);
+    const an=el('div','card'); an.innerHTML='<b>Ce que ta mélodie fait</b>';
+    if(!st) an.appendChild(el('p','lead','Rien encore. Tape « 🎲 Une idée » : l’app pose des notes de l’accord, tu les déplaces ensuite. Personne ne part d’une page blanche.'));
+    else{
+      const out=sgNotes(sec).filter(n=>!sgIsCT(n.v,sec.bars[Math.floor(n.i/SG_SPB)],s));
+      an.innerHTML+=`<div class="statgrid" style="margin-top:8px">
+        <div class="stat"><b>${st.n}</b><small>notes</small></div>
+        <div class="stat"><b>${st.span}</b><small>demi-tons d’écart</small></div>
+        <div class="stat"><b>${st.rest}</b><small>temps de silence</small></div></div>`;
+      const p=el('p','lead'); p.style.margin='10px 0 0';
+      p.innerHTML = (st.rest===0?'⚠️ <b>Aucun silence.</b> Tu chantes sur tous les temps : impossible à respirer, impossible à retenir. Enlève deux notes. ':'')
+        + (st.span>14?'⚠️ <b>'+st.span+' demi-tons d’écart</b> : trop large pour une voix, tu casseras en haut ou en bas. ':'')
+        + (out.length?'<b>'+out.length+' note(s) hors de l’accord</b> de leur mesure ('+out.map(n=>sgMelName(n.v,s)).join(', ')+'). Ce n’est pas une faute : une note étrangère tenue est exactement ce qui fait « pro » — mais posée par hasard sur un temps fort, elle sonne fausse. Écoute-la isolée.'
+             :'Toutes tes notes sont dans l’accord de leur mesure : ça sonnera juste, et un peu sage. Une note étrangère bien placée donne du relief.');
+      an.appendChild(p);
+    }
+    inner.appendChild(an);
+    /* où c’est sur le manche */
+    if(st){ const fbc=el('div','card'); fbc.innerHTML='<b>🎸 Où sont ces notes</b>';
+      const pcs=[...new Set(sgNotes(sec).map(n=>sgMelMidi(n.v,s)%12))];
+      const names={}; sgNotes(sec).forEach(n=>{ names[sgMelMidi(n.v,s)%12]=String(sgDegOf(n.v)); });
+      const fb=buildFretboard((st2,f)=>pluck(midiAt(st2,f))); fbc.appendChild(fb);
+      paintScale(fb,s.root,pcs,{names});
+      fbc.appendChild(el('p','lead','Les notes de ta mélodie, en <b>degrés</b>, partout sur le manche (la tonique en rouge). C’est là que tu la retrouves à la guitare pour la doubler — le truc de Cobain sur <i>Come As You Are</i>.'));
+      inner.appendChild(fbc); }
+    const back=el('button','btn','← La chanson'); back.onclick=()=>{ SLoop.stop(); openSg(id); }; inner.appendChild(back);
+  });
+}
+
+/* ---- l’éditeur de paroles ---- */
+function openSgLyr(id,si){
+  const s=sgGet(id); if(!s) return; const sec=s.secs[si]; if(!sec) return;
+  SLoop.stop(); sgMelFix(sec);
+  openOverlay(sgKindN(sec.k)+' · les paroles', inner=>{
+    const st=sgMelStats(s,sec);
+    inner.appendChild(el('p','lead','Une ligne par ligne chantée. L’app compte les syllabes et repère les rimes — <b>approximativement</b> : en français, le compte dépend de la façon dont tu chantes le « e » muet. Prends-le comme un ordre de grandeur.'));
+    const c=el('div','card');
+    const ta=el('textarea','sgin'); ta.value=sec.lyr||'';
+    ta.placeholder=(sec.k==='refrain'?'La phrase-titre, celle qu’on retiendra…':'Une image concrète, pas un concept…');
+    const an=el('div'); an.style.marginTop='12px';
+    function paint(){
+      an.innerHTML='';
+      const lines=sgLyrLines(sec), sch=sgRhymeScheme(lines);
+      const tot=lines.reduce((a,l)=>a+sgSyl(l),0);
+      if(!lines.length){ an.appendChild(el('p','lead','Rien encore.')); return; }
+      lines.forEach((l,k)=>{ const d=el('div','sgline');
+        const a=el('span'); a.textContent=l; a.style.cssText='flex:1;min-width:0';
+        const b=el('b'); b.textContent='≈'+sgSyl(l)+' · '+sch[k]; b.style.flexShrink='0';
+        d.append(a,b); an.appendChild(d); });
+      const sum=el('p','lead'); sum.style.margin='10px 0 0';
+      const nn=st?st.n:0;
+      sum.innerHTML=`<b>≈${tot} syllabes</b> pour <b>${nn} notes</b> de mélodie. `+
+        (!nn?'Écris la mélodie et je te dirai si les mots rentrent.'
+         : tot>nn+2?'⚠️ Trop de mots : '+(tot-nn)+' syllabes n’ont pas de note. Coupe des mots, ou découpe des tenues (⌒) en deux notes.'
+         : tot<nn-2?'⚠️ Trop de notes : '+(nn-tot)+' notes n’ont pas de syllabe. Allonge des voyelles (remplace des notes par des tenues) ou écris plus.'
+         : '✓ Ça rentre.')+
+        `<br>Schéma de rimes : <b>${sch.join('')}</b>. ${sch.length>=2&&new Set(sch).size===1?'Toutes les lignes riment pareil — ça devient une litanie ; alterne (ABAB) pour respirer.':'ABAB et AABB marchent tous les deux ; le piège, c’est la rime riche et attendue (amour/toujours).'}`;
+      an.appendChild(sum);
+    }
+    let th=null;
+    ta.oninput=()=>{ sec.lyr=ta.value; clearTimeout(th); th=setTimeout(()=>{ sgTouch(s); paint(); },350); };
+    c.appendChild(ta); c.appendChild(an); paint(); inner.appendChild(c);
+    const pb=el('button','btn','▶ La partie, pour chanter dessus');
+    pb.onclick=()=>{ SLoop.stop(); SLoop.start(sgPlan(s,si),s.bpm,{loop:true,mel:false,count:true}); };
+    inner.appendChild(pb);
+    const pb2=el('button','btn ghost','▶ Avec la mélodie (pour trouver les hauteurs)');
+    pb2.onclick=()=>{ SLoop.stop(); SLoop.start(sgPlan(s,si),s.bpm,{loop:true,count:true}); };
+    inner.appendChild(pb2);
+    inner.appendChild(el('div','theory',`<h3>Les trois règles qui changent tout</h3>
+      <p><b>1. Les syllabes accentuées tombent sur les temps forts.</b> En français l’accent est sur la <b>dernière</b> syllabe du groupe : « je m’en <u>vais</u> » — le « vais » doit tomber sur le 1 ou le 3, jamais entre deux temps. C’est la faute n°1 des paroles françaises, et elle s’entend immédiatement.</p>
+      <p><b>2. Concret bat abstrait.</b> « La porte a claqué deux fois » vaut dix fois « la douleur de la séparation ». Une image qu’on peut voir laisse l’auditeur projeter la sienne.</p>
+      <p><b>3. Le refrain assène, le couplet raconte.</b> Ta phrase-titre va dans le refrain, et elle revient. Si dans trois jours tu ne fredonnes qu’un morceau de ta chanson, ça doit être celui-là.</p>
+      <div class="tip">Le flou évocateur à la Cobain est une <b>force</b> — à condition que les images soient concrètes et le sens ouvert. Le flou qui ne dit rien, c’est autre chose : ce sont des mots posés pour remplir. La différence se voit à une question : <i>est-ce que je pourrais dessiner ce que je viens d’écrire ?</i></div>`));
+    const back=el('button','btn ghost','← La chanson'); back.onclick=()=>{ SLoop.stop(); openSg(id); }; inner.appendChild(back);
+  });
+}
+
+/* ---- le verdict ---- */
+function openSgCoach(id){
+  const s=sgGet(id); if(!s) return; SLoop.stop();
+  openOverlay('Le verdict de l’app', inner=>{
+    const ch=sgCheck(s), ko=ch.filter(c=>!c.ok).length;
+    const h=el('div','card'); h.style.borderColor=ko?'var(--bad)':'var(--ok)';
+    h.innerHTML=`<div class="qhead"><div class="q">${ch.length-ko}/${ch.length}</div>
+      <div class="sub">${ko?ko+' point(s) à regarder':'rien à signaler côté faits'}</div></div>
+      <p class="lead" style="margin:10px 0 0">Ce ne sont pas des règles de goût : ce sont des <b>faits vérifiables</b> sur ce que tu as écrit. L’app ne sait pas si ta chanson est belle — elle sait si ton refrain est plus haut que ton couplet.</p>`;
+    inner.appendChild(h);
+    ch.forEach(c=>{ const d=el('div','card');
+      d.style.borderColor=c.ok?'var(--line)':'var(--acc2)';
+      d.innerHTML=`<b>${c.ok?'✓':'⚠️'} ${c.t}</b><p class="lead" style="margin:6px 0 0">${c.d}</p>`;
+      inner.appendChild(d); });
+    const b=el('button','btn','📤 Le dossier pour Claude'); b.onclick=()=>openSgExport(id); inner.appendChild(b);
+    const back=el('button','btn ghost','← La chanson'); back.onclick=()=>openSg(id); inner.appendChild(back);
+  });
+}
+
+/* ---- le dossier ---- */
+function openSgExport(id){
+  const s=sgGet(id); if(!s) return; SLoop.stop();
+  const txt=sgDossier(s);
+  openOverlay('Le dossier', inner=>{
+    inner.appendChild(el('div','theory',`<h3>Comment me l’envoyer</h3>
+      <p><b>1.</b> Copie le dossier ci-dessous. <b>2.</b> Colle-le dans Claude Code. <b>3.</b> Écris : <i>« juge cette chanson »</i>.</p>
+      <p>Le dossier contient tout ce qui se lit : la grille en accords ET en degrés, la mélodie note par note avec les notes hors accord marquées, les paroles avec les syllabes et les rimes, ton intention, et le verdict automatique. C’est assez pour une critique sérieuse.</p>
+      <div class="tip">🎙 <b>Pour l’audio, c’est différent</b> : je ne l’entends pas. Mais je peux le <b>mesurer</b> — justesse en cents, est-ce que tu chantes bien les notes que tu as écrites, dérive de tempo. Télécharge la prise (bouton ⬇️ dans « Mes prises »), mets le fichier sur ton Mac, et dis-moi où il est.</div>`));
+    const c=el('div','card');
+    const ta=el('textarea','sgin'); ta.value=txt; ta.style.minHeight='260px'; ta.readOnly=true;
+    ta.onclick=()=>{ ta.select(); };
+    c.appendChild(ta);
+    const b1=el('button','btn','📋 Copier le dossier'); b1.onclick=()=>copyText(txt,ta); c.appendChild(b1);
+    const b2=el('button','btn ghost','⬇️ Télécharger en .md');
+    b2.onclick=()=>{ const nm=(s.t||'chanson').replace(/[^a-zA-Z0-9À-ÿ ]/g,'').trim().replace(/\s+/g,'-').toLowerCase();
+      if(dlBlob(new Blob([txt],{type:'text/markdown'}),'chanson-'+(nm||'sans-titre')+'.md')) toast('⬇️ Téléchargé');
+      else toast('Téléchargement refusé — copie le texte'); };
+    c.appendChild(b2);
+    inner.appendChild(c);
+    const back=el('button','btn ghost','← La chanson'); back.onclick=()=>openSg(id); inner.appendChild(back);
+  });
+}
+
+/* ---- la prise : s’enregistrer sur sa propre chanson ----
+   ⚠️ Le micro entend AUSSI la boucle de l’app si elle sort par le
+   haut-parleur. C’est dit à l’écran : casque, ou clic seul, ou rien. */
+function openSgRec(id){
+  const s=sgGet(id); if(!s) return; SLoop.stop();
+  let secs=90, acc='clic', only=null;
+  openOverlay('Enregistrer · '+sgEsc(s.t||'chanson'), inner=>{
+    if(!recSupported()){
+      inner.appendChild(el('div','card',`<b>🎙 Le micro n’est pas disponible ici</b>
+        <p class="lead" style="margin:6px 0 0">Ouvre l’app depuis <b>niclaeysthomas-ctrl.github.io/shred/</b> (il faut du HTTPS) — et sur iPhone, garde Safari.</p>`));
+      const b=el('button','btn ghost','← La chanson'); b.onclick=()=>openSg(id); inner.appendChild(b); return;
+    }
+    const setup=el('div'); inner.appendChild(setup);
+    function opts(){
+      setup.innerHTML='';
+      const c1=el('div','card'); c1.innerHTML='<b>Combien de temps</b>';
+      const r1=el('div','toolrow');
+      [[45,'45 s · une partie'],[90,'90 s · couplet + refrain'],[180,'3 min · la chanson entière']].forEach(([v,n])=>{
+        const x=el('div','tag'+(secs===v?' on':''),n); x.onclick=()=>{ secs=v; opts(); }; r1.appendChild(x); });
+      c1.appendChild(r1); setup.appendChild(c1);
+      const c2=el('div','card'); c2.innerHTML='<b>Avec quoi</b>';
+      const r2=el('div','toolrow');
+      [['clic','🥁 Le clic seulement'],['boucle','🎛 La boucle (accords)'],['rien','🤫 Rien du tout']].forEach(([v,n])=>{
+        const x=el('div','tag'+(acc===v?' on':''),n); x.onclick=()=>{ acc=v; opts(); }; r2.appendChild(x); });
+      c2.appendChild(r2);
+      c2.appendChild(el('p','lead',acc==='boucle'
+        ? '⚠️ <b>Mets un casque.</b> Sans casque, le micro enregistre aussi la boucle : tu ne pourras plus juger ta voix, et moi non plus je ne pourrai rien mesurer.'
+        : acc==='clic' ? 'Le clic te garde en place sans polluer la prise. C’est le bon choix par défaut : avec un clic régulier, je peux mesurer ta dérive de tempo.'
+        : 'À sec. Le plus dur, le plus révélateur — et impossible à mesurer côté tempo.'));
+      setup.appendChild(c2);
+      const c3=el('div','card'); c3.innerHTML='<b>Quoi</b>';
+      const r3=el('div','toolrow');
+      const xa=el('div','tag'+(only===null?' on':''),'Toute la chanson'); xa.onclick=()=>{ only=null; opts(); }; r3.appendChild(xa);
+      s.secs.forEach((sec,i)=>{ const x=el('div','tag'+(only===i?' on':''),sgKindIc(sec.k)+' '+sgKindN(sec.k));
+        x.onclick=()=>{ only=i; opts(); }; r3.appendChild(x); });
+      c3.appendChild(r3); setup.appendChild(c3);
+      const go=el('button','btn','🔴 Enregistrer ('+secs+' s)'); go.onclick=()=>run(); setup.appendChild(go);
+      setup.appendChild(el('div','theory',`<div class="tip">Pose le téléphone et joue. <b>Ne recommence pas</b> : une prise ratée est une donnée, pas un échec — et une chanson enregistrée moyennement vaut mille fois une chanson jamais enregistrée.</div>`));
+      const tk=takes().filter(t=>t.sg===s.id);
+      if(tk.length){ const b=el('button','btn ghost','🎧 Mes prises sur cette chanson ('+tk.length+')');
+        b.onclick=()=>openTakes('song'); setup.appendChild(b); }
+      const back=el('button','btn ghost','← La chanson'); back.onclick=()=>openSg(id); setup.appendChild(back);
+    }
+    function run(){
+      setup.innerHTML='';
+      const head=el('div','card'); head.style.borderColor='var(--bad)';
+      head.innerHTML=`<div class="qhead"><div class="q" style="font-size:40px;color:var(--bad)">● 0.0s</div><div class="sub">joue</div></div>`;
+      const bar=el('div','bxbar'); const fill=el('i'); bar.appendChild(fill); head.appendChild(bar);
+      const stopB=el('button','btn ghost','■ Arrêter maintenant'); head.appendChild(stopB);
+      stopB.onclick=()=>Rec.stop(); setup.appendChild(head);
+      if(acc!=='rien') SLoop.start(sgPlan(s,only),s.bpm,{loop:true,mel:false,click:acc==='clic',ch:acc==='boucle',count:false});
+      Rec.start(secs, t=>{ head.querySelector('.q').textContent='● '+t.toFixed(1)+'s'; fill.style.width=(100*t/secs)+'%'; },
+        async blob=>{
+          SLoop.stop();
+          const tid='tk'+Date.now();
+          let stored=false; try{ await TDB.put(tid,blob); stored=true; }catch(e){}
+          takes().push({ id:tid, ts:Date.now(), d:today(), secs, kind:'song', sg:s.id, mime:blob.type||'',
+            label:(s.t||'chanson')+(only!=null?' · '+sgKindN(s.secs[only].k):'') });
+          dayRec().tk++; save(); pruneTakes();
+          setup.innerHTML='';
+          const c=el('div','card'); c.style.borderColor='var(--ok)';
+          c.innerHTML=`<div class="qhead"><div class="q" style="color:var(--ok)">✓ gardée</div>
+            <div class="sub">${stored?'Elle est dans tes prises.':'⚠️ le son n’a pas pu être stocké (navigation privée ?)'}</div></div>`;
+          if(stored){ const a=document.createElement('audio'); a.controls=true; a.style.cssText='width:100%;margin-top:12px';
+            a.src=URL.createObjectURL(blob); c.appendChild(a);
+            const dl=el('button','btn','⬇️ Télécharger le fichier');
+            dl.onclick=()=>{ const nm='shred-'+(s.t||'chanson').replace(/[^a-zA-Z0-9]/g,'-').toLowerCase()+'-'+today()+'.'+extOf(blob.type);
+              if(dlBlob(blob,nm)) toast('⬇️ '+nm); else toast('Téléchargement refusé par le navigateur'); };
+            c.appendChild(dl); }
+          setup.appendChild(c);
+          setup.appendChild(el('div','theory',`<h3>Pour que je la mesure</h3>
+            <p>Je <b>n’entends pas</b> ce fichier — aucun son n’entre chez moi. Mais je peux le passer à l’analyse : <b>justesse en cents</b>, est-ce que tu chantes les notes que tu as écrites, <b>dérive de tempo</b>, régularité des attaques, dynamique.</p>
+            <p>Télécharge le fichier, mets-le sur ton Mac, et dis-moi où il est. Colle aussi le <b>dossier</b> : avec la mélodie écrite, je peux comparer ce que tu voulais chanter à ce que tu as chanté.</p>
+            <div class="tip">Ce que je ne pourrai jamais te dire d’un fichier : si ta voix est belle, si le grain est bon, si ça <b>émeut</b>. Ça, c’est toi, et c’est aussi pour ça qu’il faut faire écouter à des humains.</div>`));
+          const r=el('div','row3');
+          const b1=el('button','btn ghost','🔴 Refaire'); b1.onclick=()=>opts();
+          const b2=el('button','btn ghost','📤 Le dossier'); b2.onclick=()=>openSgExport(id);
+          const b3=el('button','btn ghost','← La chanson'); b3.onclick=()=>openSg(id);
+          r.append(b1,b2,b3); setup.appendChild(r);
+        }).catch(e=>{ SLoop.stop(); setup.innerHTML='';
+          setup.appendChild(el('div','card',`<b>🎙 Micro refusé</b><p class="lead" style="margin:6px 0 0">${sgEsc((e&&e.message)||'accès refusé')}. Autorise le micro pour cette page, puis réessaie.</p>`));
+          const b=el('button','btn ghost','← Retour'); b.onclick=()=>opts(); setup.appendChild(b); });
+    }
+    opts();
+  });
+}
+
 /* ---------------- overlay + nav ---------------- */
 const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
 function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
-function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } if(_duelT){ clearInterval(_duelT); _duelT=null; } if(typeof Loop!=='undefined') Loop.stop(); metroStop(); render(); }
+function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } if(_duelT){ clearInterval(_duelT); _duelT=null; } if(typeof Loop!=='undefined') Loop.stop(); if(typeof SLoop!=='undefined') SLoop.stop(); metroStop(); render(); }
 let tab='jour';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; metroStop(); render(); });
 const NAVOF={manche:'biblio',theorie:'biblio',suite:'biblio'};
