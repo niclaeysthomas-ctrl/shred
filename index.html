@@ -2237,7 +2237,7 @@ function runBoxTrial(host,opt,done){
     if(mode==='guide'){ cells.forEach((c,k)=>box.dot(c.s,c.f, DEG_PENTA[((c.pc-root)%12+12)%12], k<i?'okd':(c.pc===root?'root':'on'))); if(cells[i]) box.dot(cells[i].s,cells[i].f,'?','ask'); }
     else if(mode==='order'){ cells.forEach((c,k)=>{ if(k<i) box.dot(c.s,c.f,'✓','okd'); else box.dot(c.s,c.f,'','on'); }); }
     else if(mode==='targets'){ /* la forme reste affichée tout du long, et les notes trouvées restent marquées */
-      cells.forEach(c=>box.dot(c.s,c.f,'','on'));
+      if(!opt.hide) cells.forEach(c=>box.dot(c.s,c.f,'','on'));
       found.forEach(g=>box.dot(g.s,g.f,g.lbl,g.cls)); }
     /* 'blind' et 'chrono' : rien du tout, c’est le but */
   }
@@ -2332,6 +2332,10 @@ function openBox(bi){
       const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
       if(lvl>0){ const rev=el('button','btn ghost','👁 Revoir la forme (sans test)');
         rev.onclick=()=>openBoxLook(bi,root); arena.appendChild(rev); }
+      if(lvl<3){ const skip=el('button','btn ghost','⏭ Je connais déjà cette forme — passer aux cibles');
+        skip.onclick=()=>{ if(!confirm('On saute « reconnaître / monter-descendre / à l’aveugle » et on va directement au palier des cibles. D’accord ?')) return;
+          const g2=bx(bi); g2.lvl=3; save(); toast('→ palier « Les cibles »'); openBox(bi); };
+        arena.appendChild(skip); }
     }
     function play(){
       arena.innerHTML=''; arena._done=false; delete arena._done;
@@ -2525,7 +2529,7 @@ function openMajTargets(root0,pos0){
 /* Les cibles de la penta, hors conquête : le même exercice, sans enjeu. */
 function openTargetsFree(){
   ac(); markDay();
-  let bi=0, root=9;
+  let bi=0, root=9, hide=false;
   openOverlay('Les cibles — penta mineure', inner=>{
     inner.appendChild(el('div','theory',`
       <h3>Le même exercice, quand tu veux</h3>
@@ -2537,16 +2541,21 @@ function openTargetsFree(){
     const bsel=el('div','toolrow');
     const bTags=BOXES.map((B,k)=>{ const t=el('div','tag'+(k===bi?' on':''),B.n);
       t.onclick=()=>{bi=k;bTags.forEach(x=>x.classList.remove('on'));t.classList.add('on');ready();}; bsel.appendChild(t); return t; });
-    c.appendChild(bsel); inner.appendChild(c);
+    c.appendChild(bsel);
+    const hrow=el('div','toolrow'); const tHide=el('div','tag','🕶 sans la forme affichée');
+    tHide.onclick=()=>{hide=!hide;tHide.classList.toggle('on',hide);ready();}; hrow.appendChild(tHide); c.appendChild(hrow);
+    c.appendChild(el('p','lead','Si les cinq boîtes sont déjà dans ta main, coupe l’affichage : c’est là que l’exercice devient vraiment utile.'));
+    inner.appendChild(c);
     const arena=el('div','card'); inner.appendChild(arena);
     function ready(){
       arena.innerHTML='';
-      arena.appendChild(el('b',null,'▶ '+BOXES[bi].n+' · '+NOTES[root]+' mineur'));
+      arena.appendChild(el('b',null,'▶ '+BOXES[bi].n+' · '+NOTES[root]+' mineur'+(hide?' · 🕶 à l’aveugle':'')));
       const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
+      const back=el('button','btn ghost','← Le Viseur'); back.onclick=()=>openViseur(); arena.appendChild(back);
     }
     function play(){
       arena.innerHTML=''; const host=el('div'); arena.appendChild(host);
-      runBoxTrial(host,{root,bi,mode:'targets'},res=>{
+      runBoxTrial(host,{root,bi,mode:'targets',hide},res=>{
         const out=el('div'); arena.appendChild(out);
         if(res.err<=2){ S.xp+=6; save(); toast('✓ Cibles · +6 XP'); }
         out.innerHTML=`<div class="qhead"><div class="q" style="color:var(--${res.err<=2?'ok':'bad'})">${res.secs!=null?res.secs+'s':'fini'}</div>
@@ -2556,6 +2565,210 @@ function openTargetsFree(){
       });
     }
     ready();
+  });
+}
+
+/* ================================================================
+   LE VISEUR — les exercices de visée, et rien d'autre.
+   Principe : aucun exercice ne demande de monter-descendre une gamme.
+   On cherche UNE note précise, vite, et on sait ce qu'elle fait.
+   ================================================================ */
+const CH_TYPES=[
+ {suf:'',     ivs:[0,4,7],    n:'majeur'},
+ {suf:'m',    ivs:[0,3,7],    n:'mineur'},
+ {suf:'7',    ivs:[0,4,7,10], n:'de dominante'},
+ {suf:'m7',   ivs:[0,3,7,10], n:'mineur 7'},
+ {suf:'maj7', ivs:[0,4,7,11], n:'majeur 7'}
+];
+const TONE_L={0:'sa fondamentale',3:'sa tierce mineure',4:'sa tierce majeure',7:'sa quinte',10:'sa septième mineure',11:'sa septième majeure'};
+const TONE_S={0:'1',3:'♭3',4:'3',7:'5',10:'♭7',11:'7'};
+const VIS_KEYS=[9,4,2,7,0,5,11,10,3,8,6,1];
+const vKey=()=>VIS_KEYS[Math.floor(Math.random()*12)];
+const vLow=()=>1+Math.floor(Math.random()*8);          /* fenêtre de 5 cases, 1→9 */
+function vHead(host){ const h=el('div','qhead'); host.appendChild(h); return h; }
+function vClock(head){ let t0=null,tk=null; return {
+  start(){ if(t0) return; t0=performance.now(); tk=setInterval(()=>{ const e=head.querySelector('.timer'); if(e) e.textContent=((performance.now()-t0)/1000).toFixed(1)+'s'; },100); },
+  stop(){ if(tk){clearInterval(tk);tk=null;} return t0?Math.round((performance.now()-t0)/100)/10:null; },
+  txt(){ return `<span class="timer bigtimer">${t0?((performance.now()-t0)/1000).toFixed(1):'0.0'}s</span> · `; } }; }
+
+/* ---------------- 1. PARTOUT SUR LE MANCHE ----------------
+   Une seule note cible, trouvée à N endroits différents : c'est ce
+   qui fait sortir des boîtes. */
+function runEverywhere(host,opt,done){
+  const {root,iv,n}=opt, want=(root+iv)%12;
+  let found=[], err=0, over=false;
+  host.innerHTML='';
+  const head=vHead(host), clk=vClock(head);
+  const fb=buildFretboard((s,f)=>tap(s,f)); host.appendChild(fb);
+  const all=[]; for(let s=0;s<6;s++) for(let f=0;f<=FRETS;f++) if(midiAt(s,f)%12===want) all.push({s,f});
+  function show(){
+    head.innerHTML=`<div class="sub">${clk.txt()}${found.length}/${n} · ❌ ${err}</div>
+      <div class="q" style="font-size:26px">${NOTES[want]} — ${DEG_TGT(iv)} de ${NOTES[root]}</div>
+      <div class="sub">Trouve-la à <b>${n} endroits différents</b>, n'importe où sur le manche. Cordes à vide comprises.</div>`;
+  }
+  function tap(s,f){
+    if(over) return; pluck(midiAt(s,f)); clk.start();
+    if(found.some(g=>g.s===s&&g.f===f)) return;
+    if(midiAt(s,f)%12===want){ found.push({s,f}); fb.dot(s,f,DEG_TGT(iv),'ok'); show();
+      if(found.length>=n){ over=true; const secs=clk.stop();
+        all.forEach(a=>{ if(!found.some(g=>g.s===a.s&&g.f===a.f)) fb.dot(a.s,a.f,DEG_TGT(iv),'pick'); });
+        head.innerHTML=`<div class="sub">${secs}s · ❌ ${err}</div><div class="q" style="font-size:20px">✓ ${n} endroits</div>
+          <div class="sub">En <b style="color:var(--blue)">bleu</b> : les autres endroits où cette note existe — ${all.length} en tout.</div>`;
+        done({err,secs}); } }
+    else { err++; const d=fb.dot(s,f,'✗','no'); setTimeout(()=>{ if(d&&d.parentNode) d.remove(); },420); show(); }
+  }
+  show();
+}
+
+/* ---------------- 2. SUR L'ACCORD QUI PASSE ----------------
+   La fenêtre ne bouge pas, les accords défilent : la vraie compétence
+   d'un solo sur grille. */
+function runChordTones(host,opt,done){
+  const {low,n}=opt;
+  let i=0, err=0, cur=null, over=false;
+  host.innerHTML='';
+  const head=vHead(host), clk=vClock(head);
+  const box=buildBox(low,(s,f)=>tap(s,f)); host.appendChild(box);
+  function nextQ(){
+    const T=CH_TYPES[Math.floor(Math.random()*CH_TYPES.length)], r=vKey();
+    /* la tierce d'abord (c'est elle qui dit majeur ou mineur), la 7e ensuite :
+       ce sont les deux notes qui changent quand l'accord change. */
+    const third=T.ivs[1], fifth=T.ivs[2], sev=T.ivs[3];
+    const tones=[third,third,third,fifth,0].concat(sev!=null?[sev,sev]:[]);
+    const iv=tones[Math.floor(Math.random()*tones.length)];
+    cur={r,T,iv,pc:(r+iv)%12};
+    /* la note demandée doit exister dans la fenêtre : sinon on retire */
+    let ok=false; for(let s=0;s<6&&!ok;s++) for(let f=low;f<=low+4;f++) if(midiAt(s,f)%12===cur.pc){ ok=true; break; }
+    if(!ok) return nextQ();
+    box.clear(); show();
+  }
+  function show(){
+    head.innerHTML=`<div class="sub">${clk.txt()}${i+1}/${n} · ❌ ${err} · cases ${low}–${low+4}</div>
+      <div class="q" style="font-size:32px">${NOTES[cur.r]}${cur.T.suf}</div>
+      <div class="sub">touche <b style="color:var(--acc)">${TONE_L[cur.iv]}</b> (${TONE_S[cur.iv]}) — dans la fenêtre, n'importe où</div>`;
+  }
+  function tap(s,f){
+    if(over) return; pluck(midiAt(s,f)); clk.start();
+    if(midiAt(s,f)%12===cur.pc){ box.flash(s,f,'good'); box.dot(s,f,TONE_S[cur.iv],'okd');
+      i++; if(i>=n){ over=true; const secs=clk.stop();
+        head.innerHTML=`<div class="sub">${secs}s · ❌ ${err}</div><div class="q" style="font-size:20px">✓ terminé</div>
+          <div class="sub">Même fenêtre, ${n} accords : c'est exactement ce que fait ta main sur une grille.</div>`;
+        return done({err,secs}); }
+      setTimeout(()=>{ box.clear(); nextQ(); },420); }
+    else { err++; box.flash(s,f,'bad');
+      const iv2=((midiAt(s,f)%12-cur.r)%12+12)%12;
+      const d=box.dot(s,f,TONE_S[iv2]||'✗','no'); setTimeout(()=>{ if(d&&d.parentNode) d.remove(); },500); show(); }
+  }
+  nextQ();
+}
+
+/* ---------------- 3. LA NOTE QUI RÉSOUT ----------------
+   On te pose quelque part, tu dois retomber sur tes pieds. */
+function runResolve(host,opt,done){
+  const {n}=opt;
+  let i=0, err=0, cur=null, over=false;
+  host.innerHTML='';
+  const head=vHead(host), clk=vClock(head);
+  let box=null;
+  const holder=el('div'); host.appendChild(holder);
+  function nextQ(){
+    const root=vKey(), low=vLow();
+    /* une note de départ prise dans la penta mineure de la tonalité */
+    const opts=[]; for(let s=0;s<6;s++) for(let f=low;f<=low+4;f++){
+      const iv=((midiAt(s,f)%12-root)%12+12)%12;
+      if(PENTA_M.indexOf(iv)>=0 && iv!==0) opts.push({s,f,iv}); }
+    if(!opts.length) return nextQ();
+    const from=opts[Math.floor(Math.random()*opts.length)];
+    const homes=[]; for(let s=0;s<6;s++) for(let f=low;f<=low+4;f++) if(midiAt(s,f)%12===root) homes.push({s,f,m:midiAt(s,f)});
+    if(!homes.length) return nextQ();
+    const fm=midiAt(from.s,from.f);
+    homes.sort((a,b)=>Math.abs(a.m-fm)-Math.abs(b.m-fm));
+    cur={root,low,from,homes,near:homes[0]};
+    holder.innerHTML='';
+    box=buildBox(low,(s,f)=>tap(s,f)); holder.appendChild(box);
+    box.dot(from.s,from.f,DEG_PENTA[from.iv],'on');
+    show();
+  }
+  function show(){
+    head.innerHTML=`<div class="sub">${clk.txt()}${i+1}/${n} · ❌ ${err}</div>
+      <div class="q" style="font-size:24px">${NOTES[cur.root]} mineur</div>
+      <div class="sub">Ta phrase finit sur la note allumée (${DEG_PENTA[cur.from.iv]}). Touche la <b>fondamentale la plus proche</b> pour te poser.</div>`;
+  }
+  function tap(s,f){
+    if(over) return; pluck(midiAt(s,f)); clk.start();
+    if(midiAt(s,f)%12===cur.root){
+      const isNear=(s===cur.near.s&&f===cur.near.f);
+      box.flash(s,f,'good'); box.dot(s,f,'1','okd');
+      if(!isNear) box.dot(cur.near.s,cur.near.f,'1','col');
+      i++;
+      if(i>=n){ over=true; const secs=clk.stop();
+        head.innerHTML=`<div class="sub">${secs}s · ❌ ${err}</div><div class="q" style="font-size:20px">✓ terminé</div>
+          <div class="sub">Finir une phrase sur la fondamentale, c'est ce qui la fait sonner « voulue » plutôt que « perdue ».</div>`;
+        return done({err,secs}); }
+      setTimeout(nextQ, isNear?420:900);
+      if(!isNear) head.innerHTML=`<div class="sub">juste</div><div class="q" style="font-size:20px;color:var(--blue)">il y en avait une plus près</div>
+        <div class="sub">En bleu : la fondamentale la plus proche de ta note. Moins tu sautes, plus ça chante.</div>`;
+    } else { err++; box.flash(s,f,'bad');
+      const iv=((midiAt(s,f)%12-cur.root)%12+12)%12;
+      const d=box.dot(s,f,DEG_PENTA[iv]||DEG_COLOR[iv]||'✗','no'); setTimeout(()=>{ if(d&&d.parentNode) d.remove(); },500); show(); }
+  }
+  nextQ();
+}
+
+/* ---------------- la salle ---------------- */
+function vRun(title,intro,build){
+  ac(); markDay();
+  openOverlay(title, inner=>{
+    inner.appendChild(el('div','theory',intro));
+    const arena=el('div','card'); inner.appendChild(arena);
+    function ready(){
+      arena.innerHTML='';
+      const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
+      const back=el('button','btn ghost','← Le Viseur'); back.onclick=()=>openViseur(); arena.appendChild(back);
+    }
+    function play(){
+      arena.innerHTML='';
+      const host=el('div'); arena.appendChild(host);
+      build(host,res=>{
+        const out=el('div'); arena.appendChild(out);
+        const win=res.err<=2;
+        if(win){ S.xp+=8; save(); toast('✓ +8 XP'); }
+        out.innerHTML=`<div class="clogic" style="margin-top:10px"><b style="color:var(--${win?'ok':'acc'})">${res.err?res.err+' erreur(s)':'sans faute'}${res.secs!=null?' · '+res.secs+'s':''}</b> — ${win?'c\'est le genre d\'exercice qui se voit au jeu, pas sur le papier.':'refais-en un : trois essais et la fenêtre devient familière.'}</div>`;
+        const again=el('button','btn','↻ Encore'); again.onclick=()=>play(); out.appendChild(again);
+        const back=el('button','btn ghost','← Le Viseur'); back.onclick=()=>openViseur(); out.appendChild(back);
+      });
+    }
+    ready();
+  });
+}
+function openViseur(){
+  ac(); markDay();
+  openOverlay('🎯 Le Viseur', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Viser, pas réciter</h3>
+      <p>Monter et descendre une gamme n'apprend <b>rien</b> sur où viser : ça entraîne un geste, pas une oreille. Ici, <b>aucun exercice ne demande de jouer une gamme</b>. À chaque fois la question est la même : <b>où est cette note-là, tout de suite ?</b></p>
+      <div class="tip">Quand les cinq formes sont déjà dans la main, c'est le seul travail qui reste — et c'est celui qui s'entend dans un solo.</div>`));
+    const list=[
+      ['🎯','Les cibles — dans une boîte','Huit degrés à trouver, avec la 3ce majeure et la blue note. Avec ou sans la forme affichée.',()=>openTargetsFree()],
+      ['🗺','Partout sur le manche','Une seule note, à cinq endroits différents. L\'exercice qui fait sortir des boîtes.',()=>vRun('Partout sur le manche',
+          `<h3>Une note, tout le manche</h3><p>Tant qu'une note n'existe qu'à un seul endroit dans ta tête, tu restes enfermé dans une boîte. Celle-ci vit à <b>six ou sept endroits</b> entre la case 0 et la 12.</p>
+           <div class="tip">Cherche les <b>octaves</b> : deux cordes plus bas, +2 cases. C'est le chemin le plus rapide d'un endroit à l'autre.</div>`,
+          (host,cb)=>runEverywhere(host,{root:vKey(),iv:[0,3,5,7,10,4][Math.floor(Math.random()*6)],n:5},cb))],
+      ['🎼','Sur l\'accord qui passe','La fenêtre ne bouge pas, les accords défilent. Touche la tierce de CET accord.',()=>vRun('Sur l\'accord qui passe',
+          `<h3>La compétence reine</h3><p>En solo, tu ne changes pas de position à chaque accord : tu restes dans ta fenêtre et tu <b>vises la note qui appartient à l'accord du moment</b>. C'est ce qui fait qu'un solo « suit » la grille au lieu de flotter au-dessus.</p>
+           <div class="tip">La <b>tierce</b> dit majeur ou mineur, la <b>7e</b> dit la couleur. Ce sont les deux notes qui changent quand l'accord change — les autres bougent peu.</div>`,
+          (host,cb)=>runChordTones(host,{low:vLow(),n:8},cb))],
+      ['🏠','La note qui résout','On te pose quelque part, tu retombes sur tes pieds : la fondamentale la plus proche.',()=>vRun('La note qui résout',
+          `<h3>Finir une phrase</h3><p>Un solo qui atterrit sur la fondamentale sonne <b>voulu</b>. Ailleurs, il sonne <b>interrompu</b>. L'app te pose sur une note au hasard : trouve la maison la plus proche, sans sauter à l'autre bout du manche.</p>
+           <div class="tip">« La plus proche » compte autant que « juste » : c'est ce qui rend le phrasé fluide.</div>`,
+          (host,cb)=>runResolve(host,{n:6},cb))],
+      ['🪜','Les cibles — gamme majeure','Les 7 degrés dans les 5 positions, plus ♭3 et ♭7.',()=>openMajTargets()],
+      ['⚔️','Le Duel — 60 secondes','Cibles à la chaîne, combo, trois vies. Le même travail, sous pression.',()=>openDuel()],
+    ];
+    list.forEach(([i,t,d,fn])=>{ const c=el('div','catcard');
+      c.innerHTML=`<div class="ico">${i}</div><div class="t"><b>${t}</b><small>${d}</small></div><div class="pc">›</div>`;
+      c.onclick=fn; inner.appendChild(c); });
+    inner.appendChild(el('div','theory',`<div class="tip">Le reste de la Conquête (reconnaître la forme, la monter, la descendre) ne sert qu'à <b>installer</b> les cinq boîtes. Si elles sont déjà là, passe directement au palier des cibles depuis chaque boîte.</div>`));
   });
 }
 
@@ -2589,8 +2802,7 @@ function openConquete(){
     const t1=el('button','btn ghost','🎯 Le Duel — 60 s, combo, 3 vies'); t1.onclick=()=>openDuel(); tools.appendChild(t1);
     const t2=el('button','btn ghost','👁 Revoir une forme, sans test'); t2.onclick=()=>openBoxLook(0,9); tools.appendChild(t2);
     const t3=el('button','btn ghost','🎧 Le Juke-box — jouer sur des vrais morceaux'); t3.onclick=()=>openJukebox(); tools.appendChild(t3);
-    const t4=el('button','btn ghost','🎯 Les cibles — libre, avec la 3ce majeure & la blue note'); t4.onclick=()=>openTargetsFree(); tools.appendChild(t4);
-    const t5=el('button','btn ghost','🪜 Les cibles — gamme majeure (7 degrés + ♭3 & ♭7)'); t5.onclick=()=>openMajTargets(); tools.appendChild(t5);
+    const t4=el('button','btn','🎯 LE VISEUR — les exercices de visée (rien à monter-descendre)'); t4.onclick=()=>openViseur(); tools.appendChild(t4);
     inner.appendChild(tools);
 
     inner.appendChild(el('div','theory',`
@@ -2650,30 +2862,34 @@ function runDuel(host){
     bi=pool[Math.floor(Math.random()*pool.length)];
     root=[9,4,2,7,0,5,11,10,3,8,6,1][Math.floor(Math.random()*(bxMastered()>=2?12:6))];
     cells=boxCells(root,bi);
-    const ivs=PENTA_M.filter(v=>v!==want); want=ivs[Math.floor(Math.random()*ivs.length)];
+    /* une question sur quatre porte sur une note de couleur (3ce majeure / blue note) */
+    const colIvs=[...new Set(boxColorCells(root,bi).map(c=>c.iv))];
+    const pool2 = (colIvs.length && Math.random()<.25) ? colIvs : PENTA_M.filter(v=>v!==want);
+    want=pool2[Math.floor(Math.random()*pool2.length)];
     holder.innerHTML='';
     const box=buildBox(boxLow(root,bi),(s,f)=>tap(s,f,box)); holder.appendChild(box);
     cells.forEach(c=>box.dot(c.s,c.f,'','on'));
     head.innerHTML=`<div class="sub">${BOXES[bi].n} · <b>${NOTES[root]} mineur</b></div>
-      <div class="q" style="font-size:34px">${DEG_PENTA[want]}</div>
-      <div class="sub">${DEG_LONG[want]}</div>`;
+      <div class="q" style="font-size:34px${TGT_COLOR.indexOf(want)>=0?';color:var(--blue)':''}">${DEG_TGT(want)}</div>
+      <div class="sub">${TGT_COLOR.indexOf(want)>=0?DEG_COLOR_LONG[want]+' — <b style="color:var(--blue)">hors de la boîte</b>':DEG_LONG[want]}</div>`;
     qt0=performance.now();
   }
   function tap(s,f,box){
     if(over) return; pluck(midiAt(s,f));
     const pc=midiAt(s,f)%12, inBox=cells.some(c=>c.s===s&&c.f===f);
-    if(inBox && pc===(root+want)%12){
+    const isCol=TGT_COLOR.indexOf(want)>=0;
+    if((inBox||isCol) && pc===(root+want)%12){
       const fast=(performance.now()-qt0)<2200;
       const mult=Math.min(4,1+Math.floor(combo/3));
       score+=(fast?15:10)*mult; combo++; hits++;
-      box.flash(s,f,'good'); box.dot(s,f,DEG_PENTA[want],'okd');
+      box.flash(s,f,'good'); box.dot(s,f,DEG_TGT(want),isCol?'col':'okd');
       if(combo===3||combo===6||combo===9||combo===12) toast('🔥 combo ×'+Math.min(4,1+Math.floor(combo/3)));
       setTimeout(()=>{ if(!over) nextQ(); },230);
     } else {
       combo=0; lives--; miss++;
       box.flash(s,f,'bad'); const d=box.dot(s,f,'✗','no');
-      const good=cells.filter(c=>c.pc===(root+want)%12);
-      good.forEach(c=>box.dot(c.s,c.f,DEG_PENTA[want],'miss'));
+      const good = isCol ? boxColorCells(root,bi).filter(c=>c.iv===want) : cells.filter(c=>c.pc===(root+want)%12);
+      good.forEach(c=>box.dot(c.s,c.f,DEG_TGT(want),'miss'));
       if(lives<=0){ setTimeout(finish,700); }
       else setTimeout(()=>{ if(!over) nextQ(); },900);
     }
@@ -2999,6 +3215,7 @@ function renderGammes(){
     ['🎯','Le Duel — 60 s, combo, 3 vies','L’arcade des degrés : l’app te jette une boîte et une tonalité, tu touches la note demandée. Record : '+(S.duelBest||0)+'.',()=>openDuel()],
     ['🎧','Le Juke-box — '+jbCount()+'/'+JUKE.length+' morceaux','Des vrais morceaux rangés par gamme, la grille jouée en boucle, et la note à viser. De Lonely Day à Hotel California.',()=>openJukebox()],
     ['🎸','La penta & les notes à viser','Le cours : les 5 notes, la ♭3 → 3, la blue note.',()=>openPentaModule()],
+    ['🎯','Le Viseur','Que des exercices de visée : cibles, accord qui passe, note qui résout.',()=>openViseur()],
     ['🪜','La gamme majeure en positions','Les 5 positions = ta penta + 2 notes.',()=>openMajorPositions()],
     ['🎭','Les 7 modes, par ordre','Une couleur, une note caractéristique. Comparées sur la même fondamentale.',()=>openModesModule()],
     ['🧭','La Boussole','Perdu sur un morceau ? Trouve la tonique, puis la palette.',()=>openBoussole()],
