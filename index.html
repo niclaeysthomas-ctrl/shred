@@ -76,6 +76,7 @@
   .bdot.no{background:var(--bad);color:#fff;border-color:var(--bad)}
   .bdot.miss{background:transparent;color:var(--blue);border:2px dashed var(--blue)}
   .bdot.ask{background:transparent;color:var(--acc);border:2px dashed var(--acc);font-size:17px}
+  .bdot.col{background:var(--blue);color:#04122b;border-color:var(--blue)}
   .boxnums{display:grid;grid-template-columns:26px repeat(5,1fr);margin-top:4px}
   .boxnums div{text-align:center;font-size:11px;color:var(--dim);font-weight:700}
   .boxnums div.mk,.boxnums div.mk2{color:var(--acc)}
@@ -948,6 +949,8 @@ function openMajorPositions(){
     const fb=buildFretboard((s,f)=>pluck(midiAt(s,f))); c.appendChild(fb);
     const info=el('div','clogic'); c.appendChild(info);
     const play=el('button','btn ghost','🔊 Écouter la position'); c.appendChild(play);
+    const dr=el('button','btn','🎯 Les cibles — trouve les degrés dans cette position');
+    dr.onclick=()=>openMajTargets(root,pos); c.appendChild(dr);
     inner.appendChild(c);
 
     inner.appendChild(el('div','theory',`
@@ -2107,6 +2110,19 @@ function renderSuite(){
 const PENTA_M=[0,3,5,7,10];
 const DEG_PENTA={0:'1',3:'♭3',5:'4',7:'5',10:'♭7'};
 const DEG_LONG={0:'la fondamentale',3:'la ♭3 (tierce mineure)',5:'la 4te',7:'la 5te',10:'la ♭7'};
+/* Les deux notes de couleur du blues mineur : elles ne sont PAS dans la boîte,
+   c'est tout l'intérêt — on apprend où elles tombent PAR RAPPORT à la forme connue. */
+const TGT_COLOR=[4,6];
+const DEG_COLOR={4:'3',6:'♭5'};
+const DEG_COLOR_LONG={4:'la tierce MAJEURE — le son Chuck Berry / SRV, à glisser depuis la ♭3',
+                      6:'la blue note (♭5) — entre la 4 et la 5, en passage seulement, jamais tenue'};
+const DEG_TGT = iv => DEG_PENTA[iv]||DEG_COLOR[iv]||'?';
+/* Les cases de la fenêtre qui portent une note de couleur (hors boîte). */
+function boxColorCells(root,bi){ const low=boxLow(root,bi), out=[];
+  for(let s=0;s<6;s++) for(let f=low;f<=low+4;f++){ if(f<0) continue;
+    const iv=((midiAt(s,f)%12-root)%12+12)%12;
+    if(TGT_COLOR.indexOf(iv)>=0) out.push({s,f,iv}); }
+  return out; }
 /* Les 5 boîtes : décalages de cases par rapport à la fondamentale sur la
    corde de Mi grave. Index 0 = Mi grave … 5 = Mi aigu. (Vérifié sur La
    mineur, fondamentale case 5 : la boîte 1 tombe bien sur 5-8.) */
@@ -2205,15 +2221,24 @@ function runBoxTrial(host,opt,done){
   const rootName=NOTES[root];
 
   /* mode « cibles » : 8 degrés à trouver, une fenêtre différente à chaque fois */
-  let qs=null;
-  if(mode==='targets'){ qs=[]; const pool=PENTA_M.slice();
-    while(qs.length<8){ const iv=pool[Math.floor(Math.random()*pool.length)];
-      if(qs.length && qs[qs.length-1]===iv) continue; qs.push(iv); } }
+  let qs=null, colCells=[], found=[];
+  if(mode==='targets'){
+    colCells = boxColorCells(root,bi);
+    const colIvs=[...new Set(colCells.map(c=>c.iv))];
+    const nCol=Math.min(2,colIvs.length);
+    qs=[]; const pool=PENTA_M.slice();
+    while(qs.length<8-nCol){ const iv=pool[Math.floor(Math.random()*pool.length)];
+      if(qs.length && qs[qs.length-1]===iv) continue; qs.push(iv); }
+    /* les couleurs s'intercalent, jamais en première question */
+    colIvs.slice(0,nCol).forEach(iv=>{ const at=1+Math.floor(Math.random()*(qs.length)); qs.splice(at,0,iv); });
+  }
 
   function paintGuide(){ box.clear();
     if(mode==='guide'){ cells.forEach((c,k)=>box.dot(c.s,c.f, DEG_PENTA[((c.pc-root)%12+12)%12], k<i?'okd':(c.pc===root?'root':'on'))); if(cells[i]) box.dot(cells[i].s,cells[i].f,'?','ask'); }
     else if(mode==='order'){ cells.forEach((c,k)=>{ if(k<i) box.dot(c.s,c.f,'✓','okd'); else box.dot(c.s,c.f,'','on'); }); }
-    else if(mode==='targets'){ if(!host._painted){ host._painted=1; cells.forEach(c=>box.dot(c.s,c.f,'','on')); } }
+    else if(mode==='targets'){ /* la forme reste affichée tout du long, et les notes trouvées restent marquées */
+      cells.forEach(c=>box.dot(c.s,c.f,'','on'));
+      found.forEach(g=>box.dot(g.s,g.f,g.lbl,g.cls)); }
     /* 'blind' et 'chrono' : rien du tout, c’est le but */
   }
   function tick(){ const e=head.querySelector('.timer'); if(e&&t0) e.textContent=((performance.now()-t0)/1000).toFixed(1)+'s'; }
@@ -2223,10 +2248,11 @@ function runBoxTrial(host,opt,done){
     const timed=(mode==='chrono'||mode==='blind'||mode==='targets');
     const el0=timed?`<span class="timer bigtimer">${t0?((performance.now()-t0)/1000).toFixed(1):'0.0'}s</span> · `:'';
     if(mode==='targets'){
-      const iv=qs[i];
+      const iv=qs[i], isCol=TGT_COLOR.indexOf(iv)>=0;
       head.innerHTML=`<div class="sub">${el0}${i+1}/8 · ❌ ${err}</div>
-        <div class="q" style="font-size:30px">touche ${DEG_PENTA[iv]}</div>
-        <div class="sub">${DEG_LONG[iv]} de <b>${rootName} mineur</b> — n’importe laquelle dans la boîte</div>`;
+        <div class="q" style="font-size:30px${isCol?';color:var(--blue)':''}">touche ${DEG_TGT(iv)}</div>
+        <div class="sub">${isCol?DEG_COLOR_LONG[iv]+' — <b style="color:var(--blue)">hors de la boîte</b>, dans la fenêtre'
+                               :DEG_LONG[iv]+' de <b>'+rootName+' mineur</b> — n’importe laquelle dans la boîte'}</div>`;
     } else {
       const asc = i<cells.length || mode!=='chrono';
       const dir = (mode==='chrono' && i>=cells.length)?'↓ on redescend':'↑ on monte';
@@ -2241,8 +2267,15 @@ function runBoxTrial(host,opt,done){
     if(mode==='targets'){
       const pc=midiAt(s,f)%12, want=(root+qs[i])%12;
       const inBox=cells.some(c=>c.s===s&&c.f===f);
-      if(inBox && pc===want){ box.flash(s,f,'good'); box.dot(s,f,DEG_PENTA[qs[i]],'okd'); i++; if(i>=8) return finish(); setTimeout(show,180); }
-      else { err++; box.flash(s,f,'bad'); const d=box.dot(s,f,inBox?DEG_PENTA[((pc-root)%12+12)%12]:'✗','no'); setTimeout(()=>{ if(d&&d.parentNode)d.remove(); },420); show(); }
+      const isCol=TGT_COLOR.indexOf(qs[i])>=0;
+      if(pc===want && (inBox||isCol)){ box.flash(s,f,'good');
+        found.push({s,f,lbl:DEG_TGT(qs[i]),cls:isCol?'col':'okd'});
+        box.dot(s,f,DEG_TGT(qs[i]),isCol?'col':'okd');
+        i++; if(i>=8) return finish(); setTimeout(show,180); }
+      else { err++; box.flash(s,f,'bad'); show();
+        const iv=((pc-root)%12+12)%12;
+        const d=box.dot(s,f,(inBox?DEG_PENTA[iv]:(DEG_COLOR[iv]||'✗')),'no');
+        setTimeout(()=>{ if(d&&d.parentNode){ d.remove(); paintGuide(); } },420); }
       return;
     }
     const want=seq[i];
@@ -2252,6 +2285,10 @@ function runBoxTrial(host,opt,done){
   function finish(){ host._done=true; if(tk){clearInterval(tk);tk=null;}
     const secs=t0?Math.round((performance.now()-t0)/100)/10:null;
     box.clear(); cells.forEach(c=>box.dot(c.s,c.f,DEG_PENTA[((c.pc-root)%12+12)%12],c.pc===root?'root':'okd'));
+    if(mode==='targets') colCells.forEach(c=>box.dot(c.s,c.f,DEG_COLOR[c.iv],'col'));
+    head.innerHTML=`<div class="sub">${secs!=null?secs+'s · ':''}❌ ${err}</div>
+      <div class="q" style="font-size:20px">✓ terminé</div>
+      <div class="sub">${mode==='targets'?'La boîte complète, et en <b style="color:var(--blue)">bleu</b> les deux notes qu’on ajoute.':'La boîte complète, avec ses degrés.'}</div>`;
     done({err,secs,root,bi,mode});
   }
   show();
@@ -2289,7 +2326,7 @@ function openBox(bi){
       const expl={guide:'La boîte est affichée avec ses degrés. Touche les notes <b>dans l’ordre</b>, du grave à l’aigu, en suivant le <b>?</b>. Le but ici : voir la forme, pas la retenir.',
         order:'Les notes sont là, sans étiquette. Touche-les dans l’ordre, du grave à l’aigu, puis c’est fini. Deux erreurs maximum.',
         blind:'<b>Manche vide.</b> Tu poses les 12 notes de la boîte de mémoire, du grave à l’aigu. C’est là que ça grave.',
-        targets:'8 questions : « touche la ♭3 », « touche la 5te »… N’importe laquelle dans la boîte. C’est ce qui transforme une forme en <b>vraies notes à viser</b>.',
+        targets:'8 questions : « touche la ♭3 », « touche la 5te »… N’importe laquelle dans la boîte. Et <b style="color:var(--blue)">deux questions bleues</b> : la <b>tierce majeure</b> et la <b>blue note</b>, qui ne sont PAS dans la boîte — c’est là qu’une forme devient de la musique. Deux erreurs tolérées.',
         chrono:`À l’aveugle, <b>monte ET redescends</b>, sous <b>${BX_CHRONO}s</b>, zéro faute. C’est le test qui scelle la boîte.`};
       arena.appendChild(el('p','lead',expl[mode]));
       const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
@@ -2300,7 +2337,7 @@ function openBox(bi){
       arena.innerHTML=''; arena._done=false; delete arena._done;
       const host=el('div'); arena.appendChild(host);
       runBoxTrial(host,{root,bi,mode},res=>{
-        const maxErr = mode==='guide'?99:(mode==='order'?2:(mode==='targets'?1:0));
+        const maxErr = mode==='guide'?99:(mode==='order'?2:(mode==='targets'?2:0));
         const okTime = mode!=='chrono' || (res.secs!=null && res.secs<=BX_CHRONO);
         const win = res.err<=maxErr && okTime;
         const out=el('div'); arena.appendChild(out);
@@ -2356,6 +2393,172 @@ function openBoxLook(bi,root){
 }
 
 /* ---------------- l’écran de conquête ---------------- */
+/* ================================================================
+   LES CIBLES — version GAMME MAJEURE
+   Le même exercice que le palier « Les cibles » de la Conquête, mais
+   sur les 5 positions de la gamme majeure : 7 degrés + 2 couleurs.
+   ================================================================ */
+const MAJ_DEG={0:'1',2:'2',4:'3',5:'4',7:'5',9:'6',11:'7'};
+const MAJ_DEG_L={0:'la fondamentale — la maison',2:'la 2de',4:'la tierce (3) — c’est ELLE qui dit « majeur »',
+  5:'la 4te',7:'la 5te — neutre et solide, juste partout',9:'la 6te',11:'la 7e (sensible) — elle tire vers la fondamentale'};
+const MAJ_COLOR=[3,10];
+const MAJ_COLOR_D={3:'♭3',10:'♭7'};
+const MAJ_COLOR_L={3:'la ♭3 — la blue note du blues MAJEUR : on la glisse vers la 3 (Chuck Berry, la country)',
+  10:'la ♭7 — la note du mixolydien : la gamme majeure bascule en rock/blues'};
+const MAJ_TGT = iv => MAJ_DEG[iv]!=null?MAJ_DEG[iv]:(MAJ_COLOR_D[iv]||'?');
+function majLow(root,pos){ return fitLow(fretOnLowE(root)+POS_OFF[pos]); }
+function majCells(root,pos){ const low=majLow(root,pos), out=[];
+  for(let s=0;s<6;s++) for(let f=low;f<=low+3;f++){ if(f<0) continue;
+    const iv=((midiAt(s,f)%12-root)%12+12)%12;
+    if(MAJ_INTS.indexOf(iv)>=0) out.push({s,f,iv,m:midiAt(s,f)}); }
+  out.sort((a,b)=>a.m-b.m); return out; }
+function majColorCells(root,pos){ const low=majLow(root,pos), out=[];
+  for(let s=0;s<6;s++) for(let f=low;f<=low+4;f++){ if(f<0) continue;
+    const iv=((midiAt(s,f)%12-root)%12+12)%12;
+    if(MAJ_COLOR.indexOf(iv)>=0) out.push({s,f,iv}); }
+  return out; }
+
+function runMajTargets(host,opt,done){
+  const {root,pos,withColor}=opt;
+  const low=majLow(root,pos), cells=majCells(root,pos), colCells=withColor?majColorCells(root,pos):[];
+  const colIvs=[...new Set(colCells.map(c=>c.iv))].slice(0,2);
+  const degs=[...new Set(cells.map(c=>c.iv))];
+  let qs=[]; const N=8;
+  while(qs.length<N-colIvs.length){ const iv=degs[Math.floor(Math.random()*degs.length)];
+    if(qs.length && qs[qs.length-1]===iv) continue; qs.push(iv); }
+  colIvs.forEach(iv=>{ const at=1+Math.floor(Math.random()*qs.length); qs.splice(at,0,iv); });
+
+  let i=0, err=0, t0=null, tk=null, done_=false;
+  host.innerHTML='';
+  const head=el('div','qhead'); host.appendChild(head);
+  const box=buildBox(low,(s,f)=>tap(s,f)); host.appendChild(box);
+  function tick(){ const e=head.querySelector('.timer'); if(e&&t0) e.textContent=((performance.now()-t0)/1000).toFixed(1)+'s'; }
+  function startClock(){ if(t0) return; t0=performance.now(); if(tk)clearInterval(tk); tk=setInterval(tick,100); }
+  const found=[];
+  function paint(){ cells.forEach(c=>box.dot(c.s,c.f,'','on')); found.forEach(g=>box.dot(g.s,g.f,g.lbl,g.cls)); }
+  function show(){
+    const iv=qs[i], isCol=MAJ_COLOR.indexOf(iv)>=0;
+    head.innerHTML=`<div class="sub"><span class="timer bigtimer">${t0?((performance.now()-t0)/1000).toFixed(1):'0.0'}s</span> · ${i+1}/${qs.length} · ❌ ${err}</div>
+      <div class="q" style="font-size:30px${isCol?';color:var(--blue)':''}">touche ${MAJ_TGT(iv)}</div>
+      <div class="sub">${isCol?MAJ_COLOR_L[iv]+' — <b style="color:var(--blue)">hors de la gamme</b>, dans la fenêtre'
+        :MAJ_DEG_L[iv]+' de <b>'+NOTES[root]+' majeur</b> — n’importe laquelle dans la position'}</div>`;
+    paint();
+  }
+  function tap(s,f){
+    if(done_) return; pluck(midiAt(s,f)); startClock();
+    const pc=midiAt(s,f)%12, iv=((pc-root)%12+12)%12, want=qs[i];
+    const inPos=cells.some(c=>c.s===s&&c.f===f);
+    const isCol=MAJ_COLOR.indexOf(want)>=0;
+    if(iv===want && (inPos||isCol)){
+      box.flash(s,f,'good');
+      found.push({s,f,lbl:MAJ_TGT(want),cls:isCol?'col':'okd'});
+      box.dot(s,f,MAJ_TGT(want),isCol?'col':'okd');
+      i++; if(i>=qs.length) return finish(); setTimeout(show,180);
+    } else {
+      err++; box.flash(s,f,'bad'); show();
+      const d=box.dot(s,f,(inPos?MAJ_DEG[iv]:(MAJ_COLOR_D[iv]||'✗')),'no');
+      setTimeout(()=>{ if(d&&d.parentNode){ d.remove(); paint(); } },420);
+    }
+  }
+  function finish(){ done_=true; if(tk){clearInterval(tk);tk=null;}
+    const secs=t0?Math.round((performance.now()-t0)/100)/10:null;
+    box.clear();
+    cells.forEach(c=>box.dot(c.s,c.f,MAJ_DEG[c.iv],c.iv===0?'root':'okd'));
+    colCells.forEach(c=>box.dot(c.s,c.f,MAJ_COLOR_D[c.iv],'col'));
+    head.innerHTML=`<div class="sub">${secs!=null?secs+'s · ':''}❌ ${err}</div>
+      <div class="q" style="font-size:20px">✓ terminé</div>
+      <div class="sub">La position avec ses degrés${colCells.length?', et en <b style="color:var(--blue)">bleu</b> les notes de couleur':''}.</div>`;
+    done({err,secs});
+  }
+  show();
+}
+
+function openMajTargets(root0,pos0){
+  ac(); markDay();
+  let root=(root0==null?7:root0), pos=(pos0==null?0:pos0), withColor=true;
+  openOverlay('Les cibles — gamme majeure', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Viser, pas réciter</h3>
+      <p>Une position sue « en montant-descendant » ne sert à rien en solo. Ce qui sert, c’est de <b>trouver une note précise</b> à l’intérieur, tout de suite : la tierce quand tu veux dire majeur, la 5te pour te poser, la sensible pour tirer vers la maison.</p>
+      <div class="tip">Les deux questions <b style="color:var(--blue)">bleues</b> sortent de la gamme : la <b>♭3</b> (le blues majeur) et la <b>♭7</b> (le mixolydien). Elles tombent juste à côté des notes que tu connais — c’est en les repérant PAR RAPPORT à la forme qu’on les joue juste.</div>`));
+
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Ta tonalité'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;ready();}));
+    const psel=el('div','toolrow');
+    const pTags=POS_OFF.map((_,k)=>{ const t=el('div','tag'+(k===pos?' on':''),(k===0?'★ ':'')+'Position '+(k+1));
+      t.onclick=()=>{pos=k;pTags.forEach(x=>x.classList.remove('on'));t.classList.add('on');ready();}; psel.appendChild(t); return t; });
+    c.appendChild(psel);
+    const orow=el('div','toolrow'); const tCol=el('div','tag on','🎨 + ♭3 & ♭7 (les couleurs)');
+    tCol.onclick=()=>{withColor=!withColor;tCol.classList.toggle('on',withColor);ready();}; orow.appendChild(tCol); c.appendChild(orow);
+    inner.appendChild(c);
+
+    const arena=el('div','card'); inner.appendChild(arena);
+    function ready(){
+      arena.innerHTML='';
+      arena.appendChild(el('b',null,'▶ Position '+(pos+1)+' · '+NOTES[root]+' majeur'));
+      arena.appendChild(el('p','lead','8 questions. La position est affichée en points vides : touche la bonne. Les notes de couleur ne sont pas dedans — elles sont dans la fenêtre.'));
+      const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
+      const look=el('button','btn ghost','👁 Revoir la position (sans test)');
+      look.onclick=()=>openMajorPositions(); arena.appendChild(look);
+    }
+    function play(){
+      arena.innerHTML='';
+      const host=el('div'); arena.appendChild(host);
+      runMajTargets(host,{root,pos,withColor},res=>{
+        const out=el('div'); arena.appendChild(out);
+        const win=res.err<=2;
+        if(win){ S.xp+=8; save(); toast('✓ Cibles majeures · +8 XP'); }
+        out.innerHTML=`<div class="qhead"><div class="q" style="color:var(--${win?'ok':'bad'})">${win?'✓ '+(res.secs!=null?res.secs+'s':'réussi'):'Pas encore'}</div>
+          <div class="sub">${res.err?res.err+' erreur(s)':'sans faute'}</div></div>
+          <div class="clogic" style="margin-top:10px">${win
+            ?'La position est devenue des <b>notes à viser</b>, pas une forme. Refais-la dans une autre tonalité : la main ne bouge pas, seuls les noms changent.'
+            :'Plus de deux erreurs. Revois la position 30 secondes (bouton ci-dessous) puis recommence — c’est normal d’y passer deux ou trois essais.'}</div>`;
+        const again=el('button','btn','↻ Encore'); again.onclick=()=>{ ready(); }; out.appendChild(again);
+        const look=el('button','btn ghost','🪜 Revoir les 5 positions'); look.onclick=()=>openMajorPositions(); out.appendChild(look);
+      });
+    }
+    ready();
+  });
+}
+
+/* Les cibles de la penta, hors conquête : le même exercice, sans enjeu. */
+function openTargetsFree(){
+  ac(); markDay();
+  let bi=0, root=9;
+  openOverlay('Les cibles — penta mineure', inner=>{
+    inner.appendChild(el('div','theory',`
+      <h3>Le même exercice, quand tu veux</h3>
+      <p>Huit questions : « touche la ♭3 », « touche la 5te ». Rien n’est en jeu, aucun palier ne bouge — c’est l’exercice à refaire cinq minutes avant de jouer, pour que la boîte redevienne des notes.</p>
+      <div class="tip">Deux questions sont <b style="color:var(--blue)">bleues</b> : la <b>tierce majeure</b> et la <b>blue note (♭5)</b>. Elles ne sont pas dans la boîte : elles tombent juste à côté. Glisser de la ♭3 à la 3, c’est LA couleur blues.</div>`));
+    const c=el('div','card');
+    c.appendChild(el('b',null,'🎸 Ta tonalité'));
+    c.appendChild(rootPicker(root,pc=>{root=pc;ready();}));
+    const bsel=el('div','toolrow');
+    const bTags=BOXES.map((B,k)=>{ const t=el('div','tag'+(k===bi?' on':''),B.n);
+      t.onclick=()=>{bi=k;bTags.forEach(x=>x.classList.remove('on'));t.classList.add('on');ready();}; bsel.appendChild(t); return t; });
+    c.appendChild(bsel); inner.appendChild(c);
+    const arena=el('div','card'); inner.appendChild(arena);
+    function ready(){
+      arena.innerHTML='';
+      arena.appendChild(el('b',null,'▶ '+BOXES[bi].n+' · '+NOTES[root]+' mineur'));
+      const go=el('button','btn','▶ Go'); go.onclick=()=>play(); arena.appendChild(go);
+    }
+    function play(){
+      arena.innerHTML=''; const host=el('div'); arena.appendChild(host);
+      runBoxTrial(host,{root,bi,mode:'targets'},res=>{
+        const out=el('div'); arena.appendChild(out);
+        if(res.err<=2){ S.xp+=6; save(); toast('✓ Cibles · +6 XP'); }
+        out.innerHTML=`<div class="qhead"><div class="q" style="color:var(--${res.err<=2?'ok':'bad'})">${res.secs!=null?res.secs+'s':'fini'}</div>
+          <div class="sub">${res.err?res.err+' erreur(s)':'sans faute'}</div></div>`;
+        const again=el('button','btn','↻ Encore'); again.onclick=()=>ready(); out.appendChild(again);
+        const maj=el('button','btn ghost','🪜 Les mêmes cibles en gamme majeure'); maj.onclick=()=>openMajTargets(); out.appendChild(maj);
+      });
+    }
+    ready();
+  });
+}
+
 function openConquete(){
   markDay();
   openOverlay('La Conquête du manche', inner=>{
@@ -2386,6 +2589,8 @@ function openConquete(){
     const t1=el('button','btn ghost','🎯 Le Duel — 60 s, combo, 3 vies'); t1.onclick=()=>openDuel(); tools.appendChild(t1);
     const t2=el('button','btn ghost','👁 Revoir une forme, sans test'); t2.onclick=()=>openBoxLook(0,9); tools.appendChild(t2);
     const t3=el('button','btn ghost','🎧 Le Juke-box — jouer sur des vrais morceaux'); t3.onclick=()=>openJukebox(); tools.appendChild(t3);
+    const t4=el('button','btn ghost','🎯 Les cibles — libre, avec la 3ce majeure & la blue note'); t4.onclick=()=>openTargetsFree(); tools.appendChild(t4);
+    const t5=el('button','btn ghost','🪜 Les cibles — gamme majeure (7 degrés + ♭3 & ♭7)'); t5.onclick=()=>openMajTargets(); tools.appendChild(t5);
     inner.appendChild(tools);
 
     inner.appendChild(el('div','theory',`
