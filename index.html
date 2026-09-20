@@ -2306,7 +2306,13 @@ function openBox(bi){
   openOverlay(BOXES[bi].n+' — penta mineure', inner=>{
     const due=bxDue(bi), lvl=g.lvl;
     const isMaint = lvl>=5;
-    const mode = isMaint ? 'chrono' : BX_MODE[Math.min(4,lvl)];
+    /* 2026-09-20 — l'entretien forçait 'chrono' : réciter une forme VITE, à
+       l'infini, tous les J+1/3/7/16/35/60. Pour qui connaît déjà ses formes,
+       c'est le test le moins utile de l'échelle — et c'était le seul servi en
+       révision. L'entretien teste désormais LES CIBLES (quelle note viser),
+       qui est la compétence qui sert vraiment en solo. Le chrono n'est pas
+       supprimé : il reste en défi optionnel ci-dessous. */
+    const mode = isMaint ? (S.bxMaint==='chrono'?'chrono':'targets') : BX_MODE[Math.min(4,lvl)];
     const root = bxKeyFor(isMaint?4:lvl);
 
     const h=el('div','card'); h.style.borderColor='var(--acc)';
@@ -2314,7 +2320,7 @@ function openBox(bi){
         <b style="font-size:17px">${BOXES[bi].n}</b>
         <span style="color:var(--acc);font-weight:800;font-size:13px">${BX_RANK[Math.min(5,lvl)]}</span></div>
       <div class="bxbar"><i style="width:${Math.min(100,lvl*20)}%"></i></div>
-      <p class="lead" style="margin:8px 0 0">${isMaint?(due?'🔁 <b style="color:var(--acc)">Entretien dû aujourd’hui.</b> Refais-la à l’aveugle sous chrono : si tu la rates, elle redescend d’un palier — c’est le prix de l’honnêteté.':'Conquise. Prochain entretien le <b>'+(g.due||'—')+'</b>. Tu peux la refaire quand tu veux, ça ne coûte rien.'):('Palier suivant : <b style="color:var(--acc)">'+BX_MODEN[Math.min(4,lvl)]+'</b>'+(lvl>=2?' · tonalité tirée au sort : la forme est <b>mobile</b>, c’est tout l’intérêt':''))}</p>`;
+      <p class="lead" style="margin:8px 0 0">${isMaint?(due?'🔁 <b style="color:var(--acc)">Entretien dû aujourd’hui.</b> '+(mode==='chrono'?'Refais-la à l’aveugle sous chrono':'On teste <b>les cibles</b> : quelle note viser dans cette boîte — pas la forme, que tu sais déjà')+'. Si tu la rates, elle redescend d’un palier — c’est le prix de l’honnêteté.':'Conquise. Prochain entretien le <b>'+(g.due||'—')+'</b>. Tu peux la refaire quand tu veux, ça ne coûte rien.'):('Palier suivant : <b style="color:var(--acc)">'+BX_MODEN[Math.min(4,lvl)]+'</b>'+(lvl>=2?' · tonalité tirée au sort : la forme est <b>mobile</b>, c’est tout l’intérêt':''))}</p>`;
     inner.appendChild(h);
 
     inner.appendChild(el('div','theory',`<div class="tip">${BOXES[bi].tip}</div>`));
@@ -2322,7 +2328,9 @@ function openBox(bi){
     const arena=el('div','card'); inner.appendChild(arena);
     function ready(){
       arena.innerHTML='';
-      arena.appendChild(el('b',null,'▶ '+BX_MODEN[Math.min(4,isMaint?4:lvl)]+' · '+NOTES[root]+' mineur'));
+      /* le titre suit le MODE réellement joué (l'entretien n'est plus forcément
+         le chrono), et non l'index du palier. */
+      arena.appendChild(el('b',null,'▶ '+BX_MODEN[Math.max(0,BX_MODE.indexOf(mode))]+' · '+NOTES[root]+' mineur'));
       const expl={guide:'La boîte est affichée avec ses degrés. Touche les notes <b>dans l’ordre</b>, du grave à l’aigu, en suivant le <b>?</b>. Le but ici : voir la forme, pas la retenir.',
         order:'Les notes sont là, sans étiquette. Touche-les dans l’ordre, du grave à l’aigu, puis c’est fini. Deux erreurs maximum.',
         blind:'<b>Manche vide.</b> Tu poses les 12 notes de la boîte de mémoire, du grave à l’aigu. C’est là que ça grave.',
@@ -2772,10 +2780,30 @@ function openViseur(){
   });
 }
 
+/* 2026-09-20 — « les formes, je les ai ».
+   La Conquête le relançait tous les jours (bloc du jour + bataille du jour)
+   pour lui faire réciter des formes qu'il connaît. bxNag() est la version
+   « ce qu'on ose lui mettre sous le nez » de bxDueList() : les données de
+   progression ne bougent pas, on cesse juste de les lui jeter à la figure.
+   Rien n'est supprimé : la Conquête reste entière dans le hub Improviser. */
+const bxNag = () => S.bxOff ? [] : bxDueList();
 function openConquete(){
   markDay();
   openOverlay('La Conquête du manche', inner=>{
     const m=bxMastered(), pct=bxPct(), due=bxDueList();
+    {const sw=el('div','card'); sw.style.borderColor=S.bxOff?'var(--ok)':'var(--line)';
+     sw.innerHTML=`<b>${S.bxOff?'✅':'🎯'} Mes formes sont acquises</b>
+       <p class="lead" style="margin:6px 0 10px">${S.bxOff
+         ? 'Activé : la Conquête ne te relance plus dans ta séance ni dans la bataille du jour. Tes paliers et tes entretiens sont <b>conservés</b> — tu viens ici quand tu veux.<br>Tes créneaux pointent maintenant vers <b>🎧 le Juke-box</b> (viser sur de vrais morceaux) et <b>🎯 le Duel</b>.'
+         : 'Si tu sais déjà tes 5 formes, ça n\'a aucun intérêt de les réciter sous chrono tous les J+1/3/7/16. Active ça : la Conquête sort de ta séance quotidienne, et les créneaux libérés vont au Juke-box et au Duel — là où on apprend <b>quelles notes viser</b>.'}</p>`;
+     const b=el('button','btn'+(S.bxOff?' ghost':''), S.bxOff?'↩︎ Remets-la dans ma séance':'✔︎ Je les ai — sors-la de ma séance');
+     b.onclick=()=>{ S.bxOff=!S.bxOff; save(); toast(S.bxOff?'La Conquête sort de ta séance':'La Conquête revient'); openConquete(); };
+     sw.appendChild(b);
+     const mt=el('button','btn ghost', S.bxMaint==='chrono'?'⏱ Entretien : le chrono':'🎯 Entretien : les cibles');
+     mt.onclick=()=>{ S.bxMaint = S.bxMaint==='chrono'?'targets':'chrono'; save();
+       mt.textContent = S.bxMaint==='chrono'?'⏱ Entretien : le chrono':'🎯 Entretien : les cibles'; };
+     sw.appendChild(mt);
+     inner.appendChild(sw);}
     const h=el('div','card'); h.style.borderColor='var(--acc)';
     h.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
         <b style="font-size:17px">${m}/5 boîtes conquises</b><span style="color:var(--acc);font-weight:800">${pct}%</span></div>
@@ -3542,14 +3570,17 @@ function renderJour(){
   m.appendChild(tc);
 
   /* 4. TROIS CHOSES, PAS PLUS — et la première se joue */
-  const T=miniToday(), dueCards=cDueTotal()+tDue().length, dueBox=bxDueList().length;
+  const T=miniToday(), dueCards=cDueTotal()+tDue().length, dueBox=bxNag().length;
   const cs=soloCur();
   const bloc1 = (cs && !repDone(cs.id))
     ? {id:'solo', ic:'🎼', t:'Ton solo : '+cs.t, d:'Marche '+Math.min(5,repCount(cs.id)+1)+'/5 — '+SOL_STEPS[Math.min(4,repCount(cs.id))].n+' · '+cs.a+' · '+cs.key, open:()=>openSolo(cs)}
     : {id:'solo', ic:'🎼', t:(repJoue()?'Choisis ton prochain solo':'Choisis ton premier solo'), d:'Le répertoire — '+repJoue()+'/'+SOLOS.length+' sus. Un seul à la fois, jusqu’au bout.', open:()=>openRepertoire()};
   const blocks=[
     bloc1,
-    (dueBox
+    (S.bxOff
+      /* formes déclarées acquises : ce créneau sert à VISER, pas à réciter */
+      ? {id:'gammes', ic:'🎧', t:'Viser sur un vrai morceau', d:'Le Juke-box — '+jbCount()+'/'+JUKE.length+' validés. La grille tourne, tu vises la bonne note.', open:()=>openJukebox()}
+      : dueBox
       ? {id:'gammes', ic:'🗺', t:'Entretien des gammes', d:dueBox+' boîte(s) à revoir — si tu les rates, elles redescendent.', open:()=>openConquete()}
       : {id:'gammes', ic:'🗺', t:'La Conquête des gammes', d:BOXES[bxNext()].n+' · palier « '+BX_MODEN[Math.min(4,bx(bxNext()).lvl)]+' »', open:()=>openConquete()}),
     (dueCards
@@ -4030,7 +4061,7 @@ function renderProfil(){
   else if(soloCur() && !repDone(soloCur().id)) battle={t:'Ton solo : '+soloCur().t,d:'Marche '+Math.min(5,repCount(soloCur().id)+1)+'/5 — '+SOL_STEPS[Math.min(4,repCount(soloCur().id))].n+'.',go:()=>openSolo(soloCur())};
   else if(!soloCur()) battle={t:'Choisir un solo',d:'Un solo appris en entier vaut dix modules survolés. Commence par « Come As You Are ».',go:()=>openRepertoire()};
   else if(temoinDue()) battle={t:'Le témoin de la semaine',d:'45 s à enregistrer. C’est la seule mesure honnête de ton jeu.',go:()=>openTake('temoin')};
-  else if(bxDueList().length) battle={t:'Entretien des gammes',d:bxDueList().length+' boîte(s) à revoir — si tu les rates, elles redescendent.',go:()=>openConquete()};
+  else if(bxNag().length) battle={t:'Entretien des gammes',d:bxNag().length+' boîte(s) à revoir — si tu les rates, elles redescendent.',go:()=>openConquete()};
   else if(dueT>0) battle={t:'Réviser tes triades',d:dueT+' triade(s) dues — rafraîchis avant d’oublier.',go:()=>goTab('cartes')};
   else if(dueC>0) battle={t:'Réviser tes accords',d:dueC+' accord(s) dus.',go:()=>goTab('cartes')};
   else if(cleanStrings<6) battle={t:'Le sprint des cordes',d:'Il te reste des cordes à passer sans faute.',go:()=>openStringSprint()};
