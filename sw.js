@@ -2,7 +2,7 @@
 // Le réseau d'abord (les mises à jour arrivent immédiatement), le cache
 // en secours (l'app reste 100 % hors-ligne). Cache-first nous servait des
 // versions périmées après chaque déploiement.
-const CACHE="shred-v39-entrainement-du-jour";
+const CACHE="shred-v40-manche-horizontal";
 const ASSETS = [
   "./",
   "./index.html",

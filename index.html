@@ -189,30 +189,32 @@
   .entpills{display:flex;gap:6px;margin:0 0 6px}
   .entpill{flex:1;white-space:nowrap;text-align:center;font-size:12px;font-weight:800;padding:7px 4px;border-radius:20px;background:var(--bg2);border:1px solid var(--line);color:var(--dim);cursor:pointer}
   .entpill.on{border-color:var(--acc);color:var(--acc)}.entpill.ok{color:var(--ok)}
-  /* manche vertical : sillet en haut, Mi grave à gauche */
-  .vneck{margin:10px auto 4px;max-width:440px}
-  .vrow{display:grid;grid-template-columns:26px repeat(6,1fr);position:relative}
-  .vhead .vsn{text-align:center;font-size:11px;font-weight:800;color:var(--dim);padding-bottom:4px}
-  .vhead .vsn.dim{opacity:.3}
-  .vnum{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dim)}
-  .vnum.mk{color:var(--acc)}
-  .vc{position:relative;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#23190f;border-bottom:2px solid #6b5a44}
-  .vrow.open .vc{background:transparent;border-bottom:6px solid #b9a074;height:38px}
-  .vc::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:var(--sw,2px);background:var(--str);opacity:.5;transform:translateX(-50%)}
-  .vc.off{cursor:default}.vc.off::before{opacity:.13}
-  .vc.good{background:rgba(107,207,122,.28)}.vc.bad{background:rgba(255,107,92,.3)}
-  .vrow.mk1::after,.vrow.mk2::after,.vrow.mk2::before{content:'';position:absolute;top:50%;width:10px;height:10px;border-radius:50%;background:#5a4632;transform:translate(-50%,-50%);pointer-events:none;z-index:1}
-  .vrow.mk1::after{left:calc(26px + (100% - 26px) * .5)}
-  .vrow.mk2::before{left:calc(26px + (100% - 26px) / 3)}
-  .vrow.mk2::after{left:calc(26px + (100% - 26px) * 2 / 3)}
-  .vdot{position:relative;z-index:2;width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12.5px;background:var(--acc);color:#1a1200;border:1px solid var(--acc)}
-  .vdot.root{background:var(--bad);color:#fff;border-color:var(--bad)}
-  .vdot.col{background:var(--blue);color:#04122b;border-color:var(--blue)}
-  .vdot.no{background:var(--bg);color:var(--bad);border:2px solid var(--bad)}
-  .vdot.ghost{background:transparent;color:var(--acc);border:2px dashed var(--acc)}
-  .vleg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:11.5px;color:var(--dim);font-weight:700;margin:6px 0 2px}
-  .vleg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-  .vleg i.root{background:var(--bad)}.vleg i.on{background:var(--acc)}.vleg i.col{background:var(--blue)}
+  /* manche horizontal : Mi aigu en haut, sillet à gauche */
+  .hneck{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0 2px;padding-bottom:2px;scrollbar-width:none}
+  .hneck::-webkit-scrollbar{display:none}
+  .hrow{display:grid}
+  .hrow:not(.hnums){background:linear-gradient(90deg,transparent 0,transparent var(--wood0),#23190f var(--wood0))}
+  .hboard{border-radius:8px}
+  .hsn{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--dim)}
+  .hsn.dim{opacity:.3}
+  .hc{position:relative;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-right:2px solid #6b5a44}
+  .hc.open{border-right:6px solid #b9a074}
+  .hc::before{content:'';position:absolute;left:0;right:0;top:50%;height:var(--sw,2px);background:var(--str);opacity:.5;transform:translateY(-50%)}
+  .hc.open::before{opacity:.28}
+  .hc.off{cursor:default}.hc.off::before{opacity:.12}
+  .hc.good{background:rgba(107,207,122,.3)}.hc.bad{background:rgba(255,107,92,.32)}
+  .hc.mk::after{content:'';position:absolute;left:50%;bottom:0;width:10px;height:10px;border-radius:50%;background:#5a4632;transform:translate(-50%,50%);pointer-events:none;z-index:1}
+  .hnums div{text-align:center;font-size:11px;font-weight:700;color:var(--dim);padding-top:4px}
+  .hnums div.mk{color:var(--acc)}
+  .hdot{position:relative;z-index:2;width:29px;height:29px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;background:var(--acc);color:#1a1200;border:1px solid var(--acc)}
+  .hdot.root{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .hdot.col{background:var(--blue);color:#04122b;border-color:var(--blue)}
+  .hdot.no{background:var(--bg);color:var(--bad);border:2px solid var(--bad)}
+  .hdot.ghost{background:transparent;color:var(--acc);border:2px dashed var(--acc)}
+  .hhint{text-align:center;font-size:11.5px;color:var(--dim);font-weight:700;margin:2px 0 4px}
+  .hleg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:11.5px;color:var(--dim);font-weight:700;margin:6px 0 2px}
+  .hleg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  .hleg i.root{background:var(--bad)}.hleg i.on{background:var(--acc)}.hleg i.col{background:var(--blue)}
 </style>
 </head>
 <body>
@@ -3570,8 +3572,7 @@ function openPlay(){
       jour + un déliateur qui tourne. 8 min.
    ② LE MANCHE AU DOIGT — toucher TOUTES les notes d’une gamme, cases
       0 à 12 : penta mineure, penta majeure, gamme blues, en rotation.
-      Manche VERTICAL : il tient en largeur sur le téléphone, on ne fait
-      défiler que vers le bas. 5 min.
+      Manche HORIZONTAL, comme une tablature (il l’a demandé). 5 min.
    ③ LA TRAVERSÉE — la même gamme sur UNE corde (puis deux, puis trois)
       pour traverser le manche, sur une instru qu’il cherche lui-même
       sur YouTube. L’app dit dans quelle tonalité chercher et quels
@@ -3719,33 +3720,45 @@ function entCopy(txt){ const done=()=>toast('📋 Copié : '+txt);
   try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,()=>toast(txt)); return; } }catch(e){}
   toast(txt); }
 
-/* ---------------- le manche vertical (tient en largeur) ----------------
-   Le sillet en haut, le Mi grave à gauche : la convention des grilles
-   d’accords. 6 colonnes de ~55 px sur un téléphone : de vrais gros doigts. */
-function buildVNeck(o,onTap){ o=o||{};
+/* ---------------- le manche horizontal ----------------
+   Comme une tablature : Mi aigu en haut, Mi grave en bas, sillet à
+   gauche. Sur un téléphone en portrait il dépasse un peu : on le fait
+   glisser du doigt ; en paysage il tient en entier. */
+function buildNeck(o,onTap){ o=o||{};
   const from=o.from||0, to=o.to==null?12:o.to, only=o.only||null;
-  const wrap=el('div','vneck'), cells={};
-  const head=el('div','vrow vhead'); head.appendChild(el('div','vnum',''));
-  for(let s=0;s<6;s++) head.appendChild(el('div','vsn'+(only&&only.indexOf(s)<0?' dim':''),['E','A','D','G','B','e'][s]));
-  wrap.appendChild(head);
+  const nOpen=from===0?1:0, nFr=to-from+1-nOpen;
+  const gtc='24px '+(nOpen?'30px ':'')+'repeat('+nFr+',minmax(34px,1fr))';
+  const wrap=el('div','hneck'), board=el('div','hboard'), cells={};
+  board.style.minWidth=(24+nOpen*30+nFr*34)+'px';
+  board.style.setProperty('--wood0',(24+nOpen*30)+'px');
   const MK={3:1,5:1,7:1,9:1,12:2,15:1};
-  for(let f=from;f<=to;f++){
-    const row=el('div','vrow'+(f===0?' open':'')+(MK[f]===1?' mk1':MK[f]===2?' mk2':''));
-    row.appendChild(el('div','vnum'+(MK[f]?' mk':''),''+f));
-    for(let s=0;s<6;s++){ const off=!!(only&&only.indexOf(s)<0);
-      const c=el('div','vc'+(off?' off':'')); c.style.setProperty('--sw',(3.4-s*0.45).toFixed(2)+'px'); c.dataset.s=s; c.dataset.f=f;
-      if(!off) c.onclick=()=>onTap&&onTap(s,f,c);
+  for(let s=5;s>=0;s--){ const offS=!!(only&&only.indexOf(s)<0);
+    const row=el('div','hrow'); row.style.gridTemplateColumns=gtc;
+    row.appendChild(el('div','hsn'+(offS?' dim':''),['E','A','D','G','B','e'][s]));
+    for(let f=from;f<=to;f++){
+      /* les repères : sous la corde de Sol (entre Sol et Ré) ; la 12 en double */
+      const mk=(MK[f]===1&&s===3)||(MK[f]===2&&(s===4||s===2));
+      const c=el('div','hc'+(f===0?' open':'')+(offS?' off':'')+(mk?' mk':''));
+      c.style.setProperty('--sw',(1.4+(5-s)*0.42).toFixed(2)+'px');
+      c.dataset.s=s; c.dataset.f=f;
+      if(!offS) c.onclick=()=>onTap&&onTap(s,f,c);
       row.appendChild(c); cells[s+':'+f]=c; }
-    wrap.appendChild(row);
-  }
-  wrap.dot=(s,f,label,cls)=>{ const c=cells[s+':'+f]; if(!c) return null; let d=c.querySelector('.vdot');
-    if(!d){ d=el('div','vdot'); c.appendChild(d); } d.className='vdot '+(cls||''); d.textContent=label==null?'':label; return d; };
-  wrap.undot=(s,f)=>{ const c=cells[s+':'+f]; const d=c&&c.querySelector('.vdot'); if(d) d.remove(); };
-  wrap.clear=()=>Object.values(cells).forEach(c=>{ const d=c.querySelector('.vdot'); if(d) d.remove(); });
-  wrap.flash=(s,f,cls)=>{ const c=cells[s+':'+f]; if(!c) return; c.classList.add(cls); setTimeout(()=>c.classList.remove(cls),280); };
-  return wrap;
+    board.appendChild(row); }
+  const nums=el('div','hrow hnums'); nums.style.gridTemplateColumns=gtc; nums.appendChild(el('div',''));
+  for(let f=from;f<=to;f++) nums.appendChild(el('div',MK[f]?'mk':'',''+f));
+  board.appendChild(nums);
+  wrap.appendChild(board);
+  const hint=el('div','hhint','↔ fais glisser le manche pour aller jusqu’à la case '+to);
+  requestAnimationFrame(()=>{ if(wrap.scrollWidth<=wrap.clientWidth+2) hint.remove(); });
+  const outer=el('div'); outer.append(wrap,hint);
+  outer.dot=(s,f,label,cls)=>{ const c=cells[s+':'+f]; if(!c) return null; let d=c.querySelector('.hdot');
+    if(!d){ d=el('div','hdot'); c.appendChild(d); } d.className='hdot '+(cls||''); d.textContent=label==null?'':label; return d; };
+  outer.undot=(s,f)=>{ const c=cells[s+':'+f]; const d=c&&c.querySelector('.hdot'); if(d) d.remove(); };
+  outer.clear=()=>Object.values(cells).forEach(c=>{ const d=c.querySelector('.hdot'); if(d) d.remove(); });
+  outer.flash=(s,f,cls)=>{ const c=cells[s+':'+f]; if(!c) return; c.classList.add(cls); setTimeout(()=>c.classList.remove(cls),280); };
+  return outer;
 }
-function entLegend(P){ return `<div class="vleg"><span><i class="root"></i>fondamentale</span><span><i class="on"></i>${P.SC.n}</span>${P.type==='blu'?'<span><i class="col"></i>la blue note (♭5)</span>':''}</div>`; }
+function entLegend(P){ return `<div class="hleg"><span><i class="root"></i>fondamentale</span><span><i class="on"></i>${P.SC.n}</span>${P.type==='blu'?'<span><i class="col"></i>la blue note (♭5)</span>':''}</div>`; }
 
 /* ---------------- ① L’ENTRETIEN ---------------- */
 function entFillTech(box,P){
@@ -3786,7 +3799,7 @@ function entFind(host,P,done){
   const found={}; let err=0, t0=null, tk=null, over=false;
   host.innerHTML='';
   const head=el('div','qhead'); host.appendChild(head);
-  const neck=buildVNeck({from:0,to:12},tap); host.appendChild(neck);
+  const neck=buildNeck({from:0,to:12},tap); host.appendChild(neck);
   host.appendChild(el('div',null,entLegend(P)));
   const give=el('button','btn ghost','🆘 Je bloque — montre ce qui manque'); host.appendChild(give);
   const secs=()=>t0?Math.round((performance.now()-t0)/100)/10:0;
@@ -3823,7 +3836,7 @@ function entStringRun(host,P){
   let i=0, err=0;
   host.innerHTML='';
   const head=el('div','qhead'); host.appendChild(head);
-  const neck=buildVNeck({from:0,to:15,only:P.str.s},tap); host.appendChild(neck);
+  const neck=buildNeck({from:0,to:15,only:P.str.s},tap); host.appendChild(neck);
   function paint(){ head.innerHTML=`<div class="sub">${i}/${seq.length} · ❌ ${err}</div>
       <div class="q" style="font-size:20px">${P.str.n} · ${entScaleName(P)}</div>
       <div class="sub">${P.str.s.length>1?'corde par corde, de la plus grave à la plus aiguë, ':''}de la case 0 à la case 15, <b>dans l’ordre</b></div>`; }
@@ -3866,7 +3879,7 @@ function entFillTrav(box,P){
 
   const nc=el('div','card');
   nc.innerHTML=`<b>${P.str.n} · ${entScaleName(P)}</b><p class="lead" style="margin:4px 0 0">Cases 0 à 15. Touche une note pour l’entendre.</p>`;
-  const neck=buildVNeck({from:0,to:15,only:P.str.s},(s,f)=>{ pluck(midiAt(s,f)); neck.flash(s,f,'good'); });
+  const neck=buildNeck({from:0,to:15,only:P.str.s},(s,f)=>{ pluck(midiAt(s,f)); neck.flash(s,f,'good'); });
   P.str.s.forEach(s=>{ for(let f=0;f<=15;f++) if(entIn(P,s,f)){ const iv=entIv(P,s,f); neck.dot(s,f,P.SC.deg[iv],entCls(P,iv)); } });
   nc.appendChild(neck); nc.appendChild(el('div',null,entLegend(P)));
   const pl=el('button','btn ghost','🔊 Écouter '+(P.str.s.length>1?'ces cordes':'la corde'));
