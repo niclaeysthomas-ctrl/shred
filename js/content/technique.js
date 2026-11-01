@@ -75,5 +75,63 @@ export const TECHNIQUE = [
     picks: '↓ ↑ ↓ ↑',
     success: 'Arrivée juste et en rythme, note de destination aussi forte que celle de départ.'
   }
+,
+  {
+    id: 'gallop', name: 'Gallop metal (palm mute)', cat: 'Médiator', level: 2, minutes: 4, start: 80, target: 150, unit: 'croches + doubles',
+    goal: 'Le rythme « croche – deux doubles » du metal, palm mute serré.',
+    how: 'Motif ↓ ↓↑ (une croche, deux doubles croches) sur la corde de Mi à vide, en [[palm mute]]. Le coup vers le haut doit être aussi fort que les coups vers le bas. Puis déplace le motif sur un power chord (case 0 → 3 → 5).',
+    tab: ['e|------------------|', 'B|------------------|', 'G|------------------|', 'D|------------------|', 'A|------------------|', 'E|-0--0-0-0--0-0-0--0-0|', '  PM---------------'],
+    picks: '↓ ↓ ↑', perBeat: 3,
+    success: 'Gallop régulier sur 8 mesures, sans que le ↑ disparaisse.'
+  },
+  {
+    id: 'economy', name: 'Economy picking', cat: 'Médiator', level: 3, minutes: 5, start: 60, target: 110, unit: 'triolets',
+    goal: 'Changer de corde en « balayant » dans le sens du mouvement.',
+    how: 'Quand on passe à la corde suivante dans le sens du coup de médiator, on enchaîne d’un seul geste (deux ↓ de suite en montant vers les aigus). Ailleurs, on alterne. Plus fluide que l’alternate strict pour les gammes à 3 notes par corde.',
+    tab: ['e|-----------------|', 'B|-----------5-7-8-|', 'G|-----5-7-9-------|', 'D|-5-7-------------|', 'A|-----------------|', 'E|-----------------|'],
+    picks: '↓ ↑ ↓ ↓ ↑ ↓ ↓ ↑', perBeat: 3,
+    success: 'Les doubles ↓ sont liés en un seul geste, rythme régulier.'
+  },
+  {
+    id: 'hammer-pull', name: 'Hammer-on / pull-off isolés', cat: 'Main gauche', level: 1, minutes: 4, start: 60, target: 100, unit: 'croches',
+    goal: 'Des liaisons nettes avant de les enchaîner en legato.',
+    how: 'Hammer-on : frappe la corde du bout du doigt, juste derrière la frette, sans réattaquer. Pull-off : tire légèrement la corde vers le sol en lâchant. Une attaque, deux notes, même volume.',
+    tab: ['e|-----------------|', 'B|-----------------|', 'G|-5h7--5h7--7p5--7p5|', 'D|-----------------|', 'A|-----------------|', 'E|-----------------|'],
+    picks: '↓ (une attaque par paire)',
+    success: 'La note liée est aussi forte que la note attaquée.'
+  },
+  {
+    id: 'tapping', name: 'Tapping (à la Van Halen / Slash live)', cat: 'Main gauche', level: 3, minutes: 4, start: 60, target: 120, unit: 'triolets',
+    goal: 'Tapper avec l’index ou le majeur droit, enchaîner pull-off et hammer-on.',
+    how: 'Tape la case 12 avec un doigt de la main droite, tire (pull-off) vers la case 5 tenue par la main gauche, puis hammer-on case 8. Étouffe les cordes graves avec la paume droite.',
+    tab: ['e|-----------------|', 'B|-12p5h8-12p5h8---|', 'G|-----------------|', 'D|-----------------|', 'A|-----------------|', 'E|-----------------|'],
+    picks: 'T = tap', perBeat: 3,
+    success: 'Triolets réguliers sans bruit parasite sur les autres cordes.'
+  },
+  {
+    id: 'sweep', name: 'Sweep picking (3 cordes)', cat: 'Médiator', level: 3, minutes: 4, start: 50, target: 100, unit: 'triolets',
+    goal: 'Un arpège en un seul geste continu de médiator, notes séparées.',
+    how: 'Le médiator « tombe » d’une corde à la suivante en un mouvement (↓↓↓ en descendant vers les aigus, ↑↑↑ en remontant). Chaque note doit être étouffée dès que la suivante sonne : main gauche qui relâche, sinon ça sonne comme un accord. Commence très lent.',
+    tab: ['e|-------5-------|', 'B|-----5---5-----|', 'G|---6-------6---|', 'D|-7-----------7-|', 'A|---------------|', 'E|---------------|'],
+    picks: '↓ ↓ ↓ ↓ ↑ ↑ ↑', perBeat: 3,
+    success: 'Notes séparées (pas d’accord qui résonne) et régulières.'
+  }
 ];
 export const techById = id => TECHNIQUE.find(t => t.id === id);
+
+/* Le module médiator : l'ordre recommandé pour passer des doigts au médiator */
+export const PICK_PATH = ['pick-basics', 'alt-1string', 'palm-mute', 'alt-cross', 'gallop', 'tremolo', 'economy', 'sweep'];
+export const perBeatOf = t => t.perBeat || (/doubles/.test(t.unit) ? 4 : /triolets/.test(t.unit) ? 3 : 2);
+
+/* Lecture d'une tablature texte → suite d'événements { s, f, col } dans l'ordre de jeu */
+export function parseTab(lines) {
+  const strings = lines.filter(l => /^[eBGDAE]\|/.test(l)).slice(0, 6);
+  if (strings.length !== 6) return [];
+  const ev = [];
+  strings.forEach((line, row) => {
+    const s = 5 - row; // ligne 0 = mi aigu = corde 5
+    const re = /\d+/g; let m;
+    while ((m = re.exec(line))) ev.push({ s, f: +m[0], col: m.index });
+  });
+  return ev.sort((a, b) => a.col - b.col || a.s - b.s);
+}

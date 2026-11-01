@@ -9,7 +9,8 @@ import { el, N, IV, rich, openModal, closeModal, toast } from '../ui.js';
 import { MODULES, notionById } from '../content/lessons.js';
 import { Fretboard, scaleMarks, compareMarks, voicingMarks, legend, STD_LEGEND } from '../fretboard.js';
 import { runQuiz, makeQuestions } from '../quiz.js';
-import { state, update, notion, markSeen, isValidated } from '../store.js';
+import { state, update, notion, markSeen, isValidated, validateNotion } from '../store.js';
+import { techById, parseTab } from '../content/technique.js';
 import { playNotes, closeVoicing } from '../audio.js';
 
 export function moduleProgress(m) {
@@ -18,20 +19,41 @@ export function moduleProgress(m) {
   return { ok, total: ready.length, pct: ready.length ? ok / ready.length : 0 };
 }
 
+/* Les modules 5 (technique) et 7 (oreille) se travaillent en parallèle, dès le début */
+const REQUIRES = { m1: null, m2: 'm1', m3: 'm2', m4: 'm3', m5: null, m6: 'm4', m7: null };
+export const PARALLEL = new Set(['m5', 'm7']);
 export function isUnlocked(m) {
-  if (m.n === 1) return true;
+  const req = REQUIRES[m.id];
+  if (!req) return true;
   if ((state().unlocked || []).includes(m.id)) return true;
-  const prev = MODULES[m.n - 2];
+  const prev = MODULES.find(x => x.id === req);
   return prev && isUnlocked(prev) && moduleProgress(prev).pct >= 0.6;
 }
+export const requiredOf = m => MODULES.find(x => x.id === REQUIRES[m.id]);
+
+/* Notions techniques : validées par un tempo propre (déclaré) ou une mesure au micro */
+export function checkTechNotions() {
+  const S = state(), newly = [];
+  MODULES.find(m => m.id === 'm5').notions.forEach(n => {
+    if (!n.tech || isValidated(n.id)) return;
+    const t = techById(n.tech), r = S.tempos[n.tech];
+    let ok = false;
+    if (n.measure) ok = (S.measures?.[n.tech] || []).some(x => x.ok);
+    else if (t && t.start) ok = !!(r && r.clean >= passBpmOf(t));
+    if (ok) { validateNotion(n.id, n.measure ? 'mesure' : 'tempo'); newly.push(n.title); }
+  });
+  return newly;
+}
+export const passBpmOf = t => t.start ? Math.round(t.start + (t.target - t.start) * 0.5) : 0;
 
 export function currentModule() {
-  return MODULES.find(m => isUnlocked(m) && m.notions.some(n => n.ready) && moduleProgress(m).pct < 1) || MODULES[0];
+  return MODULES.find(m => !PARALLEL.has(m.id) && isUnlocked(m) && moduleProgress(m).pct < 1) || MODULES[0];
 }
 
-export function nextNotion() {
+export function nextNotion({ module = null } = {}) {
   for (const m of MODULES) {
     if (!isUnlocked(m)) continue;
+    if (module ? m.id !== module : PARALLEL.has(m.id)) continue;
     const n = m.notions.find(x => x.ready && !isValidated(x.id));
     if (n) return { module: m, notion: n };
   }
@@ -43,7 +65,7 @@ export function render(main, params) {
     el('div', null, el('div', 'eyebrow', 'Parcours'), el('h1', null, 'Ta formation, module par module'),
       el('p', null, 'Six mois pour poser les bases, puis un entretien continu. Chaque notion : une explication simple, la théorie, le manche, un exercice à la guitare, un exercice musical, et un quiz qui valide (ou non) la notion.'))));
 
-  const legendRow = el('div', 'row hint', el('span', 'notion', el('span', 'st'), 'pas commencée'), el('span', 'notion', el('span', 'st seen'), 'étudiée'), el('span', 'notion', el('span', 'st ok', '✓'), 'validée par un quiz'), el('span', 'notion', el('span', 'st rev', '!'), 'à revoir (raté en évaluation)'));
+  const legendRow = el('div', 'row hint', el('span', 'notion', el('span', 'st'), 'pas commencée'), el('span', 'notion', el('span', 'st seen'), 'étudiée'), el('span', 'notion', el('span', 'st ok', '✓'), 'validée (quiz, tempo ou mesure)'), el('span', 'notion', el('span', 'st rev', '!'), 'à revoir (raté en évaluation)'));
   legendRow.querySelectorAll('.notion').forEach(n => { n.style.width = 'auto'; n.style.padding = '4px 8px'; });
   main.append(legendRow);
 
@@ -57,7 +79,7 @@ export function render(main, params) {
       pr.total ? el('div', { style: { width: '110px' } }, el('div', 'progress' + (pr.pct === 1 ? ' ok' : ''), el('i', { style: { width: (pr.pct * 100) + '%' } })), el('small', { class: 'mono hint' }, `${pr.ok}/${pr.total} validées`)) : el('span', 'tag', 'à venir'));
     const body = el('div', 'module-body');
     if (!unlocked) {
-      const prev = MODULES[m.n - 2];
+      const prev = requiredOf(m);
       body.append(el('p', { class: 'hint', style: { padding: '8px 12px' } }, `Se débloque à 60 % du module ${prev.n} (${Math.round(moduleProgress(prev).pct * 100)} % pour l’instant).`));
       if (m.notions.some(n => n.ready)) body.append(el('div', { style: { padding: '0 12px 10px' } }, el('button', { class: 'btn ghost sm', onclick: () => placementTest(m) }, 'Je pense déjà savoir : test de positionnement')));
     }
@@ -113,10 +135,16 @@ export function openLesson(id, { startStep = 0, onValidated } = {}) {
       content.innerHTML = '';
       const k = STEPS[step][0];
       if (k === 'simple' || k === 'deep') content.append(el('div', { class: 'lesson-txt', html: rich(n[k]) }));
-      if (k === 'fb') {
+      if (k === 'fb' && !n.fb && n.tech) {
+        const t = techById(n.tech);
+        const F = new Fretboard({ frets: 15, compact: true });
+        F.setMarks(parseTab(t.tab).map(e => ({ s: e.s, f: e.f, label: String(e.f), role: 'root' })));
+        content.append(el('pre', 'tab', t.tab.join('\n')), el('p', 'mono', t.picks ? 'Médiator : ' + t.picks : ''), F.root, el('p', 'hint', 'Le Technique Lab anime ce mouvement note par note au métronome.'));
+      } else if (k === 'fb') {
         content.append(lessonFretboard(n.fb), el('p', { class: 'callout', html: rich(n.fbNote || '') }));
         if (n.link) content.append(el('a', { class: 'btn ghost sm', href: n.link.href, onclick: () => closeModal() }, n.link.label + ' →'));
       }
+      if (k === 'practice' && n.tech) content.append(el('a', { class: 'btn ghost sm', href: '#/technique?ex=' + n.tech, onclick: () => closeModal() }, 'Ouvrir l’exercice →'));
       if (k === 'practice') content.append(el('div', 'eyebrow', 'Exercice pratique · guitare en main'), el('div', { class: 'lesson-txt', html: rich(n.practice) }),
         el('p', 'hint', 'Cet exercice ne se corrige pas tout seul : l’app ne t’entend pas. C’est le quiz (étape 6) qui valide la notion.'));
       if (k === 'musical') {
@@ -126,7 +154,14 @@ export function openLesson(id, { startStep = 0, onValidated } = {}) {
           content.append(el('a', { class: 'btn', href, onclick: () => closeModal() }, '♫ Ouvrir dans l’Impro Studio'));
         }
       }
-      if (k === 'quiz') {
+      if (k === 'quiz' && n.tech) {
+        const t = techById(n.tech), s = notion(id);
+        content.append(el('p', 'lead', s.validated ? `Validée le ${s.validated}.` : 'Cette notion ne se valide pas par un quiz mais par la pratique :'),
+          el('div', { class: 'callout', html: n.measure ? `<b>Mesure au micro</b> : ${n.measure === 'bend' ? 'un bend tenu à ±10 cents de la cible' : 'un vibrato d’au moins 30 cents d’amplitude et 70 % de régularité'}, mesuré dans le Technique Lab. C’est une vraie mesure de hauteur.` : `<b>Tempo propre</b> : ${passBpmOf(t)} BPM sur « ${t.name} », déclaré par toi après 3 passages propres au métronome. L’app ne t’entend pas : c’est un engagement envers toi-même.` }),
+          el('p', { html: '<b>Critère de réussite de l’exercice :</b> ' + t.success }),
+          el('a', { class: 'btn', href: '#/technique?ex=' + n.tech, onclick: () => closeModal() }, 'Ouvrir l’exercice dans le Technique Lab'));
+      }
+      if (k === 'quiz' && !n.tech) {
         const s = notion(id);
         content.append(el('p', 'lead', s.validated ? `Validée le ${s.validated}. Refaire le quiz ne peut pas te faire perdre la validation ; seule une évaluation ratée la remet « à revoir ».` : '10 questions générées à partir de la théorie. 80 % pour valider. Chaque erreur est expliquée.'));
         runQuiz(content, { gens: n.gens, n: 10, notionId: id, onDone: r => { if (r.passed) { toast('Notion validée ✓', 'ok'); onValidated && onValidated(); } } });

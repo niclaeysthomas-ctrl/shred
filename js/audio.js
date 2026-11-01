@@ -282,17 +282,18 @@ export class Backing {
 /* ---------------- métronome ---------------- */
 export class Metronome {
   constructor() { this.on = false; }
-  start(bpm, onBeat, beatsPerBar = 4) {
+  /* bpm = temps par minute ; sub = subdivisions animées par temps (seuls les temps cliquent) */
+  start(bpm, onBeat, beatsPerBar = 4, sub = 1) {
     const c = ac(); this.stop();
-    this.bpm = bpm; this.on = true; this.n = 0; this.next = c.currentTime + 0.08; this.bpb = beatsPerBar; this.onBeat = onBeat; this.q = [];
+    this.bpm = bpm; this.sub = sub; this.on = true; this.n = 0; this.next = c.currentTime + 0.08; this.bpb = beatsPerBar; this.onBeat = onBeat; this.q = [];
     this.timer = setInterval(() => {
       while (this.next < ac().currentTime + 0.12) {
-        click(this.next, this.n % this.bpb === 0);
-        this.q.push({ t: this.next, n: this.n % this.bpb });
-        this.n++; this.next += 60 / this.bpm;
+        if (this.n % this.sub === 0) click(this.next, this.n % (this.bpb * this.sub) === 0);
+        this.q.push({ t: this.next, n: this.n });
+        this.n++; this.next += 60 / this.bpm / this.sub;
       }
     }, 25);
-    const loop = () => { if (!this.on) return; const t = ac().currentTime; while (this.q.length && this.q[0].t <= t) { const e = this.q.shift(); this.onBeat && this.onBeat(e.n); } this.raf = requestAnimationFrame(loop); };
+    const loop = () => { if (!this.on) return; const t = ac().currentTime; while (this.q.length && this.q[0].t <= t) { const e = this.q.shift(); this.onBeat && this.onBeat(this.sub === 1 ? e.n % this.bpb : e.n); } this.raf = requestAnimationFrame(loop); };
     this.raf = requestAnimationFrame(loop);
   }
   setBpm(b) { this.bpm = b; }

@@ -6,7 +6,7 @@ import { currentModule, moduleProgress, nextNotion, openLesson } from './path.js
 import { buildPlan } from './session.js';
 import { skillMeters } from './progress.js';
 
-const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻' };
+const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍' };
 
 export function render(main) {
   const S = state();

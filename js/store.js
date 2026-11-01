@@ -23,7 +23,9 @@ const DEFAULT = () => ({
   goals: { short: '', long: '' },
   compos: [],           // idées enregistrées depuis le Chord Lab / l'impro
   unlocked: [],         // modules débloqués par test de positionnement
-  improLevel: {}        // exercice → niveau actuel
+  improLevel: {},       // exercice → niveau actuel
+  songs: [],            // Composition Studio
+  measures: {}          // mesures au micro (bends, vibrato)
 });
 
 export function today(d = new Date()) {
@@ -189,5 +191,23 @@ export function recordGenStats(results) {
       g.recent = (g.recent || []).concat(r.ok ? 1 : 0).slice(-20);
       s.genStats[r.gen] = g;
     });
+  });
+}
+
+export function validateNotion(id, source = 'quiz') {
+  update(s => {
+    const n = s.notions[id] || { seen: today(), attempts: [], validated: null, review: false };
+    n.validated = n.validated || today(); n.review = false; n.source = source;
+    s.notions[id] = n;
+  });
+}
+
+/* Mesures réelles au micro (justesse des bends, vibrato) */
+export function recordMeasure(exId, value, ok) {
+  update(s => {
+    s.measures = s.measures || {};
+    const a = s.measures[exId] || [];
+    a.push({ d: today(), value, ok });
+    s.measures[exId] = a.slice(-40);
   });
 }

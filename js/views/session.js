@@ -11,7 +11,8 @@ import { state, update, today, addPractice, recordTempo, setSessionLive, isValid
 import { TECHNIQUE, techById } from '../content/technique.js';
 import { PROGRESSIONS } from '../content/progressions.js';
 import { READY_NOTIONS, notionById } from '../content/lessons.js';
-import { nextNotion, openLesson } from './path.js';
+import { nextNotion, openLesson, checkTechNotions } from './path.js';
+import '../quiz2.js';
 import { Metronome, pluck, click, ac } from '../audio.js';
 import { runQuiz } from '../quiz.js';
 import { openModal, closeModal } from '../ui.js';
@@ -55,14 +56,19 @@ export function buildPlan(len) {
   const tech = k => { const t = pickTech(k); return { type: 'tech', tech: t.id, title: t.name, detail: t.goal }; };
   const validated = READY_NOTIONS.filter(n => isValidated(n.id));
   const reviewBlock = () => validated.length >= 2 ? { type: 'review', title: 'Révision express', detail: '5 questions sur des notions déjà validées (pour qu’elles tiennent).' } : tech(1);
-  const rep = () => (dayIndex() % 2)
+  const EARS = [['earIntervals', 'intervalles'], ['earChords', 'majeur / mineur'], ['earDegrees', 'degrés'], ['earMelody', 'mélodie'], ['earTriads', 'triades'], ['earSevenths', 'septièmes'], ['earModes', 'modes']];
+  const earX = EARS[dayIndex() % EARS.length];
+  const ear = () => ({ type: 'ear', gen: earX[0], title: 'Oreille : ' + earX[1], detail: '10 questions sonores, correction détaillée.' });
+  const rep = () => (dayIndex() % 3 === 2)
+    ? { type: 'rep', href: '#/compo', title: 'Composition : avance un morceau', detail: 'Une section, un riff ou une idée audio dans le Composition Studio.' }
+    : (dayIndex() % 2)
     ? { type: 'rep', href: 'classic.html#jukebox', title: 'Répertoire : un morceau du Juke-box', detail: 'Joue un morceau en entier, en visant les notes indiquées.' }
     : { type: 'rep', href: '#/labo/accords?view=harmo', title: 'Composition : une grille', detail: 'Construis une grille de 4 accords dans le Chord Lab, garde-la si elle te plaît.' };
 
   let blocks;
   if (len === 15) blocks = focus === 'theory' ? [[theory(), 8], [impro(), 7]] : focus === 'impro' ? [[tech(0), 5], [impro(), 10]] : [[tech(0), 8], [theory(), 7]];
-  else if (len === 20) blocks = focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7]] : focus === 'impro' ? [[tech(0), 5], [impro(), 10], [rep(), 5]] : [[tech(0), 8], [theory(), 6], [impro(), 6]];
-  else blocks = focus === 'tech' ? [[tech(0), 6], [tech(1), 5], [theory(), 7], [impro(), 7], [rep(), 5]] : [[tech(0), 5], [theory(), 7], [impro(), 8], [rep(), 5], [reviewBlock(), 5]];
+  else if (len === 20) blocks = focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7]] : focus === 'impro' ? [[tech(0), 5], [impro(), 10], [rep(), 5]] : [[tech(0), 8], [ear(), 5], [impro(), 7]];
+  else blocks = focus === 'tech' ? [[tech(0), 6], [tech(1), 5], [theory(), 7], [impro(), 7], [ear(), 5]] : focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7], [ear(), 5], [reviewBlock(), 5]] : [[tech(0), 5], [theory(), 7], [impro(), 8], [rep(), 5], [reviewBlock(), 5]];
   return { len, focus, d: today(), blocks: blocks.map(([b, m], i) => ({ ...b, id: 'b' + i, min: m })), done: [] };
 }
 
@@ -110,7 +116,7 @@ window.addEventListener('hashchange', () => setTimeout(renderPill, 0));
 window.addEventListener('beforeunload', () => { if (RUN.on) commitTime(); });
 
 /* ---------------- écran ---------------- */
-const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻' };
+const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍' };
 
 export function render(main, params) {
   const S = state();
@@ -163,7 +169,7 @@ export function render(main, params) {
     timer.update = () => { const e = elapsed(); const left = b.min * 60 - e; timer.textContent = left >= 0 ? mmss(left) : '+' + mmss(-left); timer.classList.toggle('over', left < 0); };
     timer.update();
     const pause = el('button', { class: 'btn ghost sm', onclick: () => { if (RUN.paused) { RUN.paused = false; RUN.start = Date.now(); pause.textContent = '❚❚ Pause'; } else { RUN.acc = elapsed(); RUN.paused = true; pause.textContent = '▶ Reprendre'; } } }, RUN.paused ? '▶ Reprendre' : '❚❚ Pause');
-    box.append(el('div', 'eyebrow', `${ICON[b.type]} ${{ tech: 'Technique', theory: 'Théorie & manche', impro: 'Improvisation', rep: 'Répertoire / composition', review: 'Révision' }[b.type]}`),
+    box.append(el('div', 'eyebrow', `${ICON[b.type]} ${{ tech: 'Technique', theory: 'Théorie & manche', impro: 'Improvisation', rep: 'Répertoire / composition', review: 'Révision', ear: 'Oreille' }[b.type]}`),
       el('h3', null, b.title), timer,
       el('div', { class: 'row', style: { justifyContent: 'center', margin: '10px 0' } }, pause,
         el('button', { class: 'btn sm', onclick: () => markDone(b) }, '✓ Bloc terminé'),
@@ -201,10 +207,12 @@ function blockContent(b) {
       } }, '▶ Métronome');
       c.append(el('div', 'panel', el('div', 'bpm', el('button', { class: 'btn ghost sm', onclick: () => setB(bpm - 4) }, '−4'), label, el('button', { class: 'btn ghost sm', onclick: () => setB(bpm + 4) }, '+4'), el('span', 'hint', 'BPM · ' + t.unit), dot, go),
         el('p', 'hint', `Départ ${t.start} → objectif ${t.target} BPM. Record propre : ${rec && rec.clean ? rec.clean + ' BPM' : 'aucun'}. On n’augmente que si 3 passages d’affilée sont propres.`),
-        el('button', { class: 'btn ghost sm', onclick: () => { recordTempo(t.id, bpm); toast(`${bpm} BPM propre enregistré pour « ${t.name} ».`, 'ok'); } }, '✓ Propre à ce tempo : l’enregistrer')));
+        el('div', 'row', el('button', { class: 'btn ghost sm', onclick: () => { recordTempo(t.id, bpm); const v = checkTechNotions(); toast(`${bpm} BPM propre enregistré pour « ${t.name} ».` + (v.length ? ' Notion validée : ' + v.join(', ') : ''), 'ok'); } }, '✓ Propre à ce tempo : l’enregistrer'),
+          el('a', { class: 'btn ghost sm', href: '#/technique?ex=' + t.id }, 'Mouvement animé →'))));
     } else {
       c.append(el('button', { class: 'btn ghost sm', onclick: () => { const tt = ac().currentTime; pluck(t.refMidi, { when: tt, dur: 2.2, vel: 0.6 }); } }, '🔊 Note cible (E, corde de Sol case 9)'),
-        el('button', { class: 'btn ghost sm', onclick: () => { recordTempo(t.id, 0); toast('Séance notée.', 'ok'); } }, '✓ Fait'));
+        el('button', { class: 'btn ghost sm', onclick: () => { recordTempo(t.id, 0); toast('Séance notée.', 'ok'); } }, '✓ Fait'),
+        el('a', { class: 'btn sm', href: '#/technique?ex=' + t.id }, '🎤 Mesurer au micro dans le Technique Lab'));
     }
   }
   if (b.type === 'theory') {
@@ -216,6 +224,10 @@ function blockContent(b) {
   if (b.type === 'impro' || b.type === 'rep') {
     c.append(el('p', 'lead', b.detail), el('a', { class: 'btn', href: b.href }, b.type === 'impro' ? '♫ Ouvrir l’exercice' : 'Ouvrir'),
       el('p', 'hint', b.href.startsWith('classic') ? 'Ouvre l’ancien Shred (ton Juke-box est là-bas). Le chrono s’arrête si tu quittes cette page : reviens marquer le bloc terminé.' : 'Le chrono continue (pastille en bas à droite). Reviens ici pour passer au bloc suivant.'));
+  }
+  if (b.type === 'ear') {
+    c.append(el('p', 'lead', b.detail + ' Monte le volume ou mets un casque.'),
+      el('button', { class: 'btn', onclick: () => openModal(b.title, body => runQuiz(body, { gens: [b.gen], n: 10, kind: 'ear' })) }, '▶ Lancer'));
   }
   if (b.type === 'review') {
     const ids = READY_NOTIONS.filter(n => isValidated(n.id));

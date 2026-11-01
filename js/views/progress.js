@@ -12,7 +12,7 @@ import { moduleProgress, openLesson } from './path.js';
 import { runQuiz, GENERATORS } from '../quiz.js';
 import { encodeProg } from './labo.js';
 
-const GEN_NAMES = { intervals: 'Intervalles', majorScale: 'Gamme majeure', fretNotes: 'Notes sur le manche', keys: 'Tonalités', degrees: 'Degrés', pentas: 'Pentatoniques', triads: 'Triades', qualities: 'Qualités d’accords', sevenths: 'Accords de septième', harmonization: 'Harmonisation', functions: 'Fonctions', inversions: 'Renversements', voiceLeading: 'Voice leading', modeCompare: 'Comparer les modes', modesAll: 'Les 7 modes', targets: 'Notes cibles' };
+const GEN_NAMES = { intervals: 'Intervalles', majorScale: 'Gamme majeure', fretNotes: 'Notes sur le manche', keys: 'Tonalités', degrees: 'Degrés', pentas: 'Pentatoniques', triads: 'Triades', qualities: 'Qualités d’accords', sevenths: 'Accords de septième', harmonization: 'Harmonisation', functions: 'Fonctions', inversions: 'Renversements', voiceLeading: 'Voice leading', modeCompare: 'Comparer les modes', modesAll: 'Les 7 modes', targets: 'Notes cibles', earIntervals: 'Oreille : intervalles', earChords: 'Oreille : majeur/mineur', earTriads: 'Oreille : triades', earSevenths: 'Oreille : septièmes', earCompare: 'Oreille : comparer', earDegrees: 'Oreille : degrés', earMelody: 'Oreille : mélodies', earModes: 'Oreille : modes', earTranscribe: 'Oreille : transcription', passing: 'Notes de passage', enrichedPenta: 'Pentas enrichies', multiChord: 'Plusieurs accords', motifId: 'Motifs', borrowed: 'Accords empruntés', contrast: 'Contraste', melodyStrong: 'Mélodie', riffScale: 'Riffs', progBuild: 'Progressions' };
 T.MODE_IDS.forEach(id => GEN_NAMES['mode_' + id] = 'Mode ' + MODE_INFO[id].name.toLowerCase());
 
 /* Jauges de compétences (affichées aussi sur l'accueil) */
@@ -20,14 +20,16 @@ export function skillMeters() {
   const S = state();
   const wrap = el('div');
   const row = (label, pct, src, v) => wrap.append(el('div', 'meter-row', el('span', null, label, ' ', el('span', { class: 'tag', style: { fontSize: '10px' } }, src)), el('div', 'progress', el('i', { style: { width: Math.round(pct * 100) + '%' } })), el('span', 'v', v)));
-  ['m1', 'm2', 'm3'].forEach(id => { const m = MODULES.find(x => x.id === id), p = moduleProgress(m); row(['Manche & bases', 'Harmonie', 'Modes'][m.n - 1], p.pct, 'quiz', `${p.ok}/${p.total}`); });
+  [['m1', 'Manche & bases'], ['m2', 'Harmonie'], ['m3', 'Modes'], ['m4', 'Impro (théorie)'], ['m6', 'Composition']].forEach(([id, label]) => { const m = MODULES.find(x => x.id === id), p = moduleProgress(m); row(label, p.pct, 'quiz', `${p.ok}/${p.total}`); });
   const imp = (S.impro || []).slice(-6);
   const lvl = (S.improLevel || {}).targets || 1;
-  row('Improvisation', imp.length ? imp.reduce((a, x) => a + x.self, 0) / imp.length / 4 : 0, 'bilan', imp.length ? `niv. ${lvl}` : '—');
+  row('Impro (pratique)', imp.length ? imp.reduce((a, x) => a + x.self, 0) / imp.length / 4 : 0, 'bilan', imp.length ? `niv. ${lvl}` : '—');
   const prac = TECHNIQUE.filter(t => t.start && S.tempos[t.id]?.clean);
   const techPct = prac.length ? prac.reduce((a, t) => a + Math.min(1, Math.max(0, (S.tempos[t.id].clean - t.start) / (t.target - t.start))), 0) / prac.length : 0;
   row('Technique', techPct, 'tempo', prac.length ? `${prac.length} exos` : '—');
-  wrap.append(el('p', 'hint', 'Oreille : module prévu dans une prochaine version.'));
+  const earG = ['earIntervals', 'earChords', 'earTriads', 'earSevenths', 'earCompare', 'earDegrees', 'earMelody', 'earModes', 'earTranscribe'].map(k => (S.genStats || {})[k]).filter(Boolean);
+  const earR = earG.flatMap(g => g.recent || []);
+  row('Oreille', earR.length ? earR.reduce((a, b) => a + b, 0) / earR.length : 0, 'quiz', earR.length ? Math.round(100 * earR.reduce((a, b) => a + b, 0) / earR.length) + ' %' : '—');
   return wrap;
 }
 

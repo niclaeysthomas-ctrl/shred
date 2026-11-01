@@ -9,7 +9,7 @@
 import * as T from './theory.js';
 import { MODE_INFO } from './content/modes.js';
 import { PROGRESSIONS } from './content/progressions.js';
-import { el, N, IV, shuffle, pick, rich } from './ui.js';
+import { el, N, IV, shuffle, pick, rich, toast } from './ui.js';
 import { Fretboard, scaleMarks, labelFor } from './fretboard.js';
 import { recordQuiz, recordGenStats } from './store.js';
 import { pluck, playNotes, closeVoicing } from './audio.js';
@@ -365,7 +365,11 @@ export function runQuiz(container, { gens, n = 10, notionId = null, kind = 'quiz
     const head = el('div', 'quiz-head', el('span', 'q-count', `Question ${i + 1} / ${qs.length}`), el('span', 'q-score', `${score} bonne${score > 1 ? 's' : ''}`));
     const bar = el('div', 'progress', el('i', { style: { width: (100 * i / qs.length) + '%' } }));
     wrap.append(head, bar, el('p', { class: 'q-prompt', html: q.prompt }));
-    if (q.audio) wrap.append(el('button', { class: 'btn ghost sm', onclick: () => q.audio() }, '🔊 Écouter'));
+    if (q.audio) {
+      wrap.append(el('div', 'row', el('button', { class: 'btn ghost sm', onclick: () => { try { q.audio(); } catch (e) { console.error(e); } } }, '🔊 ' + (q.autoplay ? 'Réécouter' : 'Écouter')),
+        q.audio2 ? el('button', { class: 'btn ghost sm', onclick: () => q.audio2() }, '🔊 ' + (q.audio2Label || 'Référence')) : null));
+      if (q.autoplay) setTimeout(() => { try { q.audio(); } catch (e) { console.error(e); } }, 250);
+    }
     const fb = el('div', 'q-feedback');
     let answered = false;
     const done = (ok, given) => {
@@ -410,6 +414,23 @@ export function runQuiz(container, { gens, n = 10, notionId = null, kind = 'quiz
         val.remove(); done(ok);
       } }, 'Valider');
       wrap.append(grid, el('p', 'hint', 'Les touches noires ont deux noms (enharmonie) : choisis le son, la correction te donne le bon nom.'), val);
+    } else if (q.type === 'sequence') {
+      // reproduire une suite de notes dans l'ordre (oreille)
+      const picked = [];
+      const shown = el('div', 'notes-row');
+      const grid = el('div', 'q-notes');
+      const nameOf = pc => N((q.names && q.choices && q.names[q.choices.indexOf(pc)]) || T.PC_NAMES[pc]);
+      const drawPicked = () => { shown.innerHTML = ''; picked.forEach(pc => shown.append(el('span', 'nchip', el('b', null, nameOf(pc))))); for (let k = picked.length; k < q.answer.length; k++) shown.append(el('span', 'nchip', el('b', null, '?'))); };
+      (q.choices || T.PC_NAMES.map((_, i) => i)).forEach(pc => grid.append(el('button', { class: 'note-btn', onclick: () => { if (answered || picked.length >= q.answer.length) return; picked.push(pc); try { pluck((q.base || 60) + ((pc - (q.base || 60)) % 12 + 12) % 12, { vel: 0.4 }); } catch (e) {} drawPicked(); } }, nameOf(pc))));
+      const undo = el('button', { class: 'btn ghost sm', onclick: () => { if (!answered) { picked.pop(); drawPicked(); } } }, '↶ Effacer la dernière');
+      const val = el('button', { class: 'btn', onclick: () => {
+        if (answered) return;
+        if (picked.length < q.answer.length) return toast(`Il faut ${q.answer.length} notes.`);
+        const ok = picked.every((pc, k) => pc === q.answer[k]);
+        val.remove(); done(ok);
+      } }, 'Valider');
+      drawPicked();
+      wrap.append(shown, grid, el('div', 'row', undo), val);
     } else if (q.type === 'fret') {
       const F = new Fretboard({ frets: 15, compact: false, onTap: (s, f) => {
         if (answered) return;

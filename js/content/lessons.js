@@ -5,6 +5,7 @@
    [[terme]] = mot du glossaire, cliquable.
    ================================================================ */
 import { MODE_INFO } from './modes.js';
+import { M4_REST, M5, M6, M7 } from './lessons2.js';
 import { buildScale, MODE_IDS, CHORD_TYPES, spell } from '../theory.js';
 
 const mk = o => ({ ready: true, ...o });
@@ -235,8 +236,7 @@ Astuce : la meilleure cible d’un changement d’accord est souvent la note la 
     musical: 'Lance l’exercice « Notes cibles » de l’Impro Studio, niveau 1 puis 2.',
     gens: ['targets'], impro: { exercise: 'targets' }
   }),
-  ...['Phrasé', 'Call and response', 'Développement de motifs', 'Notes de passage', 'Pentatoniques enrichies', 'Improvisation sur plusieurs accords', 'Construction de solos']
-    .map((t, i) => ({ id: 'm4-' + i, title: t, ready: false }))
+  ...M4_REST
 ];
 const soon = (prefix, titles) => titles.map((t, i) => ({ id: prefix + i, title: t, ready: false }));
 
@@ -245,9 +245,9 @@ export const MODULES = [
   { id: 'm2', n: 2, title: 'Harmonie et accords', when: 'Mois 2', goal: 'Comprendre d’où viennent les accords et pourquoi ils s’enchaînent.', notions: M2 },
   { id: 'm3', n: 3, title: 'Les modes', when: 'Mois 3', goal: 'Sept couleurs, une même gamme : savoir laquelle faire sonner, et comment.', notions: M3 },
   { id: 'm4', n: 4, title: 'Improvisation', when: 'Mois 4', goal: 'Suivre les accords, développer une idée, construire un solo.', notions: M4 },
-  { id: 'm5', n: 5, title: 'Technique', when: 'Mois 5 (et en continu)', goal: 'Propreté avant vitesse, médiator en priorité.', notions: soon('m5-', ['Alternate picking', 'Economy picking', 'Legato : hammer-on et pull-off', 'Bending', 'Vibrato', 'Slides', 'Palm muting', 'Trémolo picking', 'Tapping', 'Sweep picking']) },
-  { id: 'm6', n: 6, title: 'Composition et créativité', when: 'Mois 6', goal: 'Passer de l’impro au morceau.', notions: soon('m6-', ['Construire une progression', 'Composer un riff', 'Couplet et refrain', 'Contraste harmonique', 'Créer une mélodie', 'Écrire un solo', 'Composer un morceau complet']) },
-  { id: 'm7', n: 7, title: 'Oreille musicale', when: 'En continu', goal: 'Entendre ce que tu vois.', notions: soon('m7-', ['Reconnaître les intervalles', 'Reconnaître les accords', 'Reproduire une mélodie', 'Identifier les degrés', 'Transcrire une phrase']) }
+  { id: 'm5', n: 5, title: 'Technique', when: 'Mois 5 (et en continu)', goal: 'Propreté avant vitesse, médiator en priorité.', notions: M5 },
+  { id: 'm6', n: 6, title: 'Composition et créativité', when: 'Mois 6', goal: 'Passer de l’impro au morceau.', notions: M6 },
+  { id: 'm7', n: 7, title: 'Oreille musicale', when: 'En continu', goal: 'Entendre ce que tu vois.', notions: M7 }
 ];
 
 export const ALL_NOTIONS = MODULES.flatMap(m => m.notions.map(n => ({ ...n, module: m.id })));
