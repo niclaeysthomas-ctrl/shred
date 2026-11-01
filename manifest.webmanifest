@@ -1,11 +1,11 @@
 {
   "name": "Shred",
   "short_name": "Shred",
-  "description": "Guitare : d'intermédiaire à expert — technique au métronome, manche, répertoire impératif.",
+  "description": "Ton professeur de guitare : manche, gammes et modes, harmonie, improvisation guidée, séance quotidienne.",
   "display": "standalone",
   "start_url": ".",
-  "background_color": "#0d0b09",
-  "theme_color": "#0d0b09",
+  "background_color": "#0c0d10",
+  "theme_color": "#0c0d10",
   "lang": "fr",
   "icons": [
     {

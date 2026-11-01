@@ -1,12 +1,10 @@
-// SHRED — service worker : network-first avec repli cache.
-// Le réseau d'abord (les mises à jour arrivent immédiatement), le cache
-// en secours (l'app reste 100 % hors-ligne). Cache-first nous servait des
-// versions périmées après chaque déploiement.
-const CACHE="shred-v40-manche-horizontal";
+// SHRED — service worker : réseau d'abord, cache en secours (l'app reste utilisable hors-ligne).
+const CACHE = "shred-v42-oreille-technique-compo";
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest"
+  "./", "./index.html", "./classic.html", "./manifest.webmanifest", "./css/app.css",
+  "./js/app.js", "./js/theory.js", "./js/audio.js", "./js/store.js", "./js/ui.js", "./js/fretboard.js", "./js/quiz.js",
+  "./js/content/glossary.js", "./js/content/modes.js", "./js/content/lessons.js", "./js/content/progressions.js", "./js/content/technique.js", "./js/content/chords.js",
+  "./js/views/home.js", "./js/views/path.js", "./js/views/labo.js", "./js/views/impro.js", "./js/views/session.js", "./js/views/progress.js", "./js/views/technique.js", "./js/views/ear.js", "./js/views/compo.js", "./js/quiz2.js", "./js/pitch.js", "./js/content/lessons2.js"
 ];
 
 self.addEventListener("install", e => {
