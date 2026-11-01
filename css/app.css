@@ -301,3 +301,6 @@ label.field:has(textarea) { display: flex; }
 .mk.soft.r-none circle { fill: #4a5161; }
 .nchip { width: 54px; min-width: 54px; }
 .steps-row span { width: 54px; min-width: 54px; }
+.grid2 > *, .grid3 > *, .target-box > *, .split > *, .grid-auto > * { min-width: 0; }
+main { overflow-x: hidden; }
+.bpm { flex-wrap: wrap; }

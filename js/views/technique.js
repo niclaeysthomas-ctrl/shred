@@ -5,7 +5,7 @@
    Bends et vibrato : mesure RÉELLE de la hauteur au micro (une note tenue).
    ================================================================ */
 import * as T from '../theory.js';
-import { el, N, rich, seg, toast, fmtDate } from '../ui.js';
+import { el, N, rich, seg, toast, fmtDate, plain } from '../ui.js';
 import { TECHNIQUE, techById, PICK_PATH, parseTab, perBeatOf } from '../content/technique.js';
 import { Fretboard } from '../fretboard.js';
 import { Metronome, pluck, ac, click } from '../audio.js';
@@ -23,7 +23,7 @@ const LEVEL = { 1: 'Fondation', 2: 'Intermédiaire', 3: 'Avancé' };
 export function render(main, params) {
   const ex = params.ex && techById(params.ex);
   main.append(el('div', 'page-head', el('div', null, el('div', 'eyebrow', 'Technique Lab'), el('h1', null, ex ? ex.name : 'Technique'),
-    el('p', null, ex ? ex.goal : 'La propreté avant la vitesse. On n’augmente le tempo que quand 3 passages d’affilée sont propres. Les techniques avancées se débloquent quand les bases sont travaillées.'))));
+    el('p', null, ex ? plain(ex.goal) : 'La propreté avant la vitesse. On n’augmente le tempo que quand 3 passages d’affilée sont propres. Les techniques avancées se débloquent quand les bases sont travaillées.'))));
   if (ex) return detail(main, ex);
 
   const S = state();

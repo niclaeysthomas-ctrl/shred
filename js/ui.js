@@ -38,6 +38,9 @@ export function rich(text) {
     .replace(/\{\{([A-G][♯♭𝄪𝄫]*)\}\}/g, (_, n) => `<b class="nt">${N(n)}</b>`);
 }
 
+/* Texte de cours sans balises (pour les titres, sous-titres et listes) */
+export const plain = text => String(text || '').replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, k, l) => l || k).replace(/\{\{([^}]+)\}\}/g, '$1');
+
 export function toast(msg, kind = '') {
   const t = $('#toast');
   t.textContent = msg; t.className = 'toast show ' + kind;

@@ -6,7 +6,7 @@
    niveau d'impro, tempos déjà atteints.
    Le chrono continue si tu ouvres une leçon ou l'Impro Studio.
    ================================================================ */
-import { el, N, rich, seg, toast, fmtMin } from '../ui.js';
+import { el, N, rich, seg, toast, fmtMin, plain } from '../ui.js';
 import { state, update, today, addPractice, recordTempo, setSessionLive, isValidated } from '../store.js';
 import { TECHNIQUE, techById } from '../content/technique.js';
 import { PROGRESSIONS } from '../content/progressions.js';
@@ -53,7 +53,7 @@ export function buildPlan(len) {
   const impro = () => modeNotion
     ? { type: 'impro', href: `#/impro?ex=modes&mode=${modeNotion.mode}`, title: `Impro modale : ${nxt.notion.title}`, detail: 'Faire entendre la note caractéristique sur la boucle.' }
     : { type: 'impro', href: `#/impro?ex=targets&prog=${prog.id}&level=${lvl}`, title: `Notes cibles · niveau ${lvl}`, detail: prog.name };
-  const tech = k => { const t = pickTech(k); return { type: 'tech', tech: t.id, title: t.name, detail: t.goal }; };
+  const tech = k => { const t = pickTech(k); return { type: 'tech', tech: t.id, title: t.name, detail: plain(t.goal) }; };
   const validated = READY_NOTIONS.filter(n => isValidated(n.id));
   const reviewBlock = () => validated.length >= 2 ? { type: 'review', title: 'Révision express', detail: '5 questions sur des notions déjà validées (pour qu’elles tiennent).' } : tech(1);
   const EARS = [['earIntervals', 'intervalles'], ['earChords', 'majeur / mineur'], ['earDegrees', 'degrés'], ['earMelody', 'mélodie'], ['earTriads', 'triades'], ['earSevenths', 'septièmes'], ['earModes', 'modes']];

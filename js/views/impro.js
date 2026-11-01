@@ -12,13 +12,27 @@ import { PROGRESSIONS, MODAL_VAMPS } from '../content/progressions.js';
 import { MODE_INFO } from '../content/modes.js';
 import { state, update, today, addPractice, isSessionLive } from '../store.js';
 import { decodeProg } from './labo.js';
+import { PitchListener } from '../pitch.js';
+
+function listenSummary(c) {
+  const tot = c.notes.length, pct = k => Math.round(100 * c[k] / tot);
+  const box = el('div', 'panel');
+  box.append(el('h3', null, 'Analyse des notes tenues (mesurée)'),
+    el('div', 'stats', el('div', 'stat', el('b', { style: { color: 'var(--ok)' } }, pct('cible') + ' %'), el('small', null, `sur la cible (${c.cible})`)),
+      el('div', 'stat', el('b', { style: { color: 'var(--info)' } }, pct('accord') + ' %'), el('small', null, `autre note de l’accord (${c.accord})`)),
+      el('div', 'stat', el('b', null, pct('gamme') + ' %'), el('small', null, `note de passage (${c.gamme})`)),
+      el('div', 'stat', el('b', { style: { color: 'var(--bad)' } }, pct('hors') + ' %'), el('small', null, `hors gamme (${c.hors})`))),
+    el('p', 'hint', `${tot} notes tenues plus d’un quart de seconde, comparées à l’accord qui sonnait à ce moment-là. Ce n’est PAS une analyse de ton jeu : les notes rapides, le rythme et le son ne sont pas mesurés. Une note de passage tenue est souvent le signe d’une phrase qui finit « à côté ».`));
+  return box;
+}
 
 const CF = s => String(s).replace(/^([A-G][♯♭𝄪𝄫]*)/, m => N(m));
-let backing = null, recorder = null, practiceStart = null;
+let backing = null, recorder = null, practiceStart = null, heldListener = null;
 
 export function leave() { stopAll(); }
 function stopAll() {
   if (backing) backing.stop();
+  if (heldListener) { heldListener.stop(); heldListener = null; }
   if (recorder) { recorder.stop(); recorder = null; }
   flushPractice();
 }
@@ -36,7 +50,7 @@ export function render(main, params) {
   const ex = EXERCISES.some(e => e[0] === params.ex) ? params.ex : null;
   main.append(el('div', 'page-head',
     el('div', null, el('div', 'eyebrow', 'Impro Studio'), el('h1', null, ex ? EXERCISES.find(e => e[0] === ex)[1] : 'Improviser, guidé'),
-      el('p', null, 'Les accompagnements sont synthétisés en direct (batterie, basse, accords). L’app ne t’écoute pas : elle te guide pendant que tu joues, tu peux t’enregistrer, et c’est en réécoutant que tu juges.'))));
+      el('p', null, 'Les accompagnements sont synthétisés en direct (batterie, basse, accords). L’app te guide pendant que tu joues, tu peux t’enregistrer et réécouter. Seule mesure réelle : dans « Notes cibles », une analyse facultative des notes que tu tiens (casque obligatoire). Le reste, c’est toi qui le juges.'))));
   if (!ex) {
     const g = el('div', 'grid-auto');
     EXERCISES.forEach(([id, t, d]) => {
@@ -178,9 +192,36 @@ function targetsEx(main, params) {
   right.append(F.root, legend([['root', 'Cible'], ['third', '3'], ['seventh', '7'], ['none', 'Gamme (passage)']]));
   box.append(left, right);
   main.append(setup, play);
+  // écoute réelle des notes tenues (facultatif, casque requis)
+  const listen = { on: false, cur: null, counts: null, run: null, live: el('div', 'hint') };
+  const listenBox = el('label', 'row hint', Object.assign(el('input', { type: 'checkbox' }), { onchange: e => listen.on = e.target.checked }),
+    ' 🎤 Analyser mes notes tenues au micro (casque obligatoire : sinon le micro entend aussi l’accompagnement)');
+  left.append(el('div', { style: { height: '10px' } }), listenBox, listen.live);
+  const classify = pc => {
+    const c = listen.cur; if (!c) return null;
+    const L = TARGET_LEVELS[st.level], ivs = L.ivs(c);
+    if (c.notes.some(n => n.pc === pc && ivs.includes(n.iv))) return 'cible';
+    if (c.notes.some(n => n.pc === pc)) return 'accord';
+    if (scale().some(n => n.pc === pc)) return 'gamme';
+    return 'hors';
+  };
+  async function startListen() {
+    if (!listen.on || heldListener) return;
+    listen.counts = { cible: 0, accord: 0, gamme: 0, hors: 0, notes: [] }; listen.run = null;
+    try {
+      heldListener = new PitchListener();
+      await heldListener.start((p, t) => {
+        const m = p && p.clarity > 0.85 ? p.midi : null;
+        const r = listen.run;
+        if (m == null) { listen.run = null; return; }
+        if (r && Math.abs(m - r.mean) < 0.45) { r.n++; r.mean += (m - r.mean) / r.n; if (!r.counted && t - r.t0 >= 0.25) { r.counted = true; const pc = ((Math.round(r.mean) % 12) + 12) % 12, cat = classify(pc); if (cat) { listen.counts[cat]++; listen.counts.notes.push({ pc, cat, chord: listen.cur.symbol }); const col = { cible: 'var(--ok)', accord: 'var(--info)', gamme: 'var(--dim)', hors: 'var(--bad)' }[cat]; listen.live.innerHTML = `Dernière note tenue : <b style="color:${col}">${N(T.PC_NAMES[pc])}</b> (${cat === 'cible' ? 'sur la cible ✓' : cat === 'accord' ? 'note de l’accord' : cat === 'gamme' ? 'note de passage' : 'hors gamme'}) · ${listen.counts.cible} cible(s) / ${listen.counts.notes.length} notes tenues`; } } }
+        else listen.run = { mean: m, n: 1, t0: t, counted: false };
+      });
+    } catch (e) { heldListener = null; toast('Micro refusé ou indisponible : analyse désactivée.', 'bad'); }
+  }
   const player = Player({ container: play, getConfig: () => ({ progression: realized(), style: preset().style }),
-    onChord: (i, c, p) => showChord(i, p),
-    onStop: out => selfEval(out, { exercise: 'targets', level: st.level, style: preset().style, key: key(), question: 'Sur l’ensemble des phrases, combien ont vraiment atterri sur la note visée, au moment du changement d’accord ?', onSaved: up => { if (up) { st.level++; drawSetup(); } } }) });
+    onChord: (i, c, p) => { listen.cur = c; showChord(i, p); startListen(); },
+    onStop: out => { if (heldListener) { heldListener.stop(); heldListener = null; } if (listen.counts && listen.counts.notes.length) out.append(listenSummary(listen.counts)); listen.counts = null; selfEval(out, { exercise: 'targets', level: st.level, style: preset().style, key: key(), question: 'Sur l’ensemble des phrases, combien ont vraiment atterri sur la note visée, au moment du changement d’accord ?', onSaved: up => { if (up) { st.level++; drawSetup(); } } }); } });
   play.append(box);
 
   const preset = () => PROGRESSIONS.find(p => p.id === st.prog);
