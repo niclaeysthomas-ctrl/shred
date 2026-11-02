@@ -6,7 +6,8 @@
    ================================================================ */
 import * as T from '../theory.js';
 import { el, N, rich, seg, toast, fmtDate, plain } from '../ui.js';
-import { TECHNIQUE, techById, PICK_PATH, parseTab, perBeatOf } from '../content/technique.js';
+import { TECHNIQUE, techById, PICK_PATH, parseTab, perBeatOf, needsPick, fingerHint } from '../content/technique.js';
+import { noPickToggle } from './session.js';
 import { Fretboard } from '../fretboard.js';
 import { Metronome, pluck, ac, click } from '../audio.js';
 import { state, recordTempo, today, addPractice, isSessionLive, recordMeasure } from '../store.js';
@@ -27,8 +28,23 @@ export function render(main, params) {
   if (ex) return detail(main, ex);
 
   const S = state();
+  // mode sans médiator : ce qui se travaille aux doigts passe en premier
+  if (S.settings.noPick) {
+    const fp = el('div', 'panel hl');
+    fp.append(el('h3', null, '✋ Sans médiator : ce que tu peux travailler aux doigts'),
+      el('p', 'lead', 'Ces exercices travaillent surtout la main gauche et l’expression : rien de perdu en attendant ton médiator. Les exercices au médiator restent ouverts plus bas, mais la séance du jour ne les propose plus.'),
+      el('div', { class: 'row', style: { marginBottom: '10px' } }, noPickToggle()));
+    const l = el('div', 'block-list');
+    TECHNIQUE.filter(t => !needsPick(t) && t.level <= 2).forEach(t => {
+      const r = S.tempos[t.id];
+      l.append(el('a', { class: 'block', href: '#/technique?ex=' + t.id, style: { textDecoration: 'none', color: 'inherit' } },
+        el('span', 'bi', '✋'), el('div', null, el('b', 'bt', t.name), el('small', null, plain(t.goal))), el('span', 'bm', r && r.clean ? r.clean + ' BPM' : LEVEL[t.level])));
+    });
+    fp.append(l);
+    main.append(fp);
+  }
   // module médiator
-  const pm = el('div', 'panel hl');
+  const pm = el('div', 'panel' + (S.settings.noPick ? '' : ' hl'));
   pm.append(el('div', 'panel-title', el('h3', null, '🎸 Module médiator : des doigts au médiator'), el('span', 'tag acc', 'priorité')),
     el('p', 'lead', 'Tu joues surtout aux doigts : voici l’ordre recommandé. Chaque étape a un tempo « validé » à atteindre proprement avant de passer à la suivante (c’est toi qui déclares le tempo propre).'));
   const steps = el('div', 'block-list');
@@ -68,6 +84,7 @@ function detail(main, t) {
     row('Palier validé', t.start ? passBpm(t) + ' BPM propre' : '—'), row('Ton record propre', rec && rec.clean ? rec.clean + ' BPM' : '—'),
     el('p', { class: 'lesson-txt', style: { marginTop: '10px' }, html: rich('<b>Explication.</b> ' + t.how) }),
     el('p', { html: '<b>Critère de réussite.</b> ' + t.success }));
+  if (S.settings.noPick) info.append(el('p', 'callout', needsPick(t) ? 'Cet exercice demande un médiator. Tu as activé le mode sans médiator : garde-le pour plus tard, ou joue-le au pouce en sachant que le geste ne sera pas le même.' : fingerHint(t)));
   g.append(info);
 
   // visuel animé
