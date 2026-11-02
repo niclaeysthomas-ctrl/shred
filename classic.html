@@ -5407,8 +5407,14 @@ function openSgRec(id){
 
 /* ---------------- overlay + nav ---------------- */
 const overlay=document.getElementById('overlay'), overlayInner=document.getElementById('overlayInner');
-function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; overlayInner.querySelector('.back').onclick=closeOverlay; overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
-function closeOverlay(){ overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } if(_duelT){ clearInterval(_duelT); _duelT=null; } if(typeof Loop!=='undefined') Loop.stop(); if(typeof SLoop!=='undefined') SLoop.stop(); metroStop(); render(); }
+var DEEP=null, _ovTitle=null;
+function openOverlay(title,fill){ overlayInner.innerHTML=`<div class="topbar"><button class="back">←</button><b>${title}</b></div>`; const bk=overlayInner.querySelector('.back'); bk.onclick=closeOverlay; _ovTitle=title; if(DEEP){ bk.onclick=deepBack; deepTrack(title); } overlay.classList.add('open'); overlay.scrollTop=0; fill(overlayInner); }
+/* Ouvert depuis Shred v2 (classic.html#jukebox…) : le retour ramène à la v2, pas à l'accueil de l'ancienne app */
+function deepLeave(){ try{ const r=document.referrer; if(r && new URL(r).origin===location.origin && !/classic\.html/.test(r) && history.length>1){ history.back(); return; } }catch(e){} location.href='index.html#/'; }
+function deepTrack(title){ const sub=title!==DEEP.title, st=history.state&&history.state.deepSub; if(sub&&!st) history.pushState({deepSub:1},''); else if(!sub&&st) history.replaceState(null,''); }
+function deepBack(){ if(_ovTitle!==DEEP.title){ if(history.state&&history.state.deepSub) history.back(); else DEEP.open(); } else deepLeave(); }
+window.addEventListener('popstate',()=>{ if(!DEEP) return; if(_ovTitle!==DEEP.title) DEEP.open(); else deepLeave(); });
+function closeOverlay(){ if(DEEP) setTimeout(()=>{ if(!overlay.classList.contains('open')) deepLeave(); },0); overlay.classList.remove('open'); if(_progAuto){ clearInterval(_progAuto); _progAuto=null; } if(_sprintTimer){ clearInterval(_sprintTimer); _sprintTimer=null; } if(_duelT){ clearInterval(_duelT); _duelT=null; } if(typeof Loop!=='undefined') Loop.stop(); if(typeof SLoop!=='undefined') SLoop.stop(); metroStop(); render(); }
 let tab='jour';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); tab=b.dataset.tab; metroStop(); render(); });
 const NAVOF={manche:'biblio',theorie:'biblio',suite:'biblio'};
@@ -5420,7 +5426,7 @@ function render(){ const b=document.getElementById('badge'); const tod=dayMin();
   if(tab==='jour')renderJour(); else if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='gammes')renderGammes(); else if(tab==='biblio')renderBiblio(); else if(tab==='theorie')renderTheorie(); else if(tab==='profil')renderProfil(); else renderSuite(); }
 render();
 /* Liens profonds depuis Shred v2 : classic.html#jukebox, #repertoire, #studio, #licks */
-(function(){ try{ const h=(location.hash||'').slice(1); const map={jukebox:()=>openJukebox(), repertoire:()=>openRepertoire(), studio:()=>openStudio(), licks:()=>openLicks()}; if(map[h]) setTimeout(map[h],60); }catch(e){ console.error(e); } })();
+(function(){ try{ const h=(location.hash||'').slice(1); const map={jukebox:[()=>openJukebox(),'Le Juke-box'], repertoire:[()=>openRepertoire(),'Le répertoire'], studio:[()=>openStudio(),'Le Studio'], licks:[()=>openLicks(),'Licks, riffs & lick du jour']}; if(map[h]){ DEEP={open:map[h][0],title:map[h][1]}; setTimeout(DEEP.open,60); } }catch(e){ console.error(e); } })();
 if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
 </body>

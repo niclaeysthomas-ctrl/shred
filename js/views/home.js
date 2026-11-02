@@ -94,7 +94,8 @@ export function render(main) {
   main.append(el('div', 'panel', el('div', 'row', el('div', null, el('h3', null, 'Les outils'), el('p', 'hint', 'Ouverts à tout moment, sans passer par le parcours.')), el('span', 'spacer'),
     el('a', { class: 'btn ghost sm', href: '#/labo/manche' }, 'Manche'), el('a', { class: 'btn ghost sm', href: '#/labo/gammes' }, 'Gammes & modes'),
     el('a', { class: 'btn ghost sm', href: '#/labo/accords' }, 'Chord Lab'), el('a', { class: 'btn ghost sm', href: '#/impro' }, 'Impro Studio'),
-    el('a', { class: 'btn ghost sm', href: 'classic.html' }, 'Shred classique (Juke-box, répertoire, studio)'))));
+    el('a', { class: 'btn ghost sm', href: 'classic.html#jukebox' }, '🎧 Juke-box'), el('a', { class: 'btn ghost sm', href: 'classic.html#repertoire' }, '🎼 Répertoire de solos'),
+    el('a', { class: 'btn ghost sm', href: 'classic.html' }, 'Shred classique'))));
 }
 
 /* Séance libre : un simple chrono qui compte ton temps de jeu */
