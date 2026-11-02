@@ -135,3 +135,15 @@ export function parseTab(lines) {
   });
   return ev.sort((a, b) => a.col - b.col || a.s - b.s);
 }
+
+/* Mode « sans médiator » : exercices jouables aux doigts et conseils d'attaque */
+export const needsPick = t => t.cat === 'Médiator';
+const FINGER = {
+  'legato': 'Aux doigts : une seule attaque (pouce ou index) par groupe de 3 notes, la main gauche fait sonner le reste. C’est même plus dur qu’au médiator : excellent pour la force des hammer-on.',
+  'hammer-pull': 'Aux doigts : une attaque du pouce ou de l’index par paire, puis le hammer-on ou le pull-off doit sonner aussi fort que la note attaquée.',
+  'bends': 'Aux doigts : attaque avec le pouce (côté chair), son plus rond. Les autres doigts de la main droite étouffent les cordes graves.',
+  'vibrato': 'Aux doigts : attaque au pouce, puis pose les doigts libres de la main droite sur les cordes voisines pour qu’elles ne résonnent pas.',
+  'slides': 'Aux doigts : alterne index et majeur (i‑m‑i‑m) comme un bassiste, pouce appuyé sur la corde de Mi grave. L’alternance prépare l’alternate picking.',
+  'tapping': 'Aux doigts : tape avec le majeur de la main droite, l’index reste libre pour étouffer.',
+};
+export const fingerHint = t => FINGER[t.id] || 'Aux doigts : attaque avec le pouce, ou alterne index et majeur.';

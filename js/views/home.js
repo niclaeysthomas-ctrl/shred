@@ -3,7 +3,7 @@ import { el, N, rich, openModal, closeModal, toast, fmtMin, fmtDate } from '../u
 import { state, update, weekMinutes, lastDays, streak, minutesOn, today, addPractice, isValidated } from '../store.js';
 import { MODULES, READY_NOTIONS, notionById } from '../content/lessons.js';
 import { currentModule, moduleProgress, nextNotion, openLesson } from './path.js';
-import { buildPlan } from './session.js';
+import { buildPlan, noPickToggle } from './session.js';
 import { skillMeters } from './progress.js';
 
 const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍' };
@@ -31,7 +31,7 @@ export function render(main) {
     el('span', 'bi', ICON[b.type]), el('div', null, el('b', 'bt', b.title), el('small', null, b.detail)), el('span', 'bm', b.min + ' min'))));
   sess.append(el('div', 'row', el('a', { class: 'btn', href: '#/seance' }, done ? 'Continuer la séance' : '▶ Commencer'),
     el('button', { class: 'btn ghost', onclick: freeTimer }, '⏱ Séance libre'),
-    el('a', { class: 'btn ghost', href: '#/impro?ex=free' }, '♫ Jammer')));
+    el('a', { class: 'btn ghost', href: '#/impro?ex=free' }, '♫ Jammer'), noPickToggle()));
   g.append(sess);
 
   // module en cours

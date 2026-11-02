@@ -8,7 +8,7 @@
    ================================================================ */
 import { el, N, rich, seg, toast, fmtMin, plain } from '../ui.js';
 import { state, update, today, addPractice, recordTempo, setSessionLive, isValidated } from '../store.js';
-import { TECHNIQUE, techById } from '../content/technique.js';
+import { TECHNIQUE, techById, needsPick, fingerHint } from '../content/technique.js';
 import { PROGRESSIONS } from '../content/progressions.js';
 import { READY_NOTIONS, notionById } from '../content/lessons.js';
 import { nextNotion, openLesson, checkTechNotions } from './path.js';
@@ -30,9 +30,12 @@ function pickTech(offset = 0) {
   const S = state();
   const practicedL1 = TECHNIQUE.filter(t => t.level === 1 && (S.tempos[t.id]?.history.length || 0) >= 3).length;
   const maxLevel = practicedL1 >= 2 ? 2 : 1;
-  const pool = TECHNIQUE.filter(t => t.level <= maxLevel);
+  const noPick = !!S.settings.noPick;
+  // sans médiator : main gauche et expression (bends, vibrato) jusqu'au niveau intermédiaire
+  const pool = noPick ? TECHNIQUE.filter(t => !needsPick(t) && t.level <= 2) : TECHNIQUE.filter(t => t.level <= maxLevel);
+  const first = noPick ? 'hammer-pull' : 'pick-basics';
   const last = id => { const h = S.tempos[id]?.history; return h && h.length ? h[h.length - 1].d : '0000'; };
-  const sorted = pool.slice().sort((a, b) => last(a.id).localeCompare(last(b.id)) || (a.id === 'pick-basics' ? -1 : 1));
+  const sorted = pool.slice().sort((a, b) => last(a.id).localeCompare(last(b.id)) || (a.id === first ? -1 : b.id === first ? 1 : 0));
   return sorted[offset % sorted.length];
 }
 
@@ -70,6 +73,31 @@ export function buildPlan(len) {
   else if (len === 20) blocks = focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7]] : focus === 'impro' ? [[tech(0), 5], [impro(), 10], [rep(), 5]] : [[tech(0), 8], [ear(), 5], [impro(), 7]];
   else blocks = focus === 'tech' ? [[tech(0), 6], [tech(1), 5], [theory(), 7], [impro(), 7], [ear(), 5]] : focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7], [ear(), 5], [reviewBlock(), 5]] : [[tech(0), 5], [theory(), 7], [impro(), 8], [rep(), 5], [reviewBlock(), 5]];
   return { len, focus, d: today(), blocks: blocks.map(([b, m], i) => ({ ...b, id: 'b' + i, min: m })), done: [] };
+}
+
+/* Active / coupe le mode sans médiator. Les blocs technique pas encore faits
+   aujourd'hui qui demandent un médiator sont remplacés. */
+export function setNoPick(on) {
+  update(s => {
+    s.settings.noPick = !!on;
+    const p = s.sessions[today()];
+    if (!p || !on) return;
+    let k = 0;
+    p.blocks.forEach((b, i) => {
+      if (b.type !== 'tech' || p.done.includes(b.id) || !needsPick(techById(b.tech))) return;
+      let t = pickTech(k++);
+      if (p.blocks.some(x => x.tech === t.id)) t = pickTech(k++);
+      p.blocks[i] = { ...b, tech: t.id, title: t.name, detail: plain(t.goal) };
+    });
+  });
+}
+export function noPickToggle(after) {
+  const on = !!state().settings.noPick;
+  return el('button', { class: 'btn ghost' + (on ? ' on' : ''), title: 'Adapte la technique de la séance du jour', onclick: () => {
+    setNoPick(!on);
+    toast(!on ? 'Mode sans médiator : la technique du jour passe aux doigts (legato, bends, vibrato, slides).' : 'Médiator retrouvé : les exercices au médiator reviendront dans les prochaines séances.', 'ok');
+    after ? after() : dispatchEvent(new HashChangeEvent('hashchange'));
+  } }, on ? '🎸 Sans médiator : activé' : '🎸 Pas de médiator ?');
 }
 
 function todayPlan(len) {
@@ -128,7 +156,7 @@ export function render(main, params) {
       if (plan.done.length && !confirm('Des blocs sont déjà faits. Regénérer la séance ?')) return;
       update(s => { s.settings.sessionLen = +v; delete s.sessions[today()]; });
       stopRun(); location.hash = '#/seance?len=' + v; dispatchEvent(new HashChangeEvent('hashchange'));
-    })));
+    }), noPickToggle()));
 
   const doneN = plan.done.length;
   const list = el('div', 'block-list');
@@ -194,7 +222,8 @@ function blockContent(b) {
   if (b.type === 'tech') {
     const t = techById(b.tech), rec = state().tempos[t.id];
     c.append(el('p', { html: rich('<b>Objectif :</b> ' + t.goal) }), el('p', { class: 'lesson-txt', html: rich(t.how) }), el('pre', 'tab', t.tab.join('\n')));
-    if (t.picks) c.append(el('p', 'mono', 'Médiator : ' + t.picks));
+    if (state().settings.noPick && !needsPick(t)) c.append(el('p', 'callout', fingerHint(t)));
+    else if (t.picks) c.append(el('p', 'mono', 'Médiator : ' + t.picks));
     c.append(el('p', { html: `<b>Critère de réussite :</b> ${t.success}` }));
     if (t.start) {
       let bpm = rec && rec.clean ? Math.min(t.target, rec.clean) : t.start;
