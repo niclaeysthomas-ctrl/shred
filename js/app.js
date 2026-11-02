@@ -15,7 +15,7 @@ const plus = { render(main) {
   main.append(el('div', 'page-head', el('div', null, el('div', 'eyebrow', 'Plus'), el('h1', null, 'Tous les outils'))));
   [['#/seance', '⏱', 'Séance du jour', '15, 20 ou 30 minutes guidées'], ['#/technique', '✋', 'Technique Lab', 'Médiator, legato, bends mesurés au micro'], ['#/oreille', '👂', 'Ear Training', 'Intervalles, accords, degrés, mélodies'],
    ['#/compo', '✎', 'Composition Studio', 'Tes morceaux, grilles analysées, idées audio'], ['#/labo/gammes', '◎', 'Gammes & modes', 'Explorer et comparer'], ['#/labo/accords', '▦', 'Chord Lab', 'Accords, doigtés, harmonisation'],
-   ['#/progres', '▲', 'Progrès', 'Ce que tu sais vraiment faire, réglages, sauvegarde'], ['classic.html', '↺', 'Shred classique', 'Juke-box, répertoire de solos, studio']]
+   ['#/progres', '▲', 'Progrès', 'Ce que tu sais vraiment faire, réglages, sauvegarde'], ['classic.html#jukebox', '🎧', 'Juke-box', 'Des vrais morceaux, la grille en boucle, la note à viser'], ['classic.html#repertoire', '🎼', 'Répertoire de solos', '15 solos gradués, étape par étape'], ['classic.html', '↺', 'Shred classique', 'L’ancienne app complète']]
     .forEach(([h, i, t, d]) => main.append(el('a', { class: 'card-link', href: h, style: { marginBottom: '8px' } }, el('span', 'ic', i), el('div', null, el('b', null, t), el('small', null, d)), el('span', 'chev', '›'))));
 } };
 
