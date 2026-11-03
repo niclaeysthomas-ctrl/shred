@@ -246,8 +246,7 @@ export const MODULES = [
   { id: 'm3', n: 3, title: 'Les modes', when: 'Mois 3', goal: 'Sept couleurs, une même gamme : savoir laquelle faire sonner, et comment.', notions: M3 },
   { id: 'm4', n: 4, title: 'Improvisation', when: 'Mois 4', goal: 'Suivre les accords, développer une idée, construire un solo.', notions: M4 },
   { id: 'm5', n: 5, title: 'Technique', when: 'Mois 5 (et en continu)', goal: 'Propreté avant vitesse, médiator en priorité.', notions: M5 },
-  { id: 'm6', n: 6, title: 'Composition et créativité', when: 'Mois 6', goal: 'Passer de l’impro au morceau.', notions: M6 },
-  { id: 'm7', n: 7, title: 'Oreille musicale', when: 'En continu', goal: 'Entendre ce que tu vois.', notions: M7 }
+  { id: 'm6', n: 6, title: 'Composition et créativité', when: 'Mois 6', goal: 'Passer de l’impro au morceau.', notions: M6 }
 ];
 
 export const ALL_NOTIONS = MODULES.flatMap(m => m.notions.map(n => ({ ...n, module: m.id })));

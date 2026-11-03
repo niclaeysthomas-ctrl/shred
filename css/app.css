@@ -305,3 +305,4 @@ label.field:has(textarea) { display: flex; }
 main { overflow-x: hidden; }
 .bpm { flex-wrap: wrap; }
 .btn.ghost.on { border-color: var(--acc); color: var(--acc); background: rgba(255,181,71,.08); }
+.mk.r-scale circle { fill: #d9dde4; } .mk.r-scale text { fill: #0c0d10; }
