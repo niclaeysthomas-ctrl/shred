@@ -6,7 +6,7 @@
    ================================================================ */
 import * as T from '../theory.js';
 import { el, N, rich, seg, toast, fmtDate, plain } from '../ui.js';
-import { TECHNIQUE, techById, PICK_PATH, parseTab, perBeatOf, needsPick, fingerHint } from '../content/technique.js';
+import { TECHNIQUE, techById, PICK_PATH, parseTab, perBeatOf, needsPick, fingerHint, isNps, npsPattern } from '../content/technique.js';
 import { noPickToggle } from './session.js';
 import { Fretboard } from '../fretboard.js';
 import { Metronome, pluck, ac, click } from '../audio.js';
@@ -43,6 +43,23 @@ export function render(main, params) {
     fp.append(l);
     main.append(fp);
   }
+  // gammes NPS : la gamme majeure à 3 notes par corde, pattern par pattern
+  {
+    const np = el('div', 'panel hl');
+    np.append(el('div', 'panel-title', el('h3', null, '🎼 Gammes NPS : Sol majeur à 3 notes par corde'), el('span', 'tag acc', '7 patterns')),
+      el('p', 'lead', 'Le grand classique des chaînes de guitare : la gamme majeure découpée en 7 patterns de 3 notes par corde, un par degré de départ. Bout à bout, ils couvrent tout le manche. Un pattern par séance, montée et descente au métronome ; les séquences (groupes de 3 et de 4) se débloquent quand 4 patterns sont rodés.'));
+    const F = new Fretboard({ frets: 15, compact: true });
+    np.append(F.root);
+    try { F.setMarks(npsPattern(0).map(n => ({ s: n.s, f: n.f, label: ['Do','','Ré','','Mi','Fa','','Sol','','La','','Si'][n.pc] || 'Fa♯', role: n.pc === 7 ? 'root' : 'scale' }))); } catch (e) { }
+    const l = el('div', 'block-list');
+    TECHNIQUE.filter(isNps).forEach(t => {
+      const r = S.tempos[t.id];
+      l.append(el('a', { class: 'block' + (r && r.clean >= passBpm(t) ? ' done' : ''), href: '#/technique?ex=' + t.id, style: { textDecoration: 'none', color: 'inherit' } },
+        el('span', 'bi', t.level === 1 ? t.id.slice(-1) : '∿'), el('div', null, el('b', 'bt', t.name), el('small', null, `Validé à ${passBpm(t)} BPM · record : ${r && r.clean ? r.clean : '—'}`)), el('span', 'bm', t.level === 1 ? 'pattern' : 'séquence')));
+    });
+    np.append(l);
+    main.append(np);
+  }
   // module médiator
   const pm = el('div', 'panel' + (S.settings.noPick ? '' : ' hl'));
   pm.append(el('div', 'panel-title', el('h3', null, '🎸 Module médiator : des doigts au médiator'), el('span', 'tag acc', 'priorité')),
@@ -57,7 +74,7 @@ export function render(main, params) {
   main.append(pm);
 
   const unlocked3 = TECHNIQUE.filter(t => t.level === 2 && (S.tempos[t.id]?.history.length || 0) >= 3).length >= 2;
-  const cats = [...new Set(TECHNIQUE.map(t => t.cat))];
+  const cats = [...new Set(TECHNIQUE.filter(t => !isNps(t)).map(t => t.cat))];
   cats.forEach(c => {
     main.append(el('h2', 'sec', c));
     const g = el('div', 'grid-auto');

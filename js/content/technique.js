@@ -146,4 +146,72 @@ const FINGER = {
   'slides': 'Aux doigts : alterne index et majeur (i‑m‑i‑m) comme un bassiste, pouce appuyé sur la corde de Mi grave. L’alternance prépare l’alternate picking.',
   'tapping': 'Aux doigts : tape avec le majeur de la main droite, l’index reste libre pour étouffer.',
 };
-export const fingerHint = t => FINGER[t.id] || 'Aux doigts : attaque avec le pouce, ou alterne index et majeur.';
+const FINGER_EXTRA = {};
+export const fingerHint = t => FINGER[t.id] || (t.cat === 'Gammes NPS' ? FINGER_EXTRA.nps : null) || 'Aux doigts : attaque avec le pouce, ou alterne index et majeur.';
+
+/* ================================================================
+   GAMME MAJEURE À 3 NOTES PAR CORDE (NPS) — calculée, pas recopiée
+   7 patterns de Sol majeur (un par degré de départ sur la corde de Mi grave),
+   plus deux séquences classiques sur le pattern 1.
+   ================================================================ */
+const OPEN = [40, 45, 50, 55, 59, 64];              // Mi grave → mi aigu
+const G_MAJOR = [7, 9, 11, 0, 2, 4, 6];             // Sol La Si Do Ré Mi Fa♯
+const FR_NAMES = ['Do', 'Do♯', 'Ré', 'Ré♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯', 'La', 'La♯', 'Si'];
+const DEG_NAMES = ['1 (Sol)', '2 (La)', '3 (Si)', '4 (Do)', '5 (Ré)', '6 (Mi)', '7 (Fa♯)'];
+
+export function npsPattern(k) {
+  // note de départ : le degré k de Sol majeur sur la corde de Mi grave, entre les cases 2 et 13
+  let f0 = (G_MAJOR[k] - 4 + 12) % 12; if (f0 < 2) f0 += 12;
+  let midi = OPEN[0] + f0, deg = k;
+  const notes = [];
+  for (let s = 0; s < 6; s++) for (let i = 0; i < 3; i++) {
+    notes.push({ s, f: midi - OPEN[s], pc: midi % 12 });
+    const step = (G_MAJOR[(deg + 1) % 7] - G_MAJOR[deg % 7] + 12) % 12;
+    midi += step; deg = (deg + 1) % 7;
+  }
+  return notes;
+}
+
+function tabFrom(seq) {
+  const rows = ['e', 'B', 'G', 'D', 'A', 'E'].map(n => n + '|-');
+  seq.forEach(n => { const w = String(n.f).length; for (let r = 0; r < 6; r++) rows[r] += (5 - r === n.s ? String(n.f) : '-'.repeat(w)) + '-'; });
+  return rows.map(r => r + '|');
+}
+
+/* doigté standard d'une corde selon ses deux écarts (en cases) */
+function fingering(a, b) { return a === 1 ? '1-2-4' : b === 1 ? '1-3-4' : '1-2-4 (écart)'; }
+
+const NPS = [];
+for (let k = 0; k < 7; k++) {
+  const pat = npsPattern(k);
+  const up = pat, down = pat.slice(0, -1).reverse();
+  const frets = pat.map(n => n.f), lo = Math.min(...frets), hi = Math.max(...frets);
+  const fing = [0, 1, 2, 3, 4, 5].map(s => { const t = pat.filter(n => n.s === s); return fingering(t[1].f - t[0].f, t[2].f - t[1].f); });
+  NPS.push({
+    id: 'nps-' + (k + 1), name: `NPS pattern ${k + 1} — Sol majeur (cases ${lo}-${hi})`, cat: 'Gammes NPS', level: 1, minutes: 5, start: 60, target: 120, unit: 'triolets', perBeat: 3,
+    goal: `Sol majeur à 3 notes par corde, en partant du degré ${DEG_NAMES[k]} sur la corde de Mi grave. Montée puis descente.`,
+    how: `Trois notes sur chaque corde, toujours. Doigtés, de la corde grave à l’aiguë : ${fing.join(' · ')}. Le pouce reste derrière le manche, au milieu : c’est lui qui permet les écarts. Trois notes par corde = un groupe de [[triolet|triolets]] par temps : chaque changement de corde tombe sur un temps, ce qui rend le pattern très régulier au métronome.`,
+    tab: [...tabFrom(up.concat(down))],
+    picks: '↓ ↑ ↓ ↑ ↓ ↑',
+    success: 'Montée et descente 3 fois de suite sans accroc, chaque note au même volume, en disant à voix haute le nom de la note de départ de chaque corde.'
+  });
+}
+{
+  const pat = npsPattern(0);
+  const g3 = []; for (let i = 0; i + 2 < pat.length; i++) g3.push(pat[i], pat[i + 1], pat[i + 2]);
+  const g4 = []; for (let i = 0; i + 3 < pat.length; i++) g4.push(pat[i], pat[i + 1], pat[i + 2], pat[i + 3]);
+  NPS.push({
+    id: 'nps-seq3', name: 'NPS en groupes de 3 (séquence)', cat: 'Gammes NPS', level: 2, minutes: 5, start: 50, target: 110, unit: 'triolets', perBeat: 3,
+    goal: 'La séquence la plus utilisée par les shredders : 1-2-3, 2-3-4, 3-4-5… sur le pattern 1.',
+    how: 'Trois notes, puis on recommence une note plus haut. Le changement de corde arrive au milieu des groupes : c’est là que la main droite apprend. Un groupe par temps. Ne monte en vitesse que si chaque groupe sonne comme un « paquet » net.',
+    tab: tabFrom(g3), picks: '↓ ↑ ↓ ↑ ↓ ↑', success: 'La séquence entière montée, propre, 3 fois de suite. Les accents tombent sur la 1re note de chaque groupe.'
+  }, {
+    id: 'nps-seq4', name: 'NPS en groupes de 4 (séquence)', cat: 'Gammes NPS', level: 2, minutes: 5, start: 50, target: 100, unit: 'doubles croches', perBeat: 4,
+    goal: 'Séquence 1-2-3-4, 2-3-4-5… sur le pattern 1 : le son « néo-classique ».',
+    how: 'Quatre notes par temps (doubles-croches) sur une gamme à trois notes par corde : les groupes et les cordes ne tombent plus ensemble, ce qui oblige à vraiment savoir le pattern. Commence très lentement.',
+    tab: tabFrom(g4), picks: '↓ ↑ ↓ ↑', success: 'La séquence entière montée, propre, 3 fois de suite, accent sur la 1re note de chaque groupe de 4.'
+  });
+}
+TECHNIQUE.push(...NPS);
+export const isNps = t => t.cat === 'Gammes NPS';
+FINGER_EXTRA.nps = 'Sans médiator, joue-la en legato : une attaque (pouce ou index) sur la 1re note de chaque corde, puis deux hammer-on en montant (deux pull-off en descendant). C’est la façon dont beaucoup de guitaristes la jouent de toute façon.';

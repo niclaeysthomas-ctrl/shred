@@ -7,19 +7,17 @@ import * as impro from './views/impro.js';
 import * as session from './views/session.js';
 import * as progress from './views/progress.js';
 import * as technique from './views/technique.js';
-import * as ear from './views/ear.js';
 import * as compo from './views/compo.js';
 import './quiz2.js';
 
 const plus = { render(main) {
   main.append(el('div', 'page-head', el('div', null, el('div', 'eyebrow', 'Plus'), el('h1', null, 'Tous les outils'))));
-  [['#/seance', '⏱', 'Séance du jour', '15, 20 ou 30 minutes guidées'], ['#/technique', '✋', 'Technique Lab', 'Médiator, legato, bends mesurés au micro'], ['#/oreille', '👂', 'Ear Training', 'Intervalles, accords, degrés, mélodies'],
-   ['#/compo', '✎', 'Composition Studio', 'Tes morceaux, grilles analysées, idées audio'], ['#/labo/gammes', '◎', 'Gammes & modes', 'Explorer et comparer'], ['#/labo/accords', '▦', 'Chord Lab', 'Accords, doigtés, harmonisation'],
+  [['#/seance', '⏱', 'Séance du jour', '15, 20 ou 30 minutes guidées'], ['#/technique', '✋', 'Technique Lab', 'Gammes NPS, médiator, legato, bends mesurés au micro'], ['#/compo', '✎', 'Composition Studio', 'Tes morceaux, grilles analysées, idées audio'], ['#/labo/gammes', '◎', 'Gammes & modes', 'Explorer et comparer'], ['#/labo/accords', '▦', 'Chord Lab', 'Accords, doigtés, harmonisation'],
    ['#/progres', '▲', 'Progrès', 'Ce que tu sais vraiment faire, réglages, sauvegarde'], ['classic.html#jukebox', '🎧', 'Juke-box', 'Des vrais morceaux, la grille en boucle, la note à viser'], ['classic.html#repertoire', '🎼', 'Répertoire de solos', '15 solos gradués, étape par étape'], ['classic.html', '↺', 'Shred classique', 'L’ancienne app complète']]
     .forEach(([h, i, t, d]) => main.append(el('a', { class: 'card-link', href: h, style: { marginBottom: '8px' } }, el('span', 'ic', i), el('div', null, el('b', null, t), el('small', null, d)), el('span', 'chev', '›'))));
 } };
 
-const ROUTES = { '': home, 'parcours': path, 'labo': labo, 'impro': impro, 'seance': session, 'progres': progress, 'technique': technique, 'oreille': ear, 'compo': compo, 'plus': plus };
+const ROUTES = { '': home, 'parcours': path, 'labo': labo, 'impro': impro, 'seance': session, 'progres': progress, 'technique': technique, 'oreille': { render(main) { location.replace('#/technique'); } }, 'compo': compo, 'plus': plus };
 let current = null;
 
 function parse() {

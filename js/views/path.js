@@ -19,9 +19,9 @@ export function moduleProgress(m) {
   return { ok, total: ready.length, pct: ready.length ? ok / ready.length : 0 };
 }
 
-/* Les modules 5 (technique) et 7 (oreille) se travaillent en parallèle, dès le début */
+/* Le module 5 (technique) se travaille en parallèle, dès le début */
 const REQUIRES = { m1: null, m2: 'm1', m3: 'm2', m4: 'm3', m5: null, m6: 'm4', m7: null };
-export const PARALLEL = new Set(['m5', 'm7']);
+export const PARALLEL = new Set(['m5']);
 export function isUnlocked(m) {
   const req = REQUIRES[m.id];
   if (!req) return true;

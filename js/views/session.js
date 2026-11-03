@@ -8,7 +8,7 @@
    ================================================================ */
 import { el, N, rich, seg, toast, fmtMin, plain } from '../ui.js';
 import { state, update, today, addPractice, recordTempo, setSessionLive, isValidated } from '../store.js';
-import { TECHNIQUE, techById, needsPick, fingerHint } from '../content/technique.js';
+import { TECHNIQUE, techById, needsPick, fingerHint, isNps } from '../content/technique.js';
 import { PROGRESSIONS } from '../content/progressions.js';
 import { READY_NOTIONS, notionById } from '../content/lessons.js';
 import { nextNotion, openLesson, checkTechNotions } from './path.js';
@@ -32,11 +32,20 @@ function pickTech(offset = 0) {
   const maxLevel = practicedL1 >= 2 ? 2 : 1;
   const noPick = !!S.settings.noPick;
   // sans médiator : main gauche et expression (bends, vibrato) jusqu'au niveau intermédiaire
-  const pool = noPick ? TECHNIQUE.filter(t => !needsPick(t) && t.level <= 2) : TECHNIQUE.filter(t => t.level <= maxLevel);
+  const pool = (noPick ? TECHNIQUE.filter(t => !needsPick(t) && t.level <= 2) : TECHNIQUE.filter(t => t.level <= maxLevel)).filter(t => !isNps(t));
   const first = noPick ? 'hammer-pull' : 'pick-basics';
   const last = id => { const h = S.tempos[id]?.history; return h && h.length ? h[h.length - 1].d : '0000'; };
   const sorted = pool.slice().sort((a, b) => last(a.id).localeCompare(last(b.id)) || (a.id === first ? -1 : b.id === first ? 1 : 0));
   return sorted[offset % sorted.length];
+}
+
+/* Bloc « gamme NPS » : un pattern par jour (1 → 7), puis les séquences quand les patterns sont rodés */
+function npsBlock() {
+  const S = state();
+  const done = TECHNIQUE.filter(t => isNps(t) && t.level === 1 && (S.tempos[t.id]?.history.length || 0) >= 2).length;
+  const pool = TECHNIQUE.filter(t => isNps(t) && (t.level === 1 || done >= 4));
+  const t = pool[dayIndex() % pool.length];
+  return { type: 'tech', tech: t.id, title: t.name, detail: 'Gamme majeure 3 notes par corde, au métronome.' };
 }
 
 export function buildPlan(len) {
@@ -60,8 +69,7 @@ export function buildPlan(len) {
   const validated = READY_NOTIONS.filter(n => isValidated(n.id));
   const reviewBlock = () => validated.length >= 2 ? { type: 'review', title: 'Révision express', detail: '5 questions sur des notions déjà validées (pour qu’elles tiennent).' } : tech(1);
   const EARS = [['earIntervals', 'intervalles'], ['earChords', 'majeur / mineur'], ['earDegrees', 'degrés'], ['earMelody', 'mélodie'], ['earTriads', 'triades'], ['earSevenths', 'septièmes'], ['earModes', 'modes']];
-  const earX = EARS[dayIndex() % EARS.length];
-  const ear = () => ({ type: 'ear', gen: earX[0], title: 'Oreille : ' + earX[1], detail: '10 questions sonores, correction détaillée.' });
+  const ear = () => npsBlock();
   const rep = () => (dayIndex() % 3 === 2)
     ? { type: 'rep', href: '#/compo', title: 'Composition : avance un morceau', detail: 'Une section, un riff ou une idée audio dans le Composition Studio.' }
     : (dayIndex() % 2)
@@ -103,6 +111,10 @@ export function noPickToggle(after) {
 function todayPlan(len) {
   const S = state();
   let p = S.sessions[today()];
+  if (p && p.blocks.some(b => b.type === 'ear')) {
+    update(s => { const q = s.sessions[today()]; q.blocks = q.blocks.map(b => b.type === 'ear' && !q.done.includes(b.id) ? { ...npsBlock(), id: b.id, min: b.min } : b); });
+    p = state().sessions[today()];
+  }
   if (!p || (len && p.len !== len && !p.done.length)) {
     p = buildPlan(len || S.settings.sessionLen || 20);
     update(s => { s.sessions[today()] = p; const keys = Object.keys(s.sessions).sort(); if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(k => delete s.sessions[k]); });
@@ -197,7 +209,7 @@ export function render(main, params) {
     timer.update = () => { const e = elapsed(); const left = b.min * 60 - e; timer.textContent = left >= 0 ? mmss(left) : '+' + mmss(-left); timer.classList.toggle('over', left < 0); };
     timer.update();
     const pause = el('button', { class: 'btn ghost sm', onclick: () => { if (RUN.paused) { RUN.paused = false; RUN.start = Date.now(); pause.textContent = '❚❚ Pause'; } else { RUN.acc = elapsed(); RUN.paused = true; pause.textContent = '▶ Reprendre'; } } }, RUN.paused ? '▶ Reprendre' : '❚❚ Pause');
-    box.append(el('div', 'eyebrow', `${ICON[b.type]} ${{ tech: 'Technique', theory: 'Théorie & manche', impro: 'Improvisation', rep: 'Répertoire / composition', review: 'Révision', ear: 'Oreille' }[b.type]}`),
+    box.append(el('div', 'eyebrow', `${ICON[b.type]} ${{ tech: 'Technique', theory: 'Théorie & manche', impro: 'Improvisation', rep: 'Répertoire / composition', review: 'Révision', ear: 'Gamme' }[b.type]}`),
       el('h3', null, b.title), timer,
       el('div', { class: 'row', style: { justifyContent: 'center', margin: '10px 0' } }, pause,
         el('button', { class: 'btn sm', onclick: () => markDone(b) }, '✓ Bloc terminé'),

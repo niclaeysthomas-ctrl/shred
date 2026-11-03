@@ -27,9 +27,9 @@ export function skillMeters() {
   const prac = TECHNIQUE.filter(t => t.start && S.tempos[t.id]?.clean);
   const techPct = prac.length ? prac.reduce((a, t) => a + Math.min(1, Math.max(0, (S.tempos[t.id].clean - t.start) / (t.target - t.start))), 0) / prac.length : 0;
   row('Technique', techPct, 'tempo', prac.length ? `${prac.length} exos` : '—');
-  const earG = ['earIntervals', 'earChords', 'earTriads', 'earSevenths', 'earCompare', 'earDegrees', 'earMelody', 'earModes', 'earTranscribe'].map(k => (S.genStats || {})[k]).filter(Boolean);
-  const earR = earG.flatMap(g => g.recent || []);
-  row('Oreille', earR.length ? earR.reduce((a, b) => a + b, 0) / earR.length : 0, 'quiz', earR.length ? Math.round(100 * earR.reduce((a, b) => a + b, 0) / earR.length) + ' %' : '—');
+  const nps = TECHNIQUE.filter(t => t.cat === 'Gammes NPS' && t.level === 1);
+  const npsOk = nps.filter(t => (S.tempos[t.id]?.clean || 0) >= t.start + (t.target - t.start) / 2).length;
+  row('Gammes NPS', npsOk / nps.length, 'tempo', `${npsOk}/${nps.length} patterns`);
   return wrap;
 }
 
