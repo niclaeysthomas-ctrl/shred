@@ -5426,7 +5426,7 @@ function render(){ const b=document.getElementById('badge'); const tod=dayMin();
   if(tab==='jour')renderJour(); else if(tab==='manche')renderManche(); else if(tab==='cartes')renderCartes(); else if(tab==='gammes')renderGammes(); else if(tab==='biblio')renderBiblio(); else if(tab==='theorie')renderTheorie(); else if(tab==='profil')renderProfil(); else renderSuite(); }
 render();
 /* Liens profonds depuis Shred v2 : classic.html#jukebox, #repertoire, #studio, #licks */
-(function(){ try{ const h=(location.hash||'').slice(1); const map={jukebox:[()=>openJukebox(),'Le Juke-box'], repertoire:[()=>openRepertoire(),'Le répertoire'], studio:[()=>openStudio(),'Le Studio'], licks:[()=>openLicks(),'Licks, riffs & lick du jour']}; if(map[h]){ DEEP={open:map[h][0],title:map[h][1]}; setTimeout(DEEP.open,60); } }catch(e){ console.error(e); } })();
+(function(){ try{ const h=(location.hash||'').slice(1); const map={jukebox:[()=>openJukebox(),'Le Juke-box'], repertoire:[()=>openRepertoire(),'Le répertoire'], studio:[()=>openStudio(),'Le Studio'], licks:[()=>openLicks(),'Licks, riffs & lick du jour'], solo:[()=>{ const c=soloCur(); if(c&&!repDone(c.id)) openSolo(c); else openRepertoire(); }, (soloCur()&&!repDone(soloCur().id))?soloCur().t:'Le répertoire']}; if(map[h]){ DEEP={open:map[h][0],title:map[h][1]}; setTimeout(DEEP.open,60); } }catch(e){ console.error(e); } })();
 if(location.protocol.startsWith('http')&&'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
 </body>

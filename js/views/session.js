@@ -10,6 +10,8 @@ import { el, N, rich, seg, toast, fmtMin, plain } from '../ui.js';
 import { state, update, today, addPractice, recordTempo, setSessionLive, isValidated } from '../store.js';
 import { TECHNIQUE, techById, needsPick, fingerHint, isNps } from '../content/technique.js';
 import { PROGRESSIONS } from '../content/progressions.js';
+import { soloStatus, SOLO_STEPS } from '../content/solos.js';
+import * as T from '../theory.js';
 import { READY_NOTIONS, notionById } from '../content/lessons.js';
 import { nextNotion, openLesson, checkTechNotions } from './path.js';
 import '../quiz2.js';
@@ -18,7 +20,7 @@ import { runQuiz } from '../quiz.js';
 import { openModal, closeModal } from '../ui.js';
 
 const FOCI = ['theory', 'impro', 'tech'];
-const FOCUS_NAME = { theory: 'Théorie & manche', impro: 'Improvisation', tech: 'Technique' };
+const FOCUS_NAME = { theory: 'Théorie & manche', impro: 'Improvisation', tech: 'Technique', solo: 'Solos' };
 
 function dayIndex() {
   const c = new Date(state().created || today()), d = new Date(today());
@@ -50,7 +52,6 @@ function npsBlock() {
 
 export function buildPlan(len) {
   const S = state();
-  const focus = FOCI[dayIndex() % 3];
   const review = READY_NOTIONS.filter(n => S.notions[n.id]?.review);
   const nxt = nextNotion();
   const theory = () => {
@@ -76,11 +77,29 @@ export function buildPlan(len) {
     ? { type: 'rep', href: 'classic.html#jukebox', title: 'Répertoire : un morceau du Juke-box', detail: 'Joue un morceau en entier, en visant les notes indiquées.' }
     : { type: 'rep', href: '#/labo/accords?view=harmo', title: 'Composition : une grille', detail: 'Construis une grille de 4 accords dans le Chord Lab, garde-la si elle te plaît.' };
 
+  /* Répartition : un solo au centre (≈ 50 %), le manche (≈ 25 %), l'impro (≈ 15 %), les NPS en échauffement court (≈ 10 %) */
+  const so = soloStatus();
+  const solo = () => so.solo
+    ? { type: 'solo', href: 'classic.html#solo', title: `Ton solo : ${so.solo.t}`, detail: `${so.solo.a} · étape ${so.n + 1}/5 : ${so.step.n}` }
+    : { type: 'solo', href: 'classic.html#solo', title: so.finished ? `${so.finished.t} est terminé : choisis le suivant` : 'Choisis ton premier solo', detail: `Conseil : ${so.suggest.t} (${so.suggest.a}).` };
+  const pos = dayIndex() % 5;
+  // position 1 = la « boîte » classique (fondamentale case 5 sur Mi grave), puis 2, 3… vers l'aigu
+  const zones = T.scaleZones(T.buildScale('A', 'minPenta'), 15);
+  const z1 = Math.max(0, zones.findIndex(z => z.from <= 5 && z.to >= 5 && z.from >= 4));
+  const zone = (z1 + pos) % zones.length;
+  const MANCHE = [
+    () => ({ type: 'manche', href: `#/labo/manche?view=scale&tonic=A&scale=minPenta&labels=deg&zone=${zone}`, title: `Pentatonique de La : position ${pos + 1}`, detail: 'Montée et descente au métronome en disant les degrés, puis relie-la à la position voisine.' }),
+    () => ({ type: 'manche', quiz: 'fretNotes', title: 'Notes du manche', detail: '10 notes à trouver sur le manche, sans réfléchir aux formes.' }),
+    () => nxt ? theory() : ({ type: 'manche', quiz: 'fretNotes', title: 'Notes du manche', detail: '10 notes à trouver sur le manche.' })
+  ];
+  const manche = () => MANCHE[dayIndex() % 3]();
+  const warm = () => ({ ...npsBlock(), detail: 'Échauffement : gamme majeure 3 notes par corde, au métronome.' });
   let blocks;
-  if (len === 15) blocks = focus === 'theory' ? [[theory(), 8], [impro(), 7]] : focus === 'impro' ? [[tech(0), 5], [impro(), 10]] : [[tech(0), 8], [theory(), 7]];
-  else if (len === 20) blocks = focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7]] : focus === 'impro' ? [[tech(0), 5], [impro(), 10], [rep(), 5]] : [[tech(0), 8], [ear(), 5], [impro(), 7]];
-  else blocks = focus === 'tech' ? [[tech(0), 6], [tech(1), 5], [theory(), 7], [impro(), 7], [ear(), 5]] : focus === 'theory' ? [[tech(0), 5], [theory(), 8], [impro(), 7], [ear(), 5], [reviewBlock(), 5]] : [[tech(0), 5], [theory(), 7], [impro(), 8], [rep(), 5], [reviewBlock(), 5]];
-  return { len, focus, d: today(), blocks: blocks.map(([b, m], i) => ({ ...b, id: 'b' + i, min: m })), done: [] };
+  if (len === 15) blocks = [[warm(), 2], [solo(), 8], [manche(), 5]];
+  else if (len === 20) blocks = [[warm(), 2], [solo(), 10], [manche(), 4], [impro(), 4]];
+  else blocks = [[warm(), 3], [solo(), 15], [manche(), 7], [impro(), 5]];
+  const focus = 'solo';
+  return { v: 2, len, focus, d: today(), blocks: blocks.map(([b, m], i) => ({ ...b, id: 'b' + i, min: m })), done: [] };
 }
 
 /* Active / coupe le mode sans médiator. Les blocs technique pas encore faits
@@ -108,14 +127,14 @@ export function noPickToggle(after) {
   } }, on ? '🎸 Sans médiator : activé' : '🎸 Pas de médiator ?');
 }
 
-function todayPlan(len) {
+export function todayPlan(len) {
   const S = state();
   let p = S.sessions[today()];
   if (p && p.blocks.some(b => b.type === 'ear')) {
     update(s => { const q = s.sessions[today()]; q.blocks = q.blocks.map(b => b.type === 'ear' && !q.done.includes(b.id) ? { ...npsBlock(), id: b.id, min: b.min } : b); });
     p = state().sessions[today()];
   }
-  if (!p || (len && p.len !== len && !p.done.length)) {
+  if (!p || (len && p.len !== len && !p.done.length) || (p.v !== 2 && !p.done.length)) {
     p = buildPlan(len || S.settings.sessionLen || 20);
     update(s => { s.sessions[today()] = p; const keys = Object.keys(s.sessions).sort(); if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(k => delete s.sessions[k]); });
   }
@@ -156,14 +175,14 @@ window.addEventListener('hashchange', () => setTimeout(renderPill, 0));
 window.addEventListener('beforeunload', () => { if (RUN.on) commitTime(); });
 
 /* ---------------- écran ---------------- */
-const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍' };
+const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍', solo: '🎸', manche: '▦' };
 
 export function render(main, params) {
   const S = state();
   const plan = todayPlan(params.len ? +params.len : null);
   main.append(el('div', 'page-head',
     el('div', null, el('div', 'eyebrow', 'Séance du jour · priorité ' + FOCUS_NAME[plan.focus].toLowerCase()), el('h1', null, `${plan.len} minutes`),
-      el('p', null, 'Les priorités tournent sur trois jours : théorie, impro, technique. Les contenus suivent tes résultats.')),
+      el('p', null, 'Un solo au centre de chaque séance, puis le manche et l’impro. Les gammes NPS servent d’échauffement.')),
     seg([[15, '15 min'], [20, '20 min'], [30, '30 min']], plan.len, v => {
       if (plan.done.length && !confirm('Des blocs sont déjà faits. Regénérer la séance ?')) return;
       update(s => { s.settings.sessionLen = +v; delete s.sessions[today()]; });
@@ -209,7 +228,7 @@ export function render(main, params) {
     timer.update = () => { const e = elapsed(); const left = b.min * 60 - e; timer.textContent = left >= 0 ? mmss(left) : '+' + mmss(-left); timer.classList.toggle('over', left < 0); };
     timer.update();
     const pause = el('button', { class: 'btn ghost sm', onclick: () => { if (RUN.paused) { RUN.paused = false; RUN.start = Date.now(); pause.textContent = '❚❚ Pause'; } else { RUN.acc = elapsed(); RUN.paused = true; pause.textContent = '▶ Reprendre'; } } }, RUN.paused ? '▶ Reprendre' : '❚❚ Pause');
-    box.append(el('div', 'eyebrow', `${ICON[b.type]} ${{ tech: 'Technique', theory: 'Théorie & manche', impro: 'Improvisation', rep: 'Répertoire / composition', review: 'Révision', ear: 'Gamme' }[b.type]}`),
+    box.append(el('div', 'eyebrow', `${ICON[b.type]} ${{ tech: 'Technique', theory: 'Théorie & manche', impro: 'Improvisation', rep: 'Répertoire / composition', review: 'Révision', ear: 'Gamme', solo: 'Solo', manche: 'Manche' }[b.type]}`),
       el('h3', null, b.title), timer,
       el('div', { class: 'row', style: { justifyContent: 'center', margin: '10px 0' } }, pause,
         el('button', { class: 'btn sm', onclick: () => markDone(b) }, '✓ Bloc terminé'),
@@ -265,6 +284,22 @@ function blockContent(b) {
   if (b.type === 'impro' || b.type === 'rep') {
     c.append(el('p', 'lead', b.detail), el('a', { class: 'btn', href: b.href }, b.type === 'impro' ? '♫ Ouvrir l’exercice' : 'Ouvrir'),
       el('p', 'hint', b.href.startsWith('classic') ? 'Ouvre l’ancien Shred (ton Juke-box est là-bas). Le chrono s’arrête si tu quittes cette page : reviens marquer le bloc terminé.' : 'Le chrono continue (pastille en bas à droite). Reviens ici pour passer au bloc suivant.'));
+  }
+  if (b.type === 'solo') {
+    const so = soloStatus();
+    if (so.solo) {
+      const steps = el('div', 'block-list');
+      SOLO_STEPS.forEach((st, i) => steps.append(el('div', { class: 'block' + (i < so.n ? ' done' : i === so.n ? ' now' : ''), style: { padding: '8px 12px' } },
+        el('span', 'bi', i < so.n ? '✓' : String(i + 1)), el('div', null, el('b', 'bt', st.n), i === so.n ? el('small', null, st.d) : null))));
+      c.append(el('p', 'lead', `${so.solo.t} (${so.solo.a}) : aujourd’hui, étape « ${so.step.n} ».`), steps);
+    } else c.append(el('p', 'lead', b.detail + ' Un solo appris en entier vaut dix exercices survolés.'));
+    c.append(el('a', { class: 'btn', href: b.href }, so.solo ? '🎸 Ouvrir mon solo' : '🎼 Choisir dans le répertoire'),
+      el('p', 'hint', 'Le solo s’ouvre dans le répertoire (ancien Shred) : tu y coches les étapes. La flèche ← te ramène ici ; marque alors le bloc terminé.'));
+  }
+  if (b.type === 'manche') {
+    c.append(el('p', 'lead', b.detail));
+    if (b.quiz) c.append(el('button', { class: 'btn', onclick: () => openModal(b.title, body => runQuiz(body, { gens: [b.quiz], n: 10, kind: 'manche' })) }, '▶ Lancer'));
+    else c.append(el('a', { class: 'btn', href: b.href }, '▦ Ouvrir sur le manche'), el('p', 'hint', 'Le chrono continue (pastille en bas à droite). Reviens ici pour passer au bloc suivant.'));
   }
   if (b.type === 'ear') {
     c.append(el('p', 'lead', b.detail + ' Monte le volume ou mets un casque.'),
