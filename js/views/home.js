@@ -3,10 +3,10 @@ import { el, N, rich, openModal, closeModal, toast, fmtMin, fmtDate } from '../u
 import { state, update, weekMinutes, lastDays, streak, minutesOn, today, addPractice, isValidated } from '../store.js';
 import { MODULES, READY_NOTIONS, notionById } from '../content/lessons.js';
 import { currentModule, moduleProgress, nextNotion, openLesson } from './path.js';
-import { buildPlan, noPickToggle } from './session.js';
+import { todayPlan, noPickToggle } from './session.js';
 import { skillMeters } from './progress.js';
 
-const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍' };
+const ICON = { tech: '✋', theory: '◈', impro: '♫', rep: '🎵', review: '↻', ear: '◍', solo: '🎸', manche: '▦' };
 
 export function render(main) {
   const S = state();
@@ -23,7 +23,7 @@ export function render(main) {
   const g = el('div', 'grid2');
 
   // séance du jour
-  const plan = S.sessions[today()] || buildPlan(S.settings.sessionLen || 20);
+  const plan = todayPlan();
   const sess = el('div', 'panel hl');
   const done = plan.done ? plan.done.length : 0;
   sess.append(el('div', 'panel-title', el('h3', null, 'Ta séance du jour'), el('span', 'tag acc', `${plan.len} min · ${done}/${plan.blocks.length}`)));
