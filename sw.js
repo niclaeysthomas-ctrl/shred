@@ -1,5 +1,5 @@
 // SHRED — service worker : réseau d'abord, cache en secours (l'app reste utilisable hors-ligne).
-const CACHE = "shred-v45-nps";
+const CACHE = "shred-v46-nps";
 const ASSETS = [
   "./", "./index.html", "./classic.html", "./manifest.webmanifest", "./css/app.css",
   "./js/app.js", "./js/theory.js", "./js/audio.js", "./js/store.js", "./js/ui.js", "./js/fretboard.js", "./js/quiz.js",
@@ -24,7 +24,7 @@ self.addEventListener("fetch", e => {
   e.respondWith(
     fetch(e.request).then(res => {
       const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+      if (res.ok) caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
       return res;
     }).catch(() =>
       caches.match(e.request, { ignoreSearch: true }).then(hit => hit || caches.match("./index.html"))
